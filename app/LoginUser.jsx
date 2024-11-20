@@ -1,121 +1,140 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   Image,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  ImageBackground,
+} from "react-native";
 
-const LoginUser = () => {
+const LoginAdmin = () => {
   return (
-    <View style={styles.container}>
-      {/* Background Image */}
-      <Image
-        source={require('../assets/images/background.png')}
-        style={styles.image}
-      />
+    <ImageBackground
+      source={require("@/assets/images/rectangles1.png")} // Update the background image
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <View style={styles.container}>
+        {/* Illustration */}
+        <View style={styles.topSection}>
+          <Image
+            source={require("../assets/images/login.png")} // Ensure the path is correct
+            style={styles.illustration}
+          />
+        </View>
 
-      {/* Content Overlay */}
-      <View style={styles.contentContainer}>
-        {/* Back Button */}
-        <TouchableOpacity style={styles.backButton}>
-          <Icon name="arrow-left" size={15} color="#FFF" />
+        {/* Welcome Text */}
+        <Text style={styles.title}>Hello there,</Text>
+
+        {/* Email Input */}
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#4874A6"
+        />
+
+        {/* Password Input */}
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#4874A6"
+          secureTextEntry
+        />
+
+        {/* Forgot Password */}
+        <TouchableOpacity>
+          <Text style={styles.forgotPassword}>Forgot Password?</Text>
         </TouchableOpacity>
 
-        {/* Login Fields */}
-        <Text style={styles.greeting}>Hello there,</Text>
-        <View style={styles.outercontainer}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput style={styles.input} placeholder="Enter your email" />
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your password"
-            secureTextEntry
-          />
-          <TouchableOpacity>
-            <Text style={styles.forgotPassword}>Forgot Password?</Text>
+        {/* Login Button */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.loginButton}>
-          <Text style={styles.loginButtonText}>Login</Text>
-        </TouchableOpacity>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  outercontainer: {
-    marginTop: 70,
+  backgroundImage: {
+    flex: 1,
+    width: "100%", // Ensures it covers the full width
+    height: "100%", // Ensures it covers the full height
+    backgroundColor: "#000000", // Prevents black gaps
   },
-
   container: {
     flex: 1,
-    position: 'relative',
+    justifyContent: "flex-start", // Move content to start
+    alignItems: "flex-start", // Align content to the left
+    paddingHorizontal: 20, // Add padding on the sides
+    paddingTop: 50, // Adjust spacing from the top
   },
-  image: {
-    width: '100%',
-    height: '85%',
-    resizeMode: 'cover',
-    position: 'absolute',
+  topSection: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 20,
   },
-  contentContainer: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
+  illustration: {
+    width: "70%",
+    height: 180,
+    resizeMode: "contain",
+    marginBottom: 30,
   },
-  backButton: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    padding: 10,
-  },
-  greeting: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: '#FFF',
-    marginBottom: 70,
-    marginTop: 50,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#4874A6',
-    marginBottom: 5,
+  title: {
+    fontSize: 28,
+    color: "#4874A6",
+    fontWeight: "bold",
+    textAlign: "left", // Align text to the left
+    marginTop:40,
+    marginBottom: 30,
   },
   input: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    padding: 12,
+    marginVertical: 10,
     borderWidth: 1,
-    borderColor: '#4874A6',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Makes inputs stand out on the background
+    borderColor: "#4874A6",
+    fontSize: 16,
+    textAlign: "left", // Align placeholder text to the left
   },
   forgotPassword: {
+    color: "#4874A6",
     fontSize: 14,
-    fontWeight: '700',
-    color: '#4874A6',
-    textAlign: 'right',
+    // textAlign: "right", 
+    textAlign:"center",// Align forgot password to the right
+    // alignSelf: "flex-end",
     marginBottom: 20,
   },
-  loginButton: {
-    backgroundColor: '#4874A6',
-    borderRadius: 30,
-    paddingVertical: 15,
-    alignItems: 'center',
-    alignSelf: 'center',
-    width: '50%',
-    marginTop: 10,
+  buttonContainer: {
+    width: "100%",
+    alignItems: "center", // Center the button horizontally
+    marginTop: 30,
   },
-  loginButtonText: {
-    fontSize: 24,
-    fontWeight: '400',
-    color: '#FFFFFF',
+  button: {
+    width: "50%",
+    backgroundColor: "#80A3CC",
+    borderRadius: 10,
+    paddingVertical: 15,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    boarderColor: "#000000",
+
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });
 
-export default LoginUser;
+export default LoginAdmin;
