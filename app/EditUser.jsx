@@ -1,9 +1,9 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 import PhoneInput from "react-native-phone-number-input";
 
-const EditUser = () => {
+const AddUser = () => {
   const [value, setValue] = useState("");
   const [formattedValue, setFormattedValue] = useState("");
   const [valid, setValid] = useState(false);
@@ -22,12 +22,12 @@ const EditUser = () => {
         </View>
         <View style={styles.profileSection}>
           <View style={styles.profileRow}>
-            <Icon name="user" size={50} color="#000" style={styles.userIcon} />
+            <Icon name="user" size={50} color="#000" style={styles.profileImage} />
             <View style={styles.textSection}>
-              <Text style={styles.uploadPhotoText}>Edit Photo</Text>
+              <Text style={styles.uploadPhotoText}>Upload Photo</Text>
               <View style={styles.uploadSection}>
                 <Icon name="upload" size={24} color="#8E8E8E" />
-                <Text style={styles.uploadText}>Upload Additional file</Text>
+                <Text style={styles.uploadText}>Update Profile pic</Text>
               </View>
               <Text style={styles.helperText}>
                 Attach file. File size of your documents should not exceed 10MB
@@ -40,7 +40,7 @@ const EditUser = () => {
             <Icon name="user" size={24} color="#000" style={styles.inputIcon} />
             <View style={styles.inputContainer}>
               <Text style={styles.label}>User Name</Text>
-              <TextInput style={styles.input} placeholder="Edit User Name" />
+              <TextInput style={styles.input} placeholder="Enter User Name" />
             </View>
           </View>
           <View style={styles.inputRow}>
@@ -59,29 +59,20 @@ const EditUser = () => {
                 placeholder="Enter phone number"
                 containerStyle={styles.phoneInputContainer}
                 textContainerStyle={styles.textContainer}
-                textInputProps={{ keyboardType: 'phone-pad' }}
+                textInputProps={{ keyboardType: "phone-pad" }}
                 textInputStyle={styles.textInput}
                 codeTextStyle={styles.codeText}
                 flagButtonStyle={styles.flagButton}
                 countryPickerButtonStyle={styles.countryPickerButton}
-                onChangeCountry={(country) => {}}
-                renderDropdownImage={
-                  <Icon name="arrow-down" size={18} color="#000" />
-                }
+                renderDropdownImage={<Icon name="arrow-down" size={18} color="#000" />}
               />
-              <View style={styles.phoneInput}>
-                <Image
-                  source={{ uri: 'https://placeholder.pics/svg/23x17' }}
-                  style={styles.flagIcon}
-                />
-              </View>
             </View>
           </View>
           <View style={styles.inputRow}>
             <Icon name="envelope" size={24} color="#000" style={styles.inputIcon} />
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email Address</Text>
-              <TextInput style={styles.input} placeholder="username123@gmail.com" />
+              <TextInput style={styles.input} placeholder="Enter Email Address" />
             </View>
           </View>
         </View>
@@ -100,191 +91,124 @@ const EditUser = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
+  container: { flex: 1, backgroundColor: "#FFFFF" },
   header: {
-    backgroundColor: '#ADC1D8',
+    backgroundColor: "#B1C4DA",
     paddingVertical: 20,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    height: '30%',
+    height: "30%",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 4,
+    elevation: 5,
   },
-  backButton: {
-    position: 'absolute',
-    left: 20,
-    top: 20,
-  },
-  editIcon: {
-    marginBottom: 5,
-    marginTop: 40,
-  },
+  backButton: { position: "absolute", left: 20, top: 20 },
+  editIcon: { marginBottom: 5, marginTop: 70 },
   headerText: {
     marginTop: 10,
-    fontSize: 30,
-    fontWeight: '800',
-    color: '#FFF',
+    fontSize: 26, // Slightly smaller font
+    fontWeight: "700",
+    color: "#FFF",
   },
   profileSection: {
-    alignItems: 'center',
-    marginVertical: 20,
+    right:14,
+    alignItems: "center",
+    padding: 20,
   },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '90%',
-  },
-  userIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  textSection: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  uploadPhotoText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#000',
-    marginBottom: 10,
-  },
+  profileRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", width: "90%" },
+  profileImage: { width: 50, height: 50, borderRadius: 25 },
+  uploadPhotoText: { fontSize: 14, fontWeight: "600", color: "#333", marginBottom: 10 },
   uploadSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#8E8E8E',
+    borderColor: "#B1C4DA",
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 5,
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
-  uploadText: {
-    fontSize: 14,
-    color: '#8E8E8E',
-    marginLeft: 10,
-  },
-  helperText: {
-    fontSize: 10,
-    color: '#8E8E8E',
-    textAlign: 'center',
-  },
-  inputSection: {
-    paddingHorizontal: 20,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  inputIcon: {
-    marginBottom: 28,
-    marginRight: 10,
-  },
-  inputIcon2: {
-    marginBottom: 80,
-    marginRight: 10,
-  },
-  inputContainer: {
-    flex: 1,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F1F1F',
-  },
-  label2: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F1F1F',
-    marginBottom: 10,
-  },
+  uploadText: { fontSize: 12, color: "#555", marginLeft: 10 },
+  helperText: { fontSize: 10, color: "#888", textAlign: "center" },
+  inputSection: { paddingHorizontal: 20 },
+  inputRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  inputIcon: { marginRight: 15,marginTop:30, height: 24,     // Ensure height consistency across all icons
+    width: 24,  },
+  inputIcon2: { marginRight: 15,marginTop:50, height: 24,     // Ensure height consistency across all icons
+    width: 24,  },
+
+  inputContainer: { flex: 1 },
+  label: { fontSize: 14, fontWeight: "600", color: "#555" ,marginVertical:5},
+  label2:{fontSize: 14, fontWeight: "600", color: "#555" ,marginBottom:5},
   input: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#000',
-    paddingVertical: 5,
-  },
-  phoneInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  flagIcon: {
-    width: 23,
-    height: 17,
-    marginRight: 5,
-  },
-  countryCode: {
-    fontSize: 14,
-    color: '#2F2F2F',
-    marginRight: 10,
-  },
-  doneButton: {
-    backgroundColor: '#ADC1D8',
-    borderRadius: 30,
-    paddingVertical: 15,
-    alignItems: 'center',
-    alignContent: 'center',
-    alignSelf: 'center',
-    width: '50%',
-    marginHorizontal: 20,
-    marginTop: 0,
-  },
-  doneButtonText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#FFF',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: '#E0E0E0',
-    marginTop: 'auto',
-  },
-  phoneInputContainer: {
-    
-    marginVertical: 10,
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#8E8E8E',
+    borderColor: "#B1C4DA",
     borderRadius: 10,
+    padding: 10,
+    fontSize: 14,
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+    width:'99%'
 
   },
-  textContainer: {
-    flex: 1,
-    marginLeft: 10,
-    backgroundColor:'#fff',
-    borderWidth:0.5,
-    borderLeftColor:'black',
-    borderRightColor:'#fff',
-    borderTopColor:'#fff',
-    borderBottomColor:'#fff',
-    borderBottomRightRadius:10,
-    borderTopRightRadius:10,
+  phoneInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#B1C4DA",
+    borderRadius: 10,
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+    width:'99%'
+  },textContainer:{
+    flex: 1, marginLeft: 10, backgroundColor: "#fff", borderTopRightRadius:10, borderBottomRightRadius:10, borderLeftColor:'#B1C4DA', borderLeftWidth:1
   },
-  textInput: {
-    fontSize: 16,
-    padding: 2,
-    color: '#333',
-    flex: 1,
+  doneButton: {
+    backgroundColor: "#B1C4DA",
+    borderRadius: 30,
+    paddingVertical: 15,
+    marginBottom: 20,
+    alignItems: "center",
+    alignSelf: "center",
+    width: "50%",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 4,
+    elevation: 5,
   },
-  codeText: {
-    fontSize: 16,
-    color: '#555',
-  },
-  flagButton: {
-    padding: 2,
-  },
-  countryPickerButton: {
-    padding: 2,
-    backgroundColor: '#FFF',
-    borderRadius: 8,
+  doneButtonText: { fontSize: 16, fontWeight: "600", color: "#FFF" },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderColor: "#E0E0E0",
+    marginTop: "auto",
   },
 });
 
-export default EditUser;
+export default AddUser;
+
+
+
+
+
+
+
