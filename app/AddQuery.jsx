@@ -21,7 +21,7 @@ const AddQueryComponent = () => {
       <View style={styles.formContainer}>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Subject</Text>
-          <TextInput style={styles.input} placeholder="Enter the query subject" />
+          <TextInput style={styles.input} placeholder="Enter the query subject" placeholderTextColor="#D3D3D3"   />
         </View>
 
         <View style={styles.inputContainer}>
@@ -38,7 +38,10 @@ const AddQueryComponent = () => {
             placeholder="Enter phone number"
             containerStyle={styles.phoneInputContainer}  // Use this only for styling the input container
             textContainerStyle={styles.textContainer}
-            textInputProps={{ keyboardType: "phone-pad" }}
+            textInputProps={{
+            keyboardType: "phone-pad",
+             placeholderTextColor:"#D3D3D3"  // Set placeholder color here
+          }}
             textInputStyle={styles.textInput}
             codeTextStyle={styles.codeText}
             flagButtonStyle={styles.flagButton}
@@ -52,6 +55,7 @@ const AddQueryComponent = () => {
           <TextInput
             style={styles.textArea}
             placeholder="Write your message here"
+            placeholderTextColor="#D3D3D3" 
             multiline
             numberOfLines={4}
           />

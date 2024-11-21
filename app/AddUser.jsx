@@ -22,11 +22,11 @@ const AddUser = () => {
         </View>
         <View style={styles.profileSection}>
           <View style={styles.profileRow}>
-            <Icon name="user" size={50} color="#000" style={styles.profileImage} />
+            <Icon name="user" size={50} color="#4A4A4A" style={styles.profileImage} />
             <View style={styles.textSection}>
               <Text style={styles.uploadPhotoText}>Upload Photo</Text>
               <View style={styles.uploadSection}>
-                <Icon name="upload" size={24} color="#8E8E8E" />
+                <Icon name="upload" size={24} color="#4A4A4A" />
                 <Text style={styles.uploadText}>Upload Profile pic</Text>
               </View>
               <Text style={styles.helperText}>
@@ -37,14 +37,14 @@ const AddUser = () => {
         </View>
         <View style={styles.inputSection}>
           <View style={styles.inputRow}>
-            <Icon name="user" size={24} color="#000" style={styles.inputIcon} />
+            <Icon name="user" size={24} color="#4A4A4A" style={styles.inputIcon} />
             <View style={styles.inputContainer}>
               <Text style={styles.label}>User Name</Text>
-              <TextInput style={styles.input} placeholder="Enter User Name" />
+              <TextInput style={styles.input} placeholder="Enter User Name"  placeholderTextColor="#D3D3D3" />
             </View>
           </View>
           <View style={styles.inputRow}>
-            <Icon name="phone" size={24} color="#000" style={styles.inputIcon2} />
+            <Icon name="phone" size={24} color="#4A4A4A" style={styles.inputIcon2} />
             <View style={[styles.inputContainer, { marginTop: 15 }]}>
               <Text style={styles.label2}>Phone Number</Text>
               <PhoneInput
@@ -59,7 +59,7 @@ const AddUser = () => {
                 placeholder="Enter phone number"
                 containerStyle={styles.phoneInputContainer}
                 textContainerStyle={styles.textContainer}
-                textInputProps={{ keyboardType: "phone-pad" }}
+                textInputProps={{ keyboardType: "phone-pad", placeholderTextColor:"#D3D3D3"  }}
                 textInputStyle={styles.textInput}
                 codeTextStyle={styles.codeText}
                 flagButtonStyle={styles.flagButton}
@@ -69,10 +69,10 @@ const AddUser = () => {
             </View>
           </View>
           <View style={styles.inputRow}>
-            <Icon name="envelope" size={24} color="#000" style={styles.inputIcon} />
+            <Icon name="envelope" size={24} color="#4A4A4A" style={styles.inputIcon} />
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email Address</Text>
-              <TextInput style={styles.input} placeholder="Enter Email Address" />
+              <TextInput style={styles.input} placeholder="Enter Email Address"   placeholderTextColor="#D3D3D3" />
             </View>
           </View>
         </View>
@@ -140,9 +140,9 @@ const styles = StyleSheet.create({
   helperText: { fontSize: 10, color: "#888", textAlign: "center" },
   inputSection: { paddingHorizontal: 20 },
   inputRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  inputIcon: { marginRight: 15,marginTop:30, height: 24,     // Ensure height consistency across all icons
+  inputIcon: { marginRight: 15,marginTop:30, height: 24,    
     width: 24,  },
-  inputIcon2: { marginRight: 15,marginTop:50, height: 24,     // Ensure height consistency across all icons
+  inputIcon2: { marginRight: 15,marginTop:40, height: 24,     
     width: 24,  },
 
   inputContainer: { flex: 1 },
@@ -160,7 +160,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 2,
-    width:'99%'
+    width:'99%',
+  
 
   },
   phoneInputContainer: {
@@ -175,7 +176,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 2,
-    width:'99%'
+    width:'99%',
+    marginBottom:10
   },textContainer:{
     flex: 1, marginLeft: 10, backgroundColor: "#fff", borderTopRightRadius:10, borderBottomRightRadius:10, borderLeftColor:'#B1C4DA', borderLeftWidth:1
   },
@@ -192,6 +194,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 4,
     elevation: 5,
+    margintop:20,
+
   },
   doneButtonText: { fontSize: 16, fontWeight: "600", color: "#FFF" },
   footer: {
