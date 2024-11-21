@@ -9,7 +9,7 @@ const index=()=>{
         <ScreenWrapper>
          <View>
         <Text>index</Text>
-        <Button title='Start Screen' onPress={()=>router.push('StartScreen')}>
+        <Button title='Start Screen' onPress={()=>router.push('ViewUser')}>
 
         </Button>
         </View>
