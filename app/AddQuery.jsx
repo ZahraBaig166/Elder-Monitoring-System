@@ -1,8 +1,14 @@
-import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import PhoneInput from 'react-native-phone-number-input';
+import React, { useState, useRef } from "react";
 
 const AddQueryComponent = () => {
+  const [value, setValue] = useState("");
+  const [formattedValue, setFormattedValue] = useState("");
+  const [valid, setValid] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
+  const phoneInput = useRef(null);
   return (
     <View style={styles.container}>
       {/* Header Section */}
@@ -15,19 +21,33 @@ const AddQueryComponent = () => {
       <View style={styles.formContainer}>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Subject</Text>
-          <TextInput style={styles.input} placeholder="Enter the query subject" />
+          <TextInput style={styles.input} placeholder="Enter the query subject" placeholderTextColor="#D3D3D3"   />
         </View>
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Phone Number</Text>
-          <View style={styles.phoneInputContainer}>
-            <Icon name="flag" size={20} color="#000" style={styles.flagIcon} />
-            <TextInput
-              style={styles.phoneInput}
-              placeholder="Enter your phone number"
-              keyboardType="phone-pad"
-            />
-          </View>
+          <PhoneInput
+            ref={phoneInput}
+            defaultValue={value}
+            defaultCode="PK"
+            layout="second"
+            onChangeText={(text) => setValue(text)}
+            onChangeFormattedText={(text) => setFormattedValue(text)}
+            disabled={false}
+            disableArrowIcon={true}
+            placeholder="Enter phone number"
+            containerStyle={styles.phoneInputContainer}  // Use this only for styling the input container
+            textContainerStyle={styles.textContainer}
+            textInputProps={{
+            keyboardType: "phone-pad",
+             placeholderTextColor:"#D3D3D3"  // Set placeholder color here
+          }}
+            textInputStyle={styles.textInput}
+            codeTextStyle={styles.codeText}
+            flagButtonStyle={styles.flagButton}
+            countryPickerButtonStyle={styles.countryPickerButton}
+            renderDropdownImage={<Icon name="arrow-down" size={18} color="#000" />}
+          />
         </View>
 
         <View style={styles.inputContainer}>
@@ -35,6 +55,7 @@ const AddQueryComponent = () => {
           <TextInput
             style={styles.textArea}
             placeholder="Write your message here"
+            placeholderTextColor="#D3D3D3" 
             multiline
             numberOfLines={4}
           />
@@ -77,15 +98,22 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    height: '32%'
   },
   plusIcon: {
+    marginTop: 30,
     marginBottom: 10,
   },
   headerText: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
+    textTransform: 'uppercase',
   },
   formContainer: {
     paddingHorizontal: 20,
@@ -95,7 +123,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#263238',
     marginBottom: 5,
@@ -103,24 +131,27 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: '#B0C4DE',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: '#F9F9F9',
+    fontSize: 16,
+    color: '#263238',
   },
   phoneInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#B0C4DE',
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: '#F9F9F9',
   },
-  flagIcon: {
-    marginRight: 10,
+  textContainer: {
+    flex: 1,
   },
-  phoneInput: {
+  textInput: {
     flex: 1,
     fontSize: 16,
     color: '#000',
@@ -128,12 +159,14 @@ const styles = StyleSheet.create({
   textArea: {
     borderWidth: 1,
     borderColor: '#B0C4DE',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     height: 100,
     backgroundColor: '#F9F9F9',
     textAlignVertical: 'top',
+    fontSize: 16,
+    color: '#263238',
   },
   submitButton: {
     backgroundColor: '#ADC1D8',
@@ -141,7 +174,11 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     marginHorizontal: 20,
-    marginTop: 30,
+    marginTop: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
   },
   submitButtonText: {
     color: '#FFFFFF',
@@ -149,16 +186,28 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
+    marginTop: "auto",
   },
-  footerIcon: {
-    padding: 10,
+  phoneInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#B1C4DA",
+    borderRadius: 10,
+    backgroundColor: "#F9F9F9",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+    width:'100%'
+  },textContainer:{
+    flex: 1, marginLeft: 10, backgroundColor: "#f9f9f9", borderTopRightRadius:10, borderBottomRightRadius:10, borderLeftColor:'#B1C4DA', borderLeftWidth:1
   },
 });
 

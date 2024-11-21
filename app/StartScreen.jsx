@@ -1,52 +1,55 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import ScreenWrapper from "../components/ScreenWrapper";
 
 const StartScreen = () => {
   return (
-    <LinearGradient
-      colors={["#80A3CC", "#91BEE3"]} // Define the gradient colors
-      style={styles.container}
-    >
-      {/* Title */}
-      <Text style={styles.title}>
-        <Text style={styles.smartText}>SMART</Text>
-        {"\n"}
-        <Text style={styles.careText}>CARE</Text>
-      </Text>
+    <ScreenWrapper bg="#80A3CC"> {/* Pass the starting gradient color here */}
+      <LinearGradient
+        colors={["#80A3CC", "#91BEE3"]} // Define the gradient colors
+        style={styles.container}
+      >
+        {/* Title */}
+        <Text style={styles.title}>
+          <Text style={styles.smartText}>SMART</Text>
+          {"\n"}
+          <Text style={styles.careText}>CARE</Text>
+        </Text>
 
-      {/* Image Container */}
-      <View style={styles.imageContainer}>
-        {/* Background Gear */}
-        <Image
-          source={require("@/assets/images/gear.png")} // Gear background
-          style={styles.backgroundGear}
-        />
-        {/* Left Lady */}
-        <Image
-          source={require("@/assets/images/left.png")}
-          style={styles.image1}
-        />
-        {/* Watch */}
-        <Image
-          source={require("@/assets/images/watch.png")}
-          style={styles.watch}
-        />
-        {/* Right Lady */}
-        <Image
-          source={require("@/assets/images/right.png")}
-          style={styles.image2}
-        />
-      </View>
+        {/* Image Container */}
+        <View style={styles.imageContainer}>
+          {/* Background Gear */}
+          <Image
+            source={require("@/assets/images/gear.png")} // Gear background
+            style={styles.backgroundGear}
+          />
+          {/* Left Lady */}
+          <Image
+            source={require("@/assets/images/left.png")}
+            style={styles.image1}
+          />
+          {/* Watch */}
+          <Image
+            source={require("@/assets/images/watch.png")}
+            style={styles.watch}
+          />
+          {/* Right Lady */}
+          <Image
+            source={require("@/assets/images/right.png")}
+            style={styles.image2}
+          />
+        </View>
 
-      {/* Buttons */}
-      <TouchableOpacity style={styles.buttonAdmin}>
-        <Text style={styles.buttonText}>Login as Admin</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.buttonUser}>
-        <Text style={styles.buttonText}>Login as User</Text>
-      </TouchableOpacity>
-    </LinearGradient>
+        {/* Buttons */}
+        <TouchableOpacity style={styles.buttonAdmin}>
+          <Text style={styles.buttonText}>Login as Admin</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.buttonUser}>
+          <Text style={styles.buttonText}>Login as User</Text>
+        </TouchableOpacity>
+      </LinearGradient>
+    </ScreenWrapper>
   );
 };
 
@@ -55,7 +58,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "#80A3CC", // Match the background color from the original design
   },
   imageContainer: {
     position: "relative", // Allows overlapping of images
