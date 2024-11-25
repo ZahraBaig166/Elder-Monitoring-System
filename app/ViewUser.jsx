@@ -56,7 +56,7 @@ const ViewUser = () => {
               <View style={styles.userInfo}>
                 <Image
                   source={{
-                    uri: 'https://i.pinimg.com/736x/8b/16/7a/8b167af653c2399dd93b952a48740620.jpg', // Dummy user image
+                    uri: 'https://i.pinimg.com/736x/8b/16/7a/8b167af653c2399dd93b952a48740620.jpg', 
                   }}
                   style={styles.userImage}
                 />
