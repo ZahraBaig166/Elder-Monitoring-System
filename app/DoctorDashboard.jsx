@@ -1,30 +1,9 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import NavBar from '../components/NavBarPatients';
 
 const { width } = Dimensions.get('window');
-
-const NavBar = () => {
-  return (
-    <View style={styles.navBarContainer}>
-      <TouchableOpacity style={styles.iconContainer}>
-        <FontAwesome name="bell" size={24} color="white" />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.iconContainer}>
-        <FontAwesome name="comments" size={24} color="white" />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.iconContainerActive}>
-        <FontAwesome name="bars" size={24} color="black" />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.iconContainer}>
-        <FontAwesome name="user" size={24} color="white" />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.iconContainer}>
-        <FontAwesome name="question-circle" size={24} color="white" />
-      </TouchableOpacity>
-    </View>
-  );
-};
 
 const PatientInfoCard = () => {
   return (

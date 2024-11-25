@@ -3,6 +3,7 @@ import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Image, Dimensions
 import Svg, { Path, Circle } from 'react-native-svg';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
+import NavBar from '../components/NavBarPatients';
 
 const { width } = Dimensions.get('window');
 
@@ -13,6 +14,7 @@ const Dashboard = () => {
       <NavigationButtons />
       <LineChart />
       <BarChart />
+      <NavBar/>
     </ScrollView>
   );
 };
