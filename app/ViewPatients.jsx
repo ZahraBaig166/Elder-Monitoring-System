@@ -107,7 +107,8 @@ const styles = StyleSheet.create({
     margin: -20,
     marginBottom: 30,
     height: 150,
-    marginTop: -20,
+    marginTop: -70,
+    paddingTop: 50,
   },
   header: {
     flexDirection: 'row',
