@@ -1,8 +1,22 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useRouter } from 'expo-router';
 
-const NavBar = () => {
+const NavBarPatients = () => {
+  const router = useRouter();
+  const handleAddQueryPress = () => {
+    router.push('/AddQuery'); // Navigate to AddQuery screen
+  };
+
+  const handleNotificationPress = () => {
+    router.push('/NotificationComponent'); // Navigate to NotificationComponent screen
+  };
+
+  const handleCommentPress = () => {
+    router.push('/AddQuery'); // Navigate to AddQuery screen when comment icon is pressed
+  };
+
   return (
     <View style={styles.navContainer}>
       <TouchableOpacity style={styles.navIcon}>
@@ -11,12 +25,13 @@ const NavBar = () => {
       <TouchableOpacity style={styles.navIcon}>
         <Icon name="pie-chart" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navCenter}>
+      <TouchableOpacity style={styles.navCenter}  onPress={handleAddQueryPress}>
         <View style={styles.centerButton}>
           <Icon name="comment" size={24} color="#576574" /> {/* Updated Icon */}
         </View>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navIcon}>
+      
+      <TouchableOpacity style={styles.navIcon} onPress={handleNotificationPress}>
         <Icon name="bell" size={20} color="#576574" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.navIcon}>
@@ -74,4 +89,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NavBar;
+export default NavBarPatients;

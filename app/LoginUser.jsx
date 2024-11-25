@@ -8,8 +8,16 @@ import {
   TouchableOpacity,
   ImageBackground,
 } from "react-native";
+import { useRouter } from "expo-router";
 
-const LoginAdmin = () => {
+
+
+const LoginUser = () => {
+  const router = useRouter();
+
+const handleLogin = () => {
+  router.push("/DoctorDashboard"); 
+};
   return (
     <ImageBackground
       source={require("@/assets/images/rectangles1.png")} // Update the background image
@@ -50,9 +58,9 @@ const LoginAdmin = () => {
 
         {/* Login Button */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
         </View>
       </View>
     </ImageBackground>
@@ -137,4 +145,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginAdmin;
+export default LoginUser;

@@ -2,10 +2,13 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import NavBar from '../components/NavBarPatients';
+import { useRouter } from 'expo-router';
+
 
 const { width } = Dimensions.get('window');
 
 const PatientInfoCard = () => {
+ 
   return (
     <View style={styles.cardContainer}>
       <Text style={styles.totalPatientsText}>Total Patients: <Text style={styles.totalNumber}>56</Text></Text>
@@ -31,8 +34,14 @@ const PatientInfoCard = () => {
 };
 
 const CriticalPatientList = () => {
+  const router = useRouter();  // Initialize useRouter
+
+  const handleListPress = () => {
+    // Navigate to the ViewPatient screen
+    router.push('/ViewPatients');  // Replace '/ViewPatient' with the actual path of the ViewPatient screen
+  };
   return (
-    <View style={styles.criticalListContainer}>
+    <TouchableOpacity onPress={handleListPress} style={styles.criticalListContainer}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Critical Patient List</Text>
         <FontAwesome name="filter" size={22} color="#000" style={styles.filterIcon} />
@@ -57,7 +66,7 @@ const CriticalPatientList = () => {
           </View>
         </View>
       ))}
-    </View>
+    </TouchableOpacity>
   );
 };
 

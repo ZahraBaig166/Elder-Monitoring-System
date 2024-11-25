@@ -4,6 +4,7 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import NavBar from '../components/NavBarPatients';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -69,21 +70,35 @@ const headerStyles = StyleSheet.create({
 });
 
 const NavigationButtons = () => {
+  const router = useRouter();
+
   return (
     <View style={navStyles.container}>
-      <TouchableOpacity style={[navStyles.button, navStyles.addUser]}>
+      <TouchableOpacity
+        style={[navStyles.button, navStyles.addUser]}
+        onPress={() => router.push('/AddUser')} // Navigate to AddUser
+      >
         <Icon name="plus-square" size={30} color="#d2416e" />
         <Text style={navStyles.addUserText}>Add User</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[navStyles.button, navStyles.viewUser]}>
+      <TouchableOpacity
+        style={[navStyles.button, navStyles.viewUser]}
+        onPress={() => router.push('/ViewUser')} // Navigate to ViewUser
+      >
         <Icon name="user" size={30} color="#7042c9" />
         <Text style={navStyles.viewUserText}>View User</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[navStyles.button, navStyles.addPatient]}>
+      <TouchableOpacity
+        style={[navStyles.button, navStyles.addPatient]}
+        onPress={() => router.push('/AddPatient')} // Navigate to AddPatient
+      >
         <Icon name="plus-square" size={30} color="#0db1ad" />
         <Text style={navStyles.addPatientText}>Add Patient</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[navStyles.button, navStyles.viewQuery]}>
+      <TouchableOpacity
+        style={[navStyles.button, navStyles.viewQuery]}
+        onPress={() => router.push('/Queries')} // Navigate to ViewQuery
+      >
         <Icon name="comments" size={30} color="#157fdd" />
         <Text style={navStyles.viewQueryText}>View Query</Text>
       </TouchableOpacity>

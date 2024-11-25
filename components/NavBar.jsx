@@ -1,8 +1,12 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useRouter } from 'expo-router';
+
 
 const NavBar = () => {
+  const router = useRouter();
+ 
   return (
     <View style={styles.navContainer}>
       <TouchableOpacity style={styles.navIcon}>
