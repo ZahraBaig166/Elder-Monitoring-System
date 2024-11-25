@@ -1,42 +1,62 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import NavBar from '../components/NavBar';
 
-const NotificationComponent = () => {
+const NotificationScreen = () => {
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton}>
-          <Icon name="arrow-left" size={16} color="#000" />
+          <Icon name="arrow-left" size={20} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>ALERTS</Text>
-        <TouchableOpacity style={styles.menuButton}>
-          <Icon name="ellipsis-v" size={16} color="#000" />
+        <Text style={styles.headerTitle}>ALERTS</Text>
+        <TouchableOpacity>
+          <Icon name="ellipsis-v" size={20} color="#000" />
         </TouchableOpacity>
       </View>
+
+      {/* Filter Buttons */}
       <View style={styles.filterContainer}>
         <TouchableOpacity style={styles.filterButton}>
           <Text style={styles.filterText}>DAILY</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.filterButton}>
-          <Text style={styles.filterText}>WEEKLY</Text>
+        <TouchableOpacity style={[styles.filterButton, styles.activeFilter]}>
+          <Text style={[styles.filterText, styles.activeFilterText]}>
+            WEEKLY
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.filterButton}>
           <Text style={styles.filterText}>MONTHLY</Text>
         </TouchableOpacity>
       </View>
-      <ScrollView style={styles.notificationList}>
+
+      {/* Notifications */}
+      <ScrollView style={styles.notificationsContainer}>
         {Array.from({ length: 5 }).map((_, index) => (
           <View key={index} style={styles.notificationCard}>
-            <Image
-              source={{ uri: 'https://placeholder.pics/svg/40x44' }}
-              style={styles.notificationIcon}
-            />
-            <View style={styles.notificationTextContainer}>
-              <Text style={styles.notificationText}>
-                [Resident's Name] is experiencing elevated heart rate. Immediate check recommended.
-              </Text>
-              <Text style={styles.notificationTime}>About 1 minute ago</Text>
+            <View style={styles.notificationContent}>
+              <Image
+                source={{
+                  uri: 'https://cdn-icons-png.flaticon.com/512/4226/4226663.png',
+                }}
+                style={styles.imagePlaceholder}
+              />
+              <View style={styles.notificationTextContainer}>
+                <Text style={styles.notificationTitle}>
+                  [Resident's Name] is experiencing elevated heart rate.
+                  Immediate check recommended.
+                </Text>
+                <Text style={styles.notificationTime}>About 1 minute ago</Text>
+              </View>
             </View>
             <TouchableOpacity style={styles.viewButton}>
               <Text style={styles.viewButtonText}>View</Text>
@@ -44,12 +64,9 @@ const NotificationComponent = () => {
           </View>
         ))}
       </ScrollView>
-      <View style={styles.footer}>
-        <Icon name="home" size={24} color="#000" />
-        <Icon name="bell" size={24} color="#000" />
-        <Icon name="envelope" size={24} color="#000" />
-        <Icon name="user" size={24} color="#000" />
-      </View>
+
+      {/* NavBar */}
+      <NavBar />
     </View>
   );
 };
@@ -57,90 +74,104 @@ const NotificationComponent = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 20,
+    backgroundColor: '#F6F8FB',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    backgroundColor: '#ADC1D8',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    paddingHorizontal: 20,
+    paddingTop: 50, // Ensure proper spacing at the top
+    paddingBottom: 15,
   },
   backButton: {
     padding: 10,
   },
-  headerText: {
-    fontSize: 16,
+  headerTitle: {
+    fontSize: 18,
     fontWeight: '700',
-    color: '#1D1617',
-  },
-  menuButton: {
-    padding: 10,
+    color: '#000',
   },
   filterContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    paddingVertical: 15,
   },
   filterButton: {
-    backgroundColor: '#ADC1D8',
+    borderWidth: 1.5,
+    borderColor: '#ADC1D8',
     borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 15,
+    backgroundColor: '#FFFFFF',
+  },
+  activeFilter: {
+    backgroundColor: '#ADC1D8',
   },
   filterText: {
     fontSize: 12,
     fontWeight: '700',
     color: '#000',
-    textAlign: 'center',
   },
-  notificationList: {
+  activeFilterText: {
+    color: '#000',
+  },
+  notificationsContainer: {
     flex: 1,
+    padding: 20,
   },
   notificationCard: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F0F4F8',
-    borderRadius: 10,
-    padding: 10,
+    backgroundColor: '#ADC1D8',
+    borderRadius: 15,
+    padding: 15,
     marginBottom: 10,
   },
-  notificationIcon: {
-    width: 40,
-    height: 44,
-    marginRight: 10,
+  notificationContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  imagePlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#FFFFFF',
+    marginRight: 15,
   },
   notificationTextContainer: {
     flex: 1,
   },
-  notificationText: {
-    fontSize: 8,
+  notificationTitle: {
+    fontSize: 14,
     fontWeight: '500',
-    color: '#1D1617',
+    color: '#000',
+    marginBottom: 5,
   },
   notificationTime: {
-    fontSize: 10,
-    fontWeight: '400',
-    color: '#7B6F72',
+    fontSize: 12,
+    color: '#7E8C99',
   },
   viewButton: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 5,
+    borderRadius: 10,
     paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
   },
   viewButtonText: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#263238',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: '#E0E0E0',
+    fontWeight: '600',
+    color: '#406B9E',
   },
 });
 
-export default NotificationComponent;
+export default NotificationScreen;
