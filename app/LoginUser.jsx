@@ -16,7 +16,7 @@ const LoginUser = () => {
   const router = useRouter();
 
 const handleLogin = () => {
-  router.push("/DoctorDashboard"); 
+  router.push("/FamilyDashboard"); 
 };
   return (
     <ImageBackground
