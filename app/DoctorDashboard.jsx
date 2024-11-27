@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState }  from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import NavBar from '../components/NavBarPatients';
@@ -34,18 +34,34 @@ const PatientInfoCard = () => {
 };
 
 const CriticalPatientList = () => {
+  const [isExpanded, setIsExpanded] = useState(false);  // State to track if list is expanded
   const router = useRouter();  // Initialize useRouter
-
+  const handleToggle = () => {
+    setIsExpanded(prevState => !prevState);  // Toggle the state
+  };
   const handleListPress = () => {
     // Navigate to the ViewPatient screen
     router.push('/ViewPatients');  // Replace '/ViewPatient' with the actual path of the ViewPatient screen
   };
+
   return (
-    <TouchableOpacity onPress={handleListPress} style={styles.criticalListContainer}>
-      <View style={styles.headerContainer}>
+    <View style={styles.criticalListContainer}>
+      {/* Title that toggles the list visibility */}
+      <TouchableOpacity onPress={handleToggle} style={styles.headerContainer}>
         <Text style={styles.title}>Critical Patient List</Text>
-        <FontAwesome name="filter" size={22} color="#000" style={styles.filterIcon} />
-      </View>
+        <FontAwesome
+          name={isExpanded ? "chevron-up" : "chevron-down"}
+          size={22}
+          color="#000"
+          style={styles.filterIcon}
+        />
+      </TouchableOpacity>
+
+      {/* Show the list only if the state is expanded */}
+      {isExpanded && (
+        <>
+        {/* <View style={styles.criticalListContainer}> */}
+           <TouchableOpacity onPress={handleListPress} style={styles.criticalList}>
       {[1, 2, 3].map((item, index) => (
         <View key={index} style={styles.card}>
           <FontAwesome name="user" size={24} color="#000" style={styles.avatar} />
@@ -67,8 +83,14 @@ const CriticalPatientList = () => {
         </View>
       ))}
     </TouchableOpacity>
+        {/* </View> */}
+        </> 
+      )}
+    </View>
   );
 };
+
+
 
 const ChartWithHeading = ({ title, source }) => {
   return (
@@ -81,7 +103,8 @@ const ChartWithHeading = ({ title, source }) => {
 
 const DoctorDashboard = () => {
   return (
-    <ScrollView style={styles.dashboardContainer}>
+    <View style={styles.dashboardContainer}>
+    <ScrollView style={styles.dashboadContainer}>
       <View style={styles.header}>
         <Image
           source={{ uri: 'https://placeholder.pics/svg/50x50' }}
@@ -115,8 +138,10 @@ const DoctorDashboard = () => {
         title="Activity Levels Over Time"
         source={require('../assets/images/G4.png')}
       />
-      <NavBar />
+    
     </ScrollView>
+      <NavBar />
+    </View>
   );
 };
 
@@ -124,6 +149,8 @@ const styles = StyleSheet.create({
   dashboardContainer: {
     flex: 1,
     backgroundColor: '#e6eaf0',
+      paddingBottom: 80, 
+    
   },
   header: {
     backgroundColor: '#b0c4de',
@@ -254,6 +281,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 10,
   },
+
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -325,6 +353,70 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
   },
+    criticalListContainer: {
+      flex: 1,
+      backgroundColor: '#f5f5f5',
+      padding: 15,
+      marginVertical: 20,
+      marginHorizontal: 15,
+      borderRadius: 10,
+
+    },
+    headerContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
+    filterIcon: {
+      marginRight: 10,
+    },
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#b0c4de',
+      borderRadius: 10,
+      padding: 10,
+      marginBottom: 10,
+    },
+    avatar: {
+      marginRight: 10,
+    },
+    infoContainer: {
+      flex: 1,
+    },
+    name: {
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    condition: {
+      fontSize: 12,
+      color: '#666',
+    },
+    detailsButton: {
+      marginTop: 5,
+      backgroundColor: '#fff',
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: 5,
+    },
+    detailsText: {
+      fontSize: 12,
+      color: '#263238',
+    },
+    actionsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: 60,
+    },
+ 
+
 });
 
 export default DoctorDashboard;
