@@ -10,13 +10,19 @@ const { width } = Dimensions.get('window');
 
 const Dashboard = () => {
   return (
+    <View style={dashboardStyles.container}>
     <ScrollView style={dashboardStyles.container}>
       <Header />
       <NavigationButtons />
       <LineChart />
-      <BarChart />
-      <NavBar/>
+      {/* <BarChart /> */}
+      {/* <StackedBarChart /> */}
+      <ActivityBarChart/>
+      <Chart />
     </ScrollView>
+    <NavBar/>
+    </View>
+    
   );
 };
 
@@ -26,6 +32,7 @@ const dashboardStyles = StyleSheet.create({
     backgroundColor: '#adc1d8',
   },
 });
+
 
 const Header = () => {
   const navigation = useNavigation(); // Access navigation
@@ -263,68 +270,184 @@ const lineChartStyles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
-const BarChart = () => {
-  const data = [80, 85, 90, 75, 95]; // Example data for caregivers
-  const maxDataValue = 100;
-
+const Chart = () => {
   return (
-    <View style={barChartStyles.container}>
-      <View style={barChartStyles.yAxis}>
-        {[100, 80, 60, 40, 20, 0].map((value) => (
-          <Text key={value} style={barChartStyles.yAxisLabel}>{`${value}%`}</Text>
-        ))}
+    <ScrollView contentContainerStyle={ChartStyles.scrollContainer}>
+      <View style={lineChartStyles.container}>
+      <Text style={lineChartStyles.title}>User Activity and Engagement</Text>
+        <View style={lineChartStyles.header}>
+          
+          {/* <View style={lineChartStyles.legendContainer}>
+            <View style={lineChartStyles.legendItem}>
+              <Circle cx="5" cy="5" r="5" fill="blue" />
+              <Text style={lineChartStyles.legendText}>Caregiver Activity</Text>
+            </View>
+            <View style={lineChartStyles.legendItem}>
+              <Circle cx="5" cy="5" r="5" fill="red" />
+              <Text style={lineChartStyles.legendText}>Patient Activity</Text>
+            </View>
+          </View> */}
+        </View>
+        {/* Y-axis Labels */}
+        <View style={lineChartStyles.yAxisLabels}>
+          {['40', '30', '20', '10', '0'].map((label, index) => (
+            <Text key={index} style={lineChartStyles.yAxisText}>{label}</Text>
+          ))}
+        </View>
+        {/* SVG Graph */}
+        <Svg height="173" width={width - 40} style={lineChartStyles.chart}>
+          {/* Line for Caregiver Activity */}
+          <Path
+            d="M10 150 Q 30 120, 60 100 T 120 70 T 180 30 T 240 50 T 300 20"
+            stroke="green"
+            strokeWidth="2"
+            fill="none"
+          />
+          {/* Line for Patient Activity (Dashed) */}
+          <Path
+            d="M10 140 Q 40 130, 80 110 T 140 90 T 200 60 T 260 80 T 300 40"
+            stroke="red"
+            strokeWidth="2"
+            fill="none"
+            strokeDasharray="5,5"
+          />
+        </Svg>
+        {/* X-axis Labels */}
+        <View style={lineChartStyles.monthsContainer}>
+          {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'].map((month, index) => (
+            <Text key={index} style={lineChartStyles.monthText}>{month}</Text>
+          ))}
+        </View>
       </View>
-      <View style={barChartStyles.chartArea}>
-        {data.map((value, index) => (
-          <View key={index} style={barChartStyles.barContainer}>
-            <View
-              style={{
-                ...barChartStyles.bar,
-                height: `${(value / maxDataValue) * 100}%`,
-              }}
-            />
-            <Text style={barChartStyles.xAxisLabel}>{`Caregiver ${index + 1}`}</Text>
-          </View>
-        ))}
-      </View>
-    </View>
+    </ScrollView>
   );
 };
 
-const barChartStyles = StyleSheet.create({
+const ChartStyles = StyleSheet.create({
   container: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    padding: 20,
+    margin: 20,
+  },
+  header: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    padding: 10,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-  },
-  yAxis: {
     justifyContent: 'space-between',
-    marginRight: 10,
+    alignItems: 'center',
+    marginBottom: 10,
   },
-  yAxisLabel: {
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  legendContainer: {
+    flexDirection: 'row',
+  },
+  legendItem: {
+    // flexDirection: 'row',
+    // alignItems: 'center',
+    // marginRight: 15,
+  },
+  legendText: {
+
     fontSize: 12,
-    color: '#666',
+    color: '#000',
+  },
+  yAxisLabels: {
+    position: 'absolute',
+    left: 10,
+    top: 50,
+  },
+  yAxisText: {
+    fontSize: 12,
+    color: '#000',
+    lineHeight: 35,
+    textAlign: 'right',
+  },
+  chart: {
+    alignSelf: 'center',
+  },
+  monthsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingHorizontal: 20,
+  },
+  monthText: {
+    fontSize: 12,
+    color: '#000',
+    textAlign: 'center',
+  },
+  scrollContainer: {
+    paddingBottom: 100,  // Padding at the bottom to ensure scroll works
+  },
+});
+const ActivityBarChart = () => {
+  const data = [12000, 15000, 9500, 17000, 10000]; // Example data for steps taken
+  const maxDataValue = 20000; // The maximum steps value (this can be dynamic based on your data)
+
+  return (
+    <ScrollView contentContainerStyle={activityBarChartStyles.scrollContainer}>
+      <View style={activityBarChartStyles.container}>
+      <Text style={activityBarChartStyles.yAxisLabel}>Steps Taken</Text>
+        <View style={activityBarChartStyles.chartArea}>
+          {data.map((value, index) => (
+            <View key={index} style={activityBarChartStyles.barContainer}>
+              <View
+                style={{
+                  ...activityBarChartStyles.bar,
+                  height: `${(value / maxDataValue) * 100}%`, // Bar height based on data value
+                }}
+              />
+              <Text style={activityBarChartStyles.xAxisLabel}>{`User ${index + 1}`}</Text>
+            </View>
+          ))}
+        </View>
+        
+      </View>
+    </ScrollView>
+  );
+};
+
+const activityBarChartStyles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: '#f7f9fb',
+    borderRadius: 15,
+    marginVertical: 20,
+    minHeight: 300,  
+    margin:20,// Ensures the chart has a minimum height for display
   },
   chartArea: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    flex: 1,
+    alignItems: 'flex-end',
+    padding: 10,
+
   },
   barContainer: {
     alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   bar: {
     width: 30,
-    backgroundColor: '#b0c4de',
+    backgroundColor: '#156082', // Color of the bar (can change as needed)
     borderRadius: 5,
+    marginBottom: 5,
   },
   xAxisLabel: {
     marginTop: 5,
     fontSize: 12,
     color: '#666',
+    fontWeight: '900',
+  },
+  yAxisLabel: {
+    textAlign: 'left',
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '700',
+    marginTop: 10,
   },
 });
 

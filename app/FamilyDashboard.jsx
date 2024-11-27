@@ -142,6 +142,7 @@ const DashboardHeartRateAndStats = () => {
           }}
         />
       </View>
+
       <View style={styles.activityLevelContainer}>
         <View style={styles.activityLevelHeader}>
           <Text style={styles.activityLevelTitle}>Activity Level</Text>
@@ -168,6 +169,7 @@ const DashboardHeartRateAndStats = () => {
         />
 
         {/* Stats Below the Bar Chart */}
+        
         <View style={styles.statsRow}>
           <TouchableOpacity style={styles.statsTab}>
             <Text style={styles.statsTabText}>Steps</Text>
@@ -183,6 +185,7 @@ const DashboardHeartRateAndStats = () => {
             <Text style={[styles.statsTabText, styles.inactiveTabText]}>Distance</Text>
           </TouchableOpacity>
         </View>
+      
 
         <View style={styles.totalStats}>
   <Text style={styles.totalSteps}>256,480</Text>
@@ -457,6 +460,7 @@ flex: 1,
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 5,
+
   },
   activityLevelTitle: { fontSize: 18, fontWeight: "700", color: "#000" },
   dropdown: { padding: 5, borderRadius: 10, backgroundColor: "#FFFFFF" },
@@ -464,6 +468,7 @@ flex: 1,
   chartStyle: {borderRadius: 15,
      marginVertical: 10,
     //  marginLeft: -20,
+    
      },
   statsRow: { flexDirection: "row", justifyContent: "space-between" },
   statsTab: {
@@ -486,6 +491,12 @@ flex: 1,
   statDetail: { alignItems: "center" },
   statDetailValue: { fontSize: 18, fontWeight: "700", color: "#406B9E" },
   statDetailLabel: { fontSize: 12, color: "#7E8C99" },
+  ChartStyles: {
+    backgroundColor: '#f7f9fb',
+    borderRadius: 15,
+    padding: 20,
+    margin: 20,
+  },
 });
 
 export default DashboardHeartRateAndStats;

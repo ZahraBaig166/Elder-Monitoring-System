@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import PhoneInput from "react-native-phone-number-input";
+import NavBar from '../components/NavBarPatients';
 
 const AddUser = () => {
   const [value, setValue] = useState("");
@@ -15,11 +16,12 @@ const AddUser = () => {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton}>
-            <Icon name="arrow-left" size={20} color="#FFF" />
+            <Icon name="arrow-left" size={20} color="#000" />
           </TouchableOpacity>
-          <Icon name="plus" size={30} color="#FFF" style={styles.addIcon} />
-          <Text style={styles.headerText}>Add User</Text>
-        </View>
+          {/* <Icon name="plus" size={30} color="#FFF" style={styles.addIcon} /> */}
+       
+        <Text style={styles.headerText}>Add User</Text>
+     </View>
         <View style={styles.profileSection}>
           <View style={styles.profileRow}>
             <Icon name="user" size={50} color="#4A4A4A" style={styles.profileImage} />
@@ -79,39 +81,48 @@ const AddUser = () => {
         <TouchableOpacity style={styles.doneButton}>
           <Text style={styles.doneButtonText}>Done</Text>
         </TouchableOpacity>
-        <View style={styles.footer}>
+        {/* <View style={styles.footer}>
           <Icon name="home" size={24} color="#000" />
           <Icon name="bell" size={24} color="#000" />
           <Icon name="plus" size={24} color="#000" />
           <Icon name="user" size={24} color="#000" />
-        </View>
+        </View> */}
+        <NavBar />
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFF" },
-  header: {
-    backgroundColor: "#B1C4DA",
+  container: { flex: 1, backgroundColor: "#FFFFF",
     paddingVertical: 20,
+
+   },
+  header: {
+    // backgroundColor: "#B1C4DA",
+    paddingVertical: 50,
     alignItems: "center",
-    borderBottomLeftRadius: 30,
+    // borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    height: "30%",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 4,
+    // height: "30%",
+    // shadowColor: "#000",
+    // shadowOpacity: 0.2,
+    // shadowOffset: { width: 0, height: 4 },
+    // shadowRadius: 4,
     elevation: 5,
   },
-  backButton: { position: "absolute", left: 20, top: 20 },
+  backButton: { position: "absolute", left: 20, top: 20,
+    
+   },
   addIcon: { marginBottom: 5, marginTop: 70 },
+
   headerText: {
-    marginTop: 10,
-    fontSize: 26, // Slightly smaller font
+    marginTop: 25,
+    fontSize: 35,
     fontWeight: "700",
-    color: "#FFF",
+    color: "#000",
+    marginLeft: -200,
+    marginBottom: -20,
   },
   profileSection: {
     right:14,
