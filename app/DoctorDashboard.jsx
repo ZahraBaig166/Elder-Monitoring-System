@@ -68,7 +68,7 @@ const CriticalPatientList = () => {
           <View style={styles.infoContainer}>
             <Text style={styles.name}>Patient Name</Text>
             <Text style={styles.condition}>Heart Patient</Text>
-            <TouchableOpacity style={styles.detailsButton}>
+            <TouchableOpacity style={styles.ScheduleButton}>
               <Text style={styles.detailsText}>Details</Text>
             </TouchableOpacity>
           </View>
@@ -89,6 +89,50 @@ const CriticalPatientList = () => {
     </View>
   );
 };
+
+const MedicationScheduleList = () => {
+  const [isMedScheduleExpanded, setIsMedScheduleExpanded] = useState(false);  // New state for medication list
+  const router = useRouter();
+  const handleMedToggle = () => {
+    setIsMedScheduleExpanded(prevState => !prevState);
+  };
+  const handleViewSchedule = () => {
+    // Navigate to the ViewPatient screen
+    router.push('/Medication');  // Replace '/ViewPatient' with the actual path of the ViewPatient screen
+  };
+  return (
+    <View style={styles.criticalListContainer}>
+      <TouchableOpacity onPress={handleMedToggle} style={styles.headerContainer}>
+        <Text style={styles.title}>Medication Schedule</Text>
+        <FontAwesome
+          name={isMedScheduleExpanded ? "chevron-up" : "chevron-down"}
+          size={22}
+          color="#000"
+          style={styles.filterIcon}
+        />
+      </TouchableOpacity>
+
+      {isMedScheduleExpanded && (
+        <View style={styles.medicationList}>
+          {[1, 2, 3].map((item, index) => (
+            <View key={index} style={styles.card}>
+              <FontAwesome name="medkit" size={24} color="#000" style={styles.avatar} />
+              <View style={styles.infoContainer}>
+                <Text style={styles.name}>Patient Name</Text>
+                <Text style={styles.medicationname}>Medication Name</Text>
+                <Text style={styles.condition}>Time: 8:00 AM</Text>
+                <TouchableOpacity onPress={handleViewSchedule} style={styles.ScheduleButton}>
+                  <Text style={styles.ScheduleText}>View Schedule</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
+
 
 
 
@@ -122,6 +166,7 @@ const DoctorDashboard = () => {
       </View>
       <PatientInfoCard />
       <CriticalPatientList />
+      <MedicationScheduleList />
       <ChartWithHeading
         title="Patient Status Transition Trends"
         source={require('../assets/images/G1.png')}
@@ -190,6 +235,102 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
   },
+  medicationListContainer: {
+    backgroundColor: '#f5f5f5',
+    padding: 10,
+    marginVertical: 10,
+  },
+  medicationList: {
+    marginTop: 10,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  filterIcon: {
+    marginRight: 10,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#b0c4de',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+  avatar: {
+    marginRight: 10,
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  name: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  medicationname: {
+    fontSize: 11,
+    paddingTop: 5,
+  },
+  condition: {
+    fontSize: 12,
+    color: '#666',
+  },
+  detailsButton: {
+    marginTop: 5,
+    backgroundColor: '#fff',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+     width: 60,  
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+  detailsText: {
+    fontSize: 12,
+    color: '#263238',
+  },
+  ScheduleButton: {
+    backgroundColor: '#fff',
+    paddingTop: 5,
+    marginTop: 5,
+    borderRadius: 5,
+    width: 110,
+    height: 30,
+    
+  },
+  ScheduleText: {
+    fontSize: 12,
+    color: '#263238',
+    textAlign: 'center',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 60,
+  },
+  chartContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  chartImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+  },
+
   navBarContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -217,6 +358,7 @@ const styles = StyleSheet.create({
     width: 377,
     height: 201,
     marginVertical: 10,
+    
   },
   totalPatientsText: {
     fontSize: 19,
@@ -319,17 +461,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
-  detailsButton: {
-    marginTop: 5,
-    backgroundColor: '#fff',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  detailsText: {
-    fontSize: 12,
-    color: '#263238',
-  },
+  
   actionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',

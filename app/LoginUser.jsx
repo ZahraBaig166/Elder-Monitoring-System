@@ -10,13 +10,14 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
-
-
 const LoginUser = () => {
   const router = useRouter();
 
-const handleLogin = () => {
+const handleLoginCaregiver = () => {
   router.push("/DoctorDashboard"); 
+};
+const handleLoginFamily = () => {
+  router.push("/FamilyDashboard"); 
 };
   return (
     <ImageBackground
@@ -58,8 +59,11 @@ const handleLogin = () => {
 
         {/* Login Button */}
         <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+        <TouchableOpacity style={styles.button} onPress={handleLoginCaregiver}>
+        <Text style={styles.buttonText}>Login Caregiver</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={handleLoginFamily}>
+        <Text style={styles.buttonText}>Login Family</Text>
       </TouchableOpacity>
         </View>
       </View>
@@ -121,11 +125,12 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     width: "100%",
-    alignItems: "center", // Center the button horizontally
-    marginTop: 30,
+    flexDirection: "row", // Place buttons in a row
+    justifyContent: "space-evenly", // Space buttons evenly
+    marginTop:-10,
   },
   button: {
-    width: "50%",
+    width: "35%",
     backgroundColor: "#80A3CC",
     borderRadius: 10,
     paddingVertical: 15,
@@ -136,6 +141,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     boarderColor: "#000000",
+    margin:20,
 
   },
   buttonText: {

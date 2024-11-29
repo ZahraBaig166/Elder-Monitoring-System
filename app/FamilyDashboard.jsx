@@ -2,8 +2,14 @@ import React from "react";
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView,TouchableOpacity } from "react-native";
 import { LineChart,BarChart } from "react-native-chart-kit";
 import NavBar from '../components/NavBar';
+import { useRouter } from "expo-router";
 
 const DashboardHeartRateAndStats = () => {
+  const router = useRouter();  // Initialize useRouter
+  const handlemed = () => {
+    router.push("/Medication"); 
+    
+  };
   return (
     <View style={{ flex: 1 }}>
             {/* Header Section */}
@@ -59,14 +65,17 @@ const DashboardHeartRateAndStats = () => {
           </View>
 
           {/* Pills */}
-          <View style={styles.statCard}>
-            <Image
-              source={require("@/assets/images/pills.png")}
-              style={styles.iconpill}
-            />
-            <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statTitle}>Pills</Text>
-          </View>
+          <TouchableOpacity
+        style={styles.statCard}
+        onPress={handlemed}  // Navigate to Medication page
+      >
+        <Image
+          source={require("@/assets/images/pills.png")}
+          style={styles.iconpill}
+        />
+        <Text style={styles.statValue}>3</Text>
+        <Text style={styles.statTitle}>Pills</Text>
+      </TouchableOpacity>
         </View>
 
         <View style={styles.row}>
