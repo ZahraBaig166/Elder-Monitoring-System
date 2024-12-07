@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "laiba",
+    "database": "ElderlyMonitoring",
+    "host": "localhost",
+    "dialect": "postgres", 
+    "logging": false
+  },
+  "test": {
+    "username": "postgres",
+    "password": "laiba",
+    "database": "ElderlyMonitoring_test",
+    "host": "localhost",
+    "dialect": "postgres",
+    "logging": false
+  },
+  "production": {
+    "username": "postgres",
+    "password": "laiba",
+    "database": "ElderlyMonitoring_prod",
+    "host": "localhost",
+    "dialect": "postgres",
+    "logging": false
+  }
+}
