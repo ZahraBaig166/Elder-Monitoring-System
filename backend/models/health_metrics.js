@@ -1,5 +1,6 @@
 'use strict';
-const { Model } = require("sequelize");
+const { Model, DataTypes } = require("sequelize");
+
 
 module.exports = (sequelize, DataTypes) => {
   class HealthMetric extends Model {
@@ -21,8 +22,8 @@ module.exports = (sequelize, DataTypes) => {
       patient_id: {
         type: DataTypes.INTEGER,
         references: {
-          model: 'patients', // Reference to the patients table
-          key: 'patient_id', // Foreign key in the patients table
+          model: 'Patient', // Reference the Sequelize model, not the table name
+          key: 'patient_id', // Foreign key in the Patient model
         },
         allowNull: false,
       },
