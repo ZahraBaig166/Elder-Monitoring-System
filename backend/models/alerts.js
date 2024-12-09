@@ -1,52 +1,46 @@
 'use strict';
-const { Model } = require("sequelize");
-const { DataTypes } = require('sequelize');
+const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class Alert extends Model {
+  class Alerts extends Model {
     static associate(models) {
-      // Each alert is associated with a specific patient
-      Alert.belongsTo(models.Patient, {
-        foreignKey: 'patient_id', // Foreign key to reference the patient
-        as: 'patient', // Alias for the associated patient
+      // Ensure models.Patient is a valid Sequelize model
+      Alerts.belongsTo(models.Patient, {
+        foreignKey: 'patient_id',
+        as: 'patient',
       });
     }
   }
-
-  Alert.init(
+  Alerts.init(
     {
       alert_id: {
         type: DataTypes.INTEGER,
-        primaryKey: true, // Set alert_id as the primary key
-        autoIncrement: true, // Auto-increment the alert ID
+        primaryKey: true,
+        autoIncrement: true,
       },
       patient_id: {
         type: DataTypes.INTEGER,
-        allowNull: false, // The patient this alert is for
-        references: {
-          model: 'Patients', // Reference to the Patients table
-          key: 'patient_id', // Foreign key to the patient_id
-        },
+        allowNull: false,
       },
       type: {
         type: DataTypes.STRING,
-        allowNull: false, // Type of alert (e.g., "Emergency", "Critical", etc.)
+        allowNull: false,
       },
       timestamp: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW, // Automatically set the current date/time when the alert is created
+        defaultValue: DataTypes.NOW,
       },
       is_acknowledged: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false, // Initially, the alert is not acknowledged
+        defaultValue: false,
       },
     },
     {
       sequelize,
-      modelName: 'Alert',
-      tableName: 'alerts', // Name of the table
+      modelName: 'Alerts',
+      tableName: 'alerts',
     }
   );
 
-  return Alert;
+  return Alerts;
 };

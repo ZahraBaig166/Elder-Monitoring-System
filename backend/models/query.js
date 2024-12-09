@@ -1,6 +1,4 @@
 'use strict';
-const { DataTypes } = require('sequelize');
-
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
@@ -15,48 +13,37 @@ module.exports = (sequelize, DataTypes) => {
         constraints: false, // This will allow a polymorphic relationship
       });
 
-      Query.belongsTo(models.FamilyMember, {
+      Query.belongsTo(models.Family, {
         foreignKey: 'raised_by',
-        as: 'familyMember', // Alias for the family member association
+        as: 'family', // Alias for the family member association
         constraints: false, // This will allow a polymorphic relationship
       });
     }
   }
-
   Query.init(
     {
       query_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true, // Automatically increments the query_id
+        autoIncrement: true,
       },
-      raised_by: {
-        type: DataTypes.INTEGER,
-        allowNull: false, // ID of the person raising the query (caregiver or family member)
-        references: {
-          model: 'caregivers', // Foreign key referencing caregivers table
-          key: 'id',
-        },
-      },
-      message: {
-        type: DataTypes.TEXT,
-        allowNull: false, // Message field that stores the query details
-      },
+      raised_by: DataTypes.INTEGER,
+      raised_to: DataTypes.INTEGER,
+      message: DataTypes.TEXT,
       timestamp: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW, // Set default timestamp as the current date and time
+        defaultValue: DataTypes.NOW,
       },
       is_resolved: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false, // Whether the query is resolved or not
+        defaultValue: false,
       },
     },
     {
       sequelize,
-      modelName: 'Query',
-      tableName: 'queries', // Name of the table to store queries
+      modelName: 'query',
+      tableName: 'query',
     }
   );
-
   return Query;
 };

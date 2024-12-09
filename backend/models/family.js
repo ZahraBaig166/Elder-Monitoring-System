@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false, // Enforce that the patient ID must be provided
         references: {
-          model: 'patients', // Referencing the patients table
+          model: 'patient', // Referencing the patients table
           key: 'id',         // Assuming 'id' is the primary key of the patients table
         },
         onDelete: 'CASCADE', // Optionally, delete family member if the related patient is deleted
@@ -77,8 +77,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'FamilyMember',
-      tableName: 'family_members', // Name of the table
+      modelName: 'family',
+      tableName: 'family', // Name of the table
       hooks: {
         beforeCreate: async (familyMember) => {
           const salt = await bcrypt.genSalt(10);
@@ -97,3 +97,5 @@ module.exports = (sequelize, DataTypes) => {
 
   return FamilyMember;
 };
+
+

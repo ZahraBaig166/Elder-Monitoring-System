@@ -2,9 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
 const { HealthMetric } = require('./models');  // Import the HealthMetric model
-const { time } = require('console');
+const { time, timeStamp } = require('console');
 
 const csvFilePath = path.join(__dirname, 'merged_activity_heart_rate.csv'); 
+console.log('HealthMetric Model:', HealthMetric);
 
 // Function to import CSV into database
 const importData = async () => {

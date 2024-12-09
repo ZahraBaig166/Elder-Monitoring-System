@@ -1,74 +1,38 @@
 'use strict';
-const { Model, DataTypes } = require("sequelize");
-
+const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class HealthMetric extends Model {
+  class HealthMetrics extends Model {
     static associate(models) {
-      // A health metric belongs to a patient
-      HealthMetric.belongsTo(models.Patient, {
-        foreignKey: 'patient_id', // Foreign key in the HealthMetric model
-        as: 'patient', // Alias for the associated patient
-      });
+      HealthMetrics.belongsTo(models.Patient, { foreignKey: 'patient_id', as: 'patient' });
     }
   }
-  HealthMetric.init(
+  
+  HealthMetrics.init(
     {
       metric_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      patient_id: {
-        type: DataTypes.INTEGER,
-        references: {
-          model: 'Patient', // Reference the Sequelize model, not the table name
-          key: 'patient_id', // Foreign key in the Patient model
-        },
-        allowNull: false,
-      },
-      heart_rate: {
-        type: DataTypes.INTEGER,
-        allowNull: true, // Heart rate can be nullable
-      },
-      activity_level: {
-        type: DataTypes.STRING,
-        allowNull: true, 
-        // Activity level can be nullable (e.g., 'low', 'medium', 'high')
-      },
-      sleep_duration: {
-        type: DataTypes.INTEGER, // Duration in hours
-        allowNull: true,
-      },
+      patient_id: DataTypes.INTEGER,
+      heart_rate: DataTypes.INTEGER,
+      activity_level: DataTypes.STRING,
+      sleep_duration: DataTypes.INTEGER,
       time: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
       },
-      calories: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-      },
-      steps: {
-        type: DataTypes.INTEGER,
-        allowNull: true,  
-
+      
+        // Disable createdAt and updatedAt
+      
     },
-    intensity: {  
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-    distance: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-    },
-  },
-
     {
       sequelize,
       modelName: 'HealthMetric',
-      tableName: 'health_metrics', // Name of the table
+      tableName: 'health_metrics',
+      timestamps: false,
     }
   );
-
-  return HealthMetric;
+  return HealthMetrics;
 };
