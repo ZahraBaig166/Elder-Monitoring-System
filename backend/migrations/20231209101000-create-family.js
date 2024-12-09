@@ -21,6 +21,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      patient_id: {
+        type: Sequelize.BIGINT,
+        references: {
+          model: 'patient',
+          key: 'patient_id',
+        },
+        onDelete: 'CASCADE',
+      },
       date_created: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,

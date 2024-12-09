@@ -17,7 +17,7 @@ module.exports = {
         allowNull: false,
       },
       patient_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
         references: {
           model: 'patient',
           key: 'patient_id',

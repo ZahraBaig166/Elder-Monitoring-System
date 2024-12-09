@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const db = require('./models'); // Import the models and Sequelize instance
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5432;
 
 // Middleware
 app.use(cors());
