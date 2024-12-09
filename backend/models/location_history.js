@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      patient_id: DataTypes.INTEGER,
+      patient_id: DataTypes.BIGINT,
       latitude: DataTypes.FLOAT,
       longitude: DataTypes.FLOAT,
       timestamp: {

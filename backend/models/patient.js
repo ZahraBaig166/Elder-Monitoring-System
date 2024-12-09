@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       patient_id: {
         type: DataTypes.BIGINT,
         primaryKey: true,
-        // autoIncrement: true,
+         autoIncrement: true,
       },
       name: DataTypes.STRING,
       age: DataTypes.INTEGER,

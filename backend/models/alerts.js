@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
       },
       patient_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
       },
       type: {
