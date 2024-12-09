@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM('Connected', 'Disconnected'),
         allowNull: false,
       },
-      patient_id: DataTypes.INTEGER,
+      patient_id: DataTypes.BIGINT,
       last_sync_time: DataTypes.DATE,
     },
     {

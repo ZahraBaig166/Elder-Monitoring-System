@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       patient_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false, // Enforce that the patient ID must be provided
         references: {
           model: 'patient', // Referencing the patients table

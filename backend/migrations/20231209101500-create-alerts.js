@@ -9,7 +9,7 @@ module.exports = {
         primaryKey: true,
       },
       patient_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
         references: {
           model: 'patient', // Reference the patients table
           key: 'patient_id',

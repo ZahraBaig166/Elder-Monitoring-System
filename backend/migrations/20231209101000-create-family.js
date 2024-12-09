@@ -1,5 +1,7 @@
 'use strict';
 
+const patient = require("../models/patient");
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('family', {
@@ -7,6 +9,14 @@ module.exports = {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
+      },
+      patient_id: {
+        type: Sequelize.BIGINT,
+        references: {
+          model: 'patient',
+          key: 'patient_id',
+        },
+        onDelete: 'CASCADE',
       },
       name: {
         type: Sequelize.STRING,

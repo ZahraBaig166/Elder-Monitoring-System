@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      patient_id: DataTypes.INTEGER,
+      patient_id: DataTypes.BIGINT,
       medication_name: DataTypes.STRING,
       dosage: DataTypes.STRING,
       interval: DataTypes.STRING,
