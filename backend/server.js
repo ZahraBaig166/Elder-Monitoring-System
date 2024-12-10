@@ -5,8 +5,10 @@ const config = require('./config/config.json');
 const bodyParser = require('body-parser');
 const db = require('./models'); // Import the models and Sequelize instance
 
+require('dotenv').config();
+
 const app = express();
-const PORT = process.env.PORT || 5432;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -34,8 +36,15 @@ db.sequelize.sync({ force: false }) // Use force: true only during development
 app.get("/", (req, res) => {
   res.send("API is running!");
 });
-
+const adminRouter = require('./routes/adminroutes'); // Assuming your routes are in adminRoutes.js
+app.use('/', adminRouter); // Or '/admin', depending on your structure
 // Example: Check Tables
+const familyRouter = require('./routes/familyauthentication');
+app.use("/",familyRouter);
+const caregiverRouter = require('./routes/caregiverauthentication');
+app.use("/",caregiverRouter);
+
+
 app.get('/checktables', async (req, res) => {
   try {
     const result = await db.sequelize.query(`

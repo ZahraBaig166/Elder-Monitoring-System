@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,16 +7,55 @@ import {
   StyleSheet,
   TouchableOpacity,
   ImageBackground,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-
 
 const LoginAdmin = () => {
   const router = useRouter();
 
-const handleLogin = () => {
-  router.push("/Dashboard"); 
-};
+  // State to manage email and password
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    try {
+
+      console.log("Email:", email);
+      console.log("Password:", password);
+
+      // Make a POST request to the /admin/login route
+      const response = await fetch("http://192.168.18.176:3000/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json(); // Parse the JSON response
+      console.log(data.message); // Log the response message
+  
+      if (response.ok) {
+        // If login is successful, navigate to the dashboard
+        router.push("/Dashboard");
+      } else {
+        // Handle login error
+        if (data.message === "Invalid email (username)") {
+          Alert.alert("Login Failed", "The email you entered is incorrect.");
+        } else if (data.message === "Invalid password") {
+          Alert.alert("Login Failed", "The password you entered is incorrect.");
+        } else {
+          Alert.alert("Login Failed", data.message || "Invalid credentials");
+        }
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      Alert.alert("Error", "An error occurred while logging in. Please try again.");
+    }
+  };
+  
+
   return (
     <ImageBackground
       source={require("@/assets/images/rectangles1.png")} // Update the background image
@@ -40,6 +79,8 @@ const handleLogin = () => {
           style={styles.input}
           placeholder="Email"
           placeholderTextColor="#4874A6"
+          value={email}
+          onChangeText={(text) => setEmail(text)} // Update email state
         />
 
         {/* Password Input */}
@@ -48,6 +89,8 @@ const handleLogin = () => {
           placeholder="Password"
           placeholderTextColor="#4874A6"
           secureTextEntry
+          value={password}
+          onChangeText={(text) => setPassword(text)} // Update password state
         />
 
         {/* Forgot Password */}
@@ -57,12 +100,11 @@ const handleLogin = () => {
 
         {/* Login Button */}
         <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
         </View>
       </View>
-      
     </ImageBackground>
   );
 };
@@ -97,7 +139,7 @@ const styles = StyleSheet.create({
     color: "#4874A6",
     fontWeight: "bold",
     textAlign: "left", // Align text to the left
-    marginTop:40,
+    marginTop: 40,
     marginBottom: 30,
   },
   input: {
@@ -114,9 +156,7 @@ const styles = StyleSheet.create({
   forgotPassword: {
     color: "#4874A6",
     fontSize: 14,
-    // textAlign: "right", 
-    textAlign:"center",// Align forgot password to the right
-    // alignSelf: "flex-end",
+    textAlign: "center", // Align forgot password to the center
     marginBottom: 20,
   },
   buttonContainer: {
@@ -135,8 +175,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    boarderColor: "#000000",
-
+    borderColor: "#000000",
   },
   buttonText: {
     color: "#FFFFFF",

@@ -1,28 +1,53 @@
 const express = require('express');
-const { PendingFamily, Family, Patient, Caregiver, sequelize } = require('./models');
+const { PendingFamily, Family, Patient, Caregiver, sequelize } = require('../models');
 
 const app = express();
-app.use(express.json());
 
-// Route for family to submit the form
-app.post('/submit/family', async (req, res) => {
-  const { name, email, relationship_to_patient, phone_number, address, 
-          patient_name, patient_age, patient_medical_conditions, 
-          patient_status, patient_emergency_contact } = req.body;
+const router = express.Router();
+router.use(express.json());
+
+router.post('/submit/family', async (req, res) => {
+  console.log("IN BACK END");
+  console.log("request body", req.body);
+
+  // Extract fields from the request body
+  const { 
+    name, 
+    email, 
+    relationship,  // Extract 'relationship' from request body
+    phone, 
+    address, 
+    patient  // Nested patient object
+  } = req.body;
+
+  console.log('phone number:',phone);
+
+  console.log("PATIENNT OBJECT ", patient);
+
+  // Extract patient details from the nested 'patient' object
+  const { 
+    name: patient_name, 
+    age: patient_age, 
+    medicalCondition: patient_medical_conditions, 
+    status: patient_status, 
+    emergencyContact: patient_emergency_contact 
+  } = patient;
+
+  console.log("Received data: ", req.body);  // Debugging log
 
   try {
-    // Create a new pending family request
+    // Explicitly assign relationship_to_patient to relationship
     const newPendingFamily = await PendingFamily.create({
       name,
       email,
-      relationship_to_patient,
-      phone_number,
+      relationship_to_patient: relationship, // Explicitly assign the relationship
+      phone_number:phone,            // This should match the model field
       address,
-      patient_name,
-      patient_age,
-      patient_medical_conditions,
-      patient_status,
-      patient_emergency_contact,
+      patient_name,            // Match patient name
+      patient_age,             // Match patient age
+      patient_medical_conditions,  // Match patient condition
+      patient_status,          // Match patient status
+      patient_emergency_contact, // Match patient emergency contact
     });
 
     res.status(201).send('Family registration request submitted successfully');
@@ -32,84 +57,12 @@ app.post('/submit/family', async (req, res) => {
   }
 });
 
-// Route for admin to approve family registration request and assign a caregiver
-app.post('/approve/family/:id', async (req, res) => {
-  const familyRequestId = req.params.id;
-  const { caregiver_id } = req.body;  // Caregiver selected by the admin
 
-  // Check if caregiver_id is provided and valid
-  if (!caregiver_id) {
-    return res.status(400).send('Caregiver ID is required.');
-  }
-
-  // Fetch the PendingFamily request to get the family and patient details
-  const pendingFamilyRequest = await PendingFamily.findOne({ where: { id: familyRequestId } });
-  
-  if (!pendingFamilyRequest) {
-    return res.status(404).send('Pending family request not found.');
-  }
-
-  // Check if the caregiver exists
-  const caregiver = await Caregiver.findOne({ where: { id: caregiver_id } });
-  
-  if (!caregiver) {
-    return res.status(404).send('Caregiver not found.');
-  }
-
-  // Start a transaction to ensure that both the Family and Patient records are created
-  const t = await sequelize.transaction();
-
-  try {
-    // Generate a random password for the family member
-    const randomPassword = crypto.randomBytes(8).toString('hex'); // Generates a random 8-byte string
-
-    // Hash the generated password
-    const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
-    // Move the PendingFamily data to the Family table and include the hashed password
-    const newFamilyMember = await Family.create({
-      name: pendingFamilyRequest.name,
-      email: pendingFamilyRequest.email,
-      relationship: pendingFamilyRequest.relationship_to_patient,
-      phone_number: pendingFamilyRequest.phone_number,
-      address: pendingFamilyRequest.address,
-      password: hashedPassword, // Store the hashed password for the family member
-    }, { transaction: t });
-
-    // Create a new Patient record and assign the selected caregiver to the patient
-    const newPatient = await Patient.create({
-      name: pendingFamilyRequest.patient_name,  // assuming patient_name is stored in the pending family request
-      age: pendingFamilyRequest.patient_age,
-      medical_conditions: pendingFamilyRequest.patient_medical_conditions,
-      status: pendingFamilyRequest.patient_status,
-      emergency_contact: pendingFamilyRequest.patient_emergency_contact,
-      assigned_caregiver_id: caregiver.id, // Assign caregiver to the patient
-    }, { transaction: t });
-
-    // Commit the transaction to save all changes
-    await t.commit();
-
-    // Remove the approved request from PendingFamily
-    await PendingFamily.destroy({ where: { id: familyRequestId } });
-
-    // Optionally, you could send the generated password to the family member via email
-
-    // Send a response indicating success
-    res.status(200).send('Family member registered and caregiver assigned to patient successfully');
-  } catch (error) {
-    // Rollback the transaction in case of error
-    await t.rollback();
-    console.error(error);
-    res.status(500).send('Error processing the family member registration and caregiver assignment');
-  }
-});
-
-
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+// const bcrypt = require('bcrypt');
+// const jwt = require('jsonwebtoken');
 
 // Login route for Admin or Caregiver
-app.post('/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -132,17 +85,50 @@ app.post('/login', async (req, res) => {
       return res.status(400).send('Invalid credentials');
     }
 
-    // Generate a JWT token
-    const token = jwt.sign({ id: user.id, role: user.role }, 'your_secret_key', { expiresIn: '1h' });
+    // // Generate a JWT token
+    // const token = jwt.sign({ id: user.id, role: user.role }, 'your_secret_key', { expiresIn: '1h' });
 
-    // Return the token in the response
-    res.status(200).json({ message: 'Login successful', token });
+    // // Return the token in the response
+    // res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
     console.error(error);
     res.status(500).send('Error during login');
   }
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+
+
+// Login route for Caregiver
+router.post('/login/family', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Find caregiver by email
+    const family = await Family.findOne({ where: { email } });
+
+    if (!family) {
+      return res.status(400).send('Caregiver not found');
+    }
+
+    // Compare password with the stored hash
+    const isPasswordValid = await bcrypt.compare(password, family.password);
+
+    if (!isPasswordValid) {
+      return res.status(400).send('Invalid credentials');
+    }
+
+    // // Generate a JWT token
+    // const token = jwt.sign(
+    //   { id: caregiver.id, role: 'caregiver' }, // Payload with caregiver id and role
+    //   'your_secret_key', // Secret key for signing the JWT
+    //   { expiresIn: '1h' } // Set token expiration to 1 hour
+    // );
+
+    // // Send response with token
+    // res.status(200).send({ message: 'Family logged in successfully', token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error logging in caregiver');
+  }
 });
+module.exports = router;

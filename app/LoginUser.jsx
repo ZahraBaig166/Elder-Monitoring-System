@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -11,17 +11,75 @@ import {
 import { useRouter } from "expo-router";
 
 const LoginUser = () => {
+  const [email, setEmail] = useState("");  // Store email input value
+  const [password, setPassword] = useState("");  // Store password input value
   const router = useRouter();
 
-const handleLoginCaregiver = () => {
-  router.push("/DoctorDashboard"); 
-};
-const handleLoginFamily = () => {
-  router.push("/FamilyDashboard"); 
-};
+  // Function to handle caregiver login
+  const handleLoginCaregiver = async () => {
+    if (!email || !password) {
+      alert("Please fill in both email and password");
+      return;
+    }
+
+    try {
+      const response = await fetch("/login/caregiver", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),  // Sending email and password to backend
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // On successful login, navigate to DoctorDashboard
+        router.push("/DoctorDashboard");
+      } else {
+        // Handle error (e.g., wrong credentials)
+        alert(data.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Error logging in caregiver:", error);
+      alert("Error logging in caregiver");
+    }
+  };
+
+  // Function to handle family login
+  const handleLoginFamily = async () => {
+    if (!email || !password) {
+      alert("Please fill in both email and password");
+      return;
+    }
+
+    try {
+      const response = await fetch("/login/family", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),  // Sending email and password to backend
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // On successful login, navigate to FamilyDashboard
+        router.push("/FamilyDashboard");
+      } else {
+        // Handle error (e.g., wrong credentials)
+        alert(data.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Error logging in family:", error);
+      alert("Error logging in family");
+    }
+  };
+
   return (
     <ImageBackground
-      source={require("@/assets/images/rectangles1.png")} // Update the background image
+      source={require("@/assets/images/rectangles1.png")}
       style={styles.backgroundImage}
       resizeMode="cover"
     >
@@ -29,7 +87,7 @@ const handleLoginFamily = () => {
         {/* Illustration */}
         <View style={styles.topSection}>
           <Image
-            source={require("../assets/images/login.png")} // Ensure the path is correct
+            source={require("../assets/images/login.png")}
             style={styles.illustration}
           />
         </View>
@@ -42,6 +100,8 @@ const handleLoginFamily = () => {
           style={styles.input}
           placeholder="Email"
           placeholderTextColor="#4874A6"
+          value={email}  // Bind the value to the state
+          onChangeText={setEmail}  // Update the email state when input changes
         />
 
         {/* Password Input */}
@@ -50,6 +110,8 @@ const handleLoginFamily = () => {
           placeholder="Password"
           placeholderTextColor="#4874A6"
           secureTextEntry
+          value={password}  // Bind the value to the state
+          onChangeText={setPassword}  // Update the password state when input changes
         />
 
         {/* Forgot Password */}
@@ -59,12 +121,12 @@ const handleLoginFamily = () => {
 
         {/* Login Button */}
         <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={handleLoginCaregiver}>
-        <Text style={styles.buttonText}>Login Caregiver</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleLoginFamily}>
-        <Text style={styles.buttonText}>Login Family</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleLoginCaregiver}>
+            <Text style={styles.buttonText}>Login Caregiver</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleLoginFamily}>
+            <Text style={styles.buttonText}>Login Family</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ImageBackground>
@@ -101,7 +163,7 @@ const styles = StyleSheet.create({
     color: "#4874A6",
     fontWeight: "bold",
     textAlign: "left", // Align text to the left
-    marginTop:40,
+    marginTop: 40,
     marginBottom: 30,
   },
   input: {
@@ -118,16 +180,14 @@ const styles = StyleSheet.create({
   forgotPassword: {
     color: "#4874A6",
     fontSize: 14,
-    // textAlign: "right", 
-    textAlign:"center",// Align forgot password to the right
-    // alignSelf: "flex-end",
+    textAlign: "center", // Align forgot password to the center
     marginBottom: 20,
   },
   buttonContainer: {
     width: "100%",
     flexDirection: "row", // Place buttons in a row
     justifyContent: "space-evenly", // Space buttons evenly
-    marginTop:-10,
+    marginTop: -10,
   },
   button: {
     width: "35%",
@@ -141,8 +201,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     boarderColor: "#000000",
-    margin:20,
-
+    margin: 20,
   },
   buttonText: {
     color: "#FFFFFF",

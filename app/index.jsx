@@ -1,11 +1,11 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router"; // Import useRouter for navigation
+import { useRouter } from "expo-router"; 
 import ScreenWrapper from "../components/ScreenWrapper";
 
 const StartScreen = () => {
-  const router = useRouter(); // Use router for navigation
+  const router = useRouter(); 
 
   return (
     <ScreenWrapper bg="#80A3CC">
@@ -57,6 +57,20 @@ const StartScreen = () => {
         >
           <Text style={styles.buttonText}>Login as User</Text>
         </TouchableOpacity>
+
+        {/* Small Links */}
+        <View style={styles.linksContainer}>
+          <TouchableOpacity
+            onPress={() => router.push("/FamilyRegistration")} // Navigate to Register Family screen
+          >
+            <Text style={styles.linkText}>Register as Family</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/CaregiverRegistration")} // Navigate to Register Caregiver screen
+          >
+            <Text style={styles.linkText}>Register as Caregiver</Text>
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
     </ScreenWrapper>
   );
@@ -151,6 +165,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 48,
     color: "#FFFFFF",
+  },
+  linksContainer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  linkText: {
+    fontSize: 14,
+    color: "#FFFFFF",
+    textDecorationLine: "underline",
+    marginVertical: 5,
   },
 });
 

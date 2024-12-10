@@ -3,8 +3,14 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const CaregiverRegistration = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [age, setAge] = useState('');
+  const [address, setAddress] = useState('');
   const [educations, setEducations] = useState([{ id: 1, degree: '' }]);
 
+
+  // Add education field
   const addEducationField = () => {
     setEducations([...educations, { id: educations.length + 1, degree: '' }]);
   };
@@ -16,6 +22,40 @@ const CaregiverRegistration = () => {
     setEducations(updatedEducations);
   };
 
+  const handleSubmit = async () => {
+    // Create an object to send to the backend
+    const caregiverData = {
+      name,
+      email,
+      age,
+      address,
+      educations,
+    };
+
+    try {
+      const response = await fetch('/submit/caregiver', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(caregiverData),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Handle success (maybe navigate or show a success message)
+        alert('Caregiver registered successfully');
+      } else {
+        // Handle error (maybe show error message)
+        alert('Error registering caregiver');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Error submitting the form');
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
@@ -23,22 +63,26 @@ const CaregiverRegistration = () => {
           <Icon name="arrow-left" size={20} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerText}>Caregiver Registration</Text>
+        
+        {/* Caregiver Info Fields */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Name</Text>
-          <TextInput style={styles.input} />
+          <TextInput style={styles.input} value={name} onChangeText={setName} />
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Email</Text>
-          <TextInput style={styles.input} keyboardType="email-address" />
+          <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" />
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Age</Text>
-          <TextInput style={styles.input} keyboardType="numeric" />
+          <TextInput style={styles.input} value={age} onChangeText={setAge} keyboardType="numeric" />
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Address</Text>
-          <TextInput style={styles.input} multiline />
+          <TextInput style={styles.input} value={address} onChangeText={setAddress} multiline />
         </View>
+        
+        {/* Education Section */}
         <View style={styles.educationContainer}>
           <Text style={styles.label}>Education</Text>
           {educations.map((edu) => (
@@ -56,13 +100,16 @@ const CaregiverRegistration = () => {
             <Text style={styles.addButtonText}>Add Another</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.submitButton}>
+
+        {/* Submit Button */}
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.submitButtonText}>REGISTER</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

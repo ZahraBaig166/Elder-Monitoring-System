@@ -97,10 +97,10 @@ const NavigationButtons = () => {
       </TouchableOpacity>
       <TouchableOpacity
         style={[navStyles.button, navStyles.addPatient]}
-        onPress={() => router.push('/AddPatient')} // Navigate to AddPatient
+        onPress={() => router.push('/ViewRequest')} // Navigate to AddPatient
       >
         <Icon name="plus-square" size={30} color="#0db1ad" />
-        <Text style={navStyles.addPatientText}>Add Patient</Text>
+        <Text style={navStyles.addPatientText}>View Requests</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[navStyles.button, navStyles.viewQuery]}
