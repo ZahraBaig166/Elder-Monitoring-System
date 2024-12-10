@@ -39,7 +39,7 @@ const FamilyRegistration = () => {
   
     try {
       console.log(familyData);
-      const response = await fetch('http://192.168.18.176:3000/submit/family', {
+      const response = await fetch('http://10.135.53.147:3000/submit/family', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

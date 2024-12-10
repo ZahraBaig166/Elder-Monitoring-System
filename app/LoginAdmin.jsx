@@ -25,7 +25,7 @@ const LoginAdmin = () => {
       console.log("Password:", password);
 
       // Make a POST request to the /admin/login route
-      const response = await fetch("http://192.168.18.176:3000/admin/login", {
+      const response = await fetch("http://10.135.53.147:3000/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
