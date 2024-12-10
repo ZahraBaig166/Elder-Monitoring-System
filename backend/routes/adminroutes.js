@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 // const { PendingCaregiver } = require('../models/pending_caregiver'); // Import PendingCaregiver model
 // const { PendingFamily } = require('../models/pending_family'); // Import PendingFamily model
-const { PendingFamily, Family, Patient, PendingCaregiver, sequelize } = require('../models');
+const { PendingFamily, Family, Patient, PendingCaregiver, Caregiver, sequelize } = require('../models');
 
 const {patient} = require('../models/patient');
 
@@ -35,33 +35,30 @@ router.post('/admin/login', (req, res) => {
   
   router.get('/admin/pending', async (req, res) => {
     try {
-      // Declare pendingFamilies outside the try block
       let pendingFamilies = [];
-  
+      let pendingCaregivers = [];
       try {
-        // Fetch pending families from the database
-        
-      // const pendingCaregivers = await PendingCaregiver.findAll();
-      // console.log("caregiver", pendingCaregivers);
+        // Fetch data from models
+        pendingCaregivers = await PendingCaregiver.findAll();
         pendingFamilies = await PendingFamily.findAll();
-        console.log("family", pendingFamilies);
-      } catch (error) {
-        console.error('Error fetching families:', error);
-        return res.status(500).json({ message: 'Error fetching pending requests', error });
+        console.log('Caregivers fetched:', pendingCaregivers);
+        console.log('Families fetched:', pendingFamilies);
+      } catch (fetchError) {
+        console.error('Error fetching families or caregivers:', fetchError); // Log detailed error
+        return res.status(500).json({ message: 'Error fetching pending requests', error: fetchError });
       }
   
-      // Map over the results to get plain data
+      // Send processed response
       res.json({
-                // caregivers: pendingCaregivers.map(c => c.get({ plain: true })),
-
+        caregivers: pendingCaregivers.map(c => c.get({ plain: true })),
         families: pendingFamilies.map(f => f.get({ plain: true })),
       });
     } catch (error) {
+      console.error('Unexpected error:', error); // Log unexpected errors
       res.status(500).json({ message: 'Error fetching pending requests', error });
     }
   });
   
-
 
 // Admin Routes
 
@@ -105,6 +102,21 @@ router.get('/admin/requestDetails/:requestId', async (req, res) => {
     res.status(500).json({ message: 'Error fetching request details', error });
   }
 });
+
+
+router.get('/admin/caregivers', async (req, res) => {
+  try {
+    const caregivers = await Caregiver.findAll({
+      attributes: ['user_id', 'name'], // Fetch only the id and name fields
+    });
+    console.log("ADMIN ROUTES",caregivers);
+    res.json(caregivers); // Send the result as JSON
+  } catch (error) {
+    console.error('Error fetching caregivers:', error);
+    res.status(500).json({ error: 'Failed to fetch caregivers' });
+  }
+});
+
 
 // Route to approve caregiver or family request
 router.post('/admin/approve/:requestId', async (req, res) => {

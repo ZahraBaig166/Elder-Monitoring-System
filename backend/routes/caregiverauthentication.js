@@ -1,14 +1,17 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const { PendingCaregiver } = require('../models/pending_caregiver'); // Import PendingCaregiver model
+const { PendingCaregiver } = require('../models'); // Import PendingCaregiver model
 const app= express();
 const router = express.Router();
 router.use(express.json());
 // Registration route for Caregiver
 router.post('/submit/caregiver', async (req, res) => {
-  const { name, email, age, address, education } = req.body;
+  console.log("caregiver request body",req.body);
+
+  const { name, email, age, address, educations } = req.body;
+
   // Check if all required fields are provided
-  if (!name || !email || !age || !address || !education) {
+  if (!name || !email || !age || !address || !educations) {
     return res.status(400).send('All fields are required.');
   }
   // Check if email already exists in the PendingCaregiver table
@@ -24,11 +27,11 @@ router.post('/submit/caregiver', async (req, res) => {
       email,
       age,
       address,
-      education,
+      educations,
     });
 
     // Send response back to frontend
-    res.status(201).send('Caregiver registration request has been submitted for approval');
+    res.status(201).json({ message: 'Caregiver registration request has been submitted for approval' });
   } catch (error) {
     console.error('Error during caregiver registration:', error);
     res.status(500).send('Error registering caregiver');

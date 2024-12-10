@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useRouter } from "expo-router";
+
 
 const CaregiverRegistration = () => {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [age, setAge] = useState('');
@@ -31,9 +34,10 @@ const CaregiverRegistration = () => {
       address,
       educations,
     };
+    console.log("caregiver data,",caregiverData);
 
     try {
-      const response = await fetch('/submit/caregiver', {
+      const response = await fetch('http://10.135.53.147:3000/submit/caregiver', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,20 +45,22 @@ const CaregiverRegistration = () => {
         body: JSON.stringify(caregiverData),
       });
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        // Handle success (maybe navigate or show a success message)
-        alert('Caregiver registered successfully');
-      } else {
-        // Handle error (maybe show error message)
-        alert('Error registering caregiver');
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Error submitting the form');
-    }
-  };
+       // Get the raw response text
+       const responseText = await response.text();  // Get plain text response
+       console.log("Response Text: ", responseText);  // Log raw response text
+   
+       if (response.ok) {
+         // Since the response is plain text, we don't need to parse it as JSON
+         alert(responseText);  // Display plain text response
+         router.push("/");
+       } else {
+         alert('Error registering caregiver: ' + responseText || 'Unknown error');
+       }
+     } catch (error) {
+       console.error('Error submitting form:', error);
+       alert('Error submitting the form');
+     }
+   };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>

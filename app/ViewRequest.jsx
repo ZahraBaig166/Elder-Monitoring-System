@@ -9,22 +9,23 @@ const ViewRequest = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await fetch('http://10.135.53.147:3000/admin/pending');
+        const response = await fetch('http://10.135.20.162:3000/admin/pending');
         const data = await response.json();
+        console.log('Received data:', data); // Debugging log
         const allRequests = [
-          // Uncomment if you want to include caregivers in the future
-          // ...data.caregivers.map((item) => ({ ...item, type: 'Caregiver' })),
-          ...data.families.map((item) => ({ ...item, type: 'Family' })),
+          ...(data.caregivers || []).map((item) => ({ ...item, type: 'Caregiver' })),
+          ...(data.families || []).map((item) => ({ ...item, type: 'Family' })),
         ];
+        console.log('Processed requests:', allRequests); // Debugging log
         setPendingRequests(allRequests);
       } catch (error) {
         console.error('Error fetching pending requests:', error);
       }
     };
-
+  
     fetchRequests();
   }, []);
-
+  
   return (
     <View style={styles.container}>
       <View style={styles.main}>
