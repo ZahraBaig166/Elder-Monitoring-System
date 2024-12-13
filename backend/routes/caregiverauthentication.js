@@ -10,6 +10,8 @@ router.post('/submit/caregiver', async (req, res) => {
   console.log("caregiver request body",req.body);
 
   const { name, email, age, address, educations } = req.body;
+  console.log("caregiver request body",req.body);
+  console.log("educations",educations);
 
   // Check if all required fields are provided
   if (!name || !email || !age || !address || !educations) {
@@ -30,7 +32,8 @@ router.post('/submit/caregiver', async (req, res) => {
       address,
       educations,
     });
-
+    console.log("newPendingCaregiver",newPendingCaregiver);
+alert("Caregiver registration request has been submitted for approval");
     // Send response back to frontend
     res.status(201).json({ message: 'Caregiver registration request has been submitted for approval' });
   } catch (error) {

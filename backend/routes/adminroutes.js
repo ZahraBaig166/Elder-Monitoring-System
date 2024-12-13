@@ -117,7 +117,9 @@ router.post('/admin/login', (req, res) => {
 
 router.get('/admin/caregivers', async (req, res) => {
   try {
-    const caregivers = await Caregiver.findAll(); // Fetch all caregivers
+    const caregivers = await Caregiver.findAll(); 
+    
+
     console.log("Backend fetched caregivers:", caregivers);
     if (!caregivers || caregivers.length === 0) {
       return res.status(404).send('No caregivers found.');

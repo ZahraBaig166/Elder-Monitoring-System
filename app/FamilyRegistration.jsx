@@ -11,10 +11,10 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import PhoneInput from "react-native-phone-number-input";
-import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import useConfig from "../backend/../hooks/useConfig";
+import { Dropdown } from 'react-native-element-dropdown';  // Import the dropdown component
 
 const FamilyRegistration = () => {
   const router = useRouter();
@@ -27,8 +27,9 @@ const FamilyRegistration = () => {
   const [patientName, setPatientName] = useState("");
   const [patientAge, setPatientAge] = useState("");
   const [medicalCondition, setMedicalCondition] = useState("");
-  const [patientStatus, setPatientStatus] = useState("Stable"); // Default option
+  const [patientStatus, setPatientStatus] = useState("");
   const [emergencyContact, setEmergencyContact] = useState("");
+  const [patientCondition, setPatientCondition] = useState("");  // State to hold the selected condition
   const phoneInput = useRef(null);
   const { apiBaseUrl, loading, error } = useConfig();
 
@@ -44,6 +45,7 @@ const FamilyRegistration = () => {
         age: patientAge,
         medicalCondition,
         status: patientStatus,
+        condition: patientCondition,  // Send the selected condition
         emergencyContact,
       },
     };
@@ -63,7 +65,7 @@ const FamilyRegistration = () => {
 
       if (response.ok) {
         alert("Family Registration Successful!\n" + responseText);
-        router.push("/");
+        router.push("/"); // Navigate back to the start screen
       } else {
         alert("Error registering family: " + responseText || "Unknown error");
       }
@@ -74,14 +76,8 @@ const FamilyRegistration = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollViewContent}
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent} keyboardShouldPersistTaps="handled">
         <View style={styles.container}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.push("/")}>
             <Icon name="arrow-left" size={20} color="#000" />
@@ -95,12 +91,7 @@ const FamilyRegistration = () => {
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email:</Text>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-            />
+            <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" />
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Relationship to Patient:</Text>
@@ -121,12 +112,7 @@ const FamilyRegistration = () => {
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Address:</Text>
-            <TextInput
-              style={styles.input}
-              value={address}
-              onChangeText={setAddress}
-              multiline
-            />
+            <TextInput style={styles.input} value={address} onChangeText={setAddress} multiline />
           </View>
 
           <Text style={styles.patientSectionText}>Add a Patient:</Text>
@@ -138,37 +124,34 @@ const FamilyRegistration = () => {
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Age:</Text>
-            <TextInput
-              style={styles.input}
-              value={patientAge}
-              onChangeText={setPatientAge}
-              keyboardType="numeric"
-            />
+            <TextInput style={styles.input} value={patientAge} onChangeText={setPatientAge} keyboardType="numeric" />
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Medical Condition:</Text>
-            <TextInput
-              style={styles.input}
-              value={medicalCondition}
-              onChangeText={setMedicalCondition}
-              multiline
+            <TextInput style={styles.input} value={medicalCondition} onChangeText={setMedicalCondition} multiline />
+          </View>
+          {/* <View style={styles.inputContainer}>
+            <Text style={styles.label}>Patient Status:</Text>
+            <TextInput style={styles.input} value={patientStatus} onChangeText={setPatientStatus} />
+          </View> */}
+          
+          {/* Dropdown for Patient Condition */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Patient Condition:</Text>
+            <Dropdown
+              style={styles.dropdown}
+              data={[
+                { label: "Stable", value: "stable" },
+                { label: "Moderate", value: "moderate" },
+                { label: "Critical", value: "critical" },
+              ]}
+              labelField="label"
+              valueField="value"
+              placeholder="Select Condition"
+              value={patientStatus}
+              onChange={(item) => setPatientStatus(item.value)}
             />
           </View>
-          <View style={styles.inputContainer}>
-  <Text style={styles.label}>Patient Status:</Text>
-  <View style={styles.pickerContainer}>
-    <Picker
-      selectedValue={patientStatus}
-      onValueChange={(itemValue) => setPatientStatus(itemValue)}
-      style={styles.picker} // Apply style to Picker
-      dropdownIconColor="#000" // Black color for dropdown icon
-    >
-      <Picker.Item label="stable" value="stable" style={styles.pickerItem} />
-      <Picker.Item label="moderate" value="moderate" style={styles.pickerItem} />
-      <Picker.Item label="critical" value="critical" style={styles.pickerItem} />
-    </Picker>
-  </View>
-</View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Emergency Contact:</Text>
@@ -230,12 +213,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9F9F9",
     fontSize: wp("4%"),
   },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    borderRadius: wp("2%"),
-    backgroundColor: "Black",
-  },
   patientSectionText: {
     fontSize: wp("5%"),
     fontWeight: "700",
@@ -263,6 +240,14 @@ const styles = StyleSheet.create({
     fontSize: wp("6%"),
     fontWeight: "700",
     color: "#FFF",
+  },
+  dropdown: {
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: wp("2%"),
+    padding: wp("3%"),
+    backgroundColor: "#F9F9F9",
+    fontSize: wp("4%"),
   },
 });
 
