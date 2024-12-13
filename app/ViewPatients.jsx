@@ -11,16 +11,22 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import NavBar from '../components/NavBarPatients';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../backend/../hooks/useConfig";
+
 
 const ViewPatients = () => {
   const [patients, setPatients] = useState([]); 
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(true); 
+  
+  const { apiBaseUrl, loading, error } = useConfig();
+
 
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await fetch('http://192.168.43.228:3000/patients'); 
+        const response = await fetch('${apiBaseUrl}/patients'); 
         const data = await response.json();
         setPatients(data); 
       } catch (error) {

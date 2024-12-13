@@ -1,6 +1,11 @@
 import React, { useState } from "react";
+import {useEffect} from "react";
+
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../backend/../hooks/useConfig";
+
 
 const AddMedication = () => {
   const [patientName, setPatientName] = useState("");
@@ -8,12 +13,14 @@ const AddMedication = () => {
   const [dosage, setDosage] = useState("");
   const [interval, setInterval] = useState("");
   const [duration, setDuration] = useState("");
+  const { apiBaseUrl, loading, error } = useConfig();
+
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
         <TouchableOpacity style={styles.backButton}>
-          <Icon name="arrow-left" size={20} color="#000" />
+          <Icon name="arrow-left" size={wp('5%')} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerText}>Add Medication</Text>
 
@@ -85,46 +92,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    padding: 20,
+    padding: wp('5%'),
   },
   scrollViewContent: {
     flexGrow: 1,
   },
   backButton: {
-    padding: 10,
-    marginBottom: 20,
+    padding: wp('2%'),
+    marginBottom: hp('2%'),
   },
   headerText: {
-    fontSize: 32,
+    fontSize: wp('8%'),
     fontWeight: '700',
     color: '#263238',
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   label: {
-    fontSize: 16,
+    fontSize: wp('4.5%'),
     fontWeight: '400',
     color: '#000',
-    marginBottom: 5,
+    marginBottom: hp('1%'),
   },
   input: {
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: wp('2%'),
+    padding: wp('3%'),
     backgroundColor: '#F9F9F9',
+    fontSize: wp('4%'),
   },
   addButton: {
     backgroundColor: '#ADC1D8',
-    borderRadius: 30,
-    paddingVertical: 15,
+    borderRadius: wp('8%'),
+    paddingVertical: hp('2%'),
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: hp('3%'),
   },
   addButtonText: {
-    fontSize: 24,
+    fontSize: wp('6%'),
     fontWeight: '700',
     color: '#FFF',
   },

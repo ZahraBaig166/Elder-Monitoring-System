@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Alert } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { FontAwesome } from '@expo/vector-icons';
+import {useEffect} from "react";
+import useConfig from "../backend/../hooks/useConfig";
+
 
 import { useRouter } from 'expo-router';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
 const { width } = Dimensions.get('window');
 
 LocaleConfig.locales['en'] = {
@@ -17,6 +22,8 @@ LocaleConfig.locales['en'] = {
 LocaleConfig.defaultLocale = 'en';
 
 const MedicationReminder = () => {
+  const { apiBaseUrl, loading, error } = useConfig();
+
   const [selectedDate, setSelectedDate] = useState('');
   const [markedDates, setMarkedDates] = useState({
     '2024-11-29': { selected: true, marked: true, selectedColor: 'blue', selectedTextColor: 'white' },

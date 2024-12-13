@@ -8,7 +8,7 @@ const db = require('./models'); // Import the models and Sequelize instance
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // Middleware
 app.use(cors());
@@ -33,10 +33,6 @@ db.sequelize.sync({ force: false }) // Use force: true only during development
     console.error('Error synchronizing models:', err);
   });
 
-// Example Routes
-app.get("/", (req, res) => {
-  res.send("API is running!");
-});
 const adminRouter = require('./routes/adminroutes'); // Assuming your routes are in adminRoutes.js
 app.use('/', adminRouter); // Or '/admin', depending on your structure
 // Example: Check Tables
@@ -59,6 +55,14 @@ app.get('/checktables', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch tables' });
   }
+});
+
+app.get('/config', (req, res) => {
+  // Send the relevant environment variables as JSON
+  console.log(process.env.API_BASE_URL);
+  res.json({
+    apiBaseUrl: process.env.API_BASE_URL,
+  });
 });
 
 // Start Server

@@ -1,12 +1,18 @@
 import React, { useState, useRef } from "react";
+import {useEffect} from "react";
+
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import PhoneInput from "react-native-phone-number-input";
 import { useRouter } from "expo-router";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../backend/../hooks/useConfig";
+
 
 
 const FamilyRegistration = () => {
   const router = useRouter();
+ 
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,7 +25,8 @@ const FamilyRegistration = () => {
   const [patientStatus, setPatientStatus] = useState("");
   const [emergencyContact, setEmergencyContact] = useState("");
   const phoneInput = useRef(null);
-  
+  const { apiBaseUrl, loading, error } = useConfig();
+
   const handleSubmit = async () => {
 
     const familyData = {
@@ -39,7 +46,7 @@ const FamilyRegistration = () => {
   
     try {
       console.log(familyData);
-      const response = await fetch('http://192.168.43.228:3000/submit/family', {
+      const response = await fetch(`${apiBaseUrl}/submit/family`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,6 +71,7 @@ const FamilyRegistration = () => {
     }
   };
   
+ 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
@@ -148,62 +156,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    padding: 20,
+    padding: wp('5%'),
   },
   scrollViewContent: {
     flexGrow: 1,
   },
   backButton: {
-    padding: 10,
-    marginBottom: 20,
+    padding: wp('2%'),
+    marginBottom: hp('2%'),
   },
   headerText: {
-    fontSize: 32,
+    fontSize: wp('8%'),
     fontWeight: '700',
     color: '#263238',
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   label: {
-    fontSize: 16,
+    fontSize: wp('4.5%'),
     fontWeight: '400',
     color: '#000',
-    marginBottom: 5,
+    marginBottom: hp('1%'),
   },
   input: {
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: wp('2%'),
+    padding: wp('3%'),
     backgroundColor: '#F9F9F9',
-  },
-  uploadContainer: {
-    marginBottom: 20,
-  },
-  uploadSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#8E8E8E',
-    padding: 10,
-    borderRadius: 10,
-  },
-  uploadText: {
-    fontSize: 14,
-    color: '#000',
-    marginLeft: 10,
+    fontSize: wp('4%'),
   },
   patientSectionText: {
-    fontSize: 18,
+    fontSize: wp('5%'),
     fontWeight: '700',
     color: '#000',
-    marginBottom: 10,
+    marginBottom: hp('2%'),
   },
   phoneInputContainer: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: wp('2%'),
     borderColor: '#E0E0E0',
     backgroundColor: '#F9F9F9',
     width: '100%',
@@ -211,33 +204,19 @@ const styles = StyleSheet.create({
   textContainer: {
     backgroundColor: '#F9F9F9',
   },
-  radioGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  radioButton: {
-    padding: 10,
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#F9F9F9',
-  },
-  radioText: {
-    fontSize: 16,
-    color: '#333',
-  },
   submitButton: {
     backgroundColor: '#ADC1D8',
-    borderRadius: 30,
-    paddingVertical: 15,
+    borderRadius: wp('8%'),
+    paddingVertical: hp('2%'),
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: hp('3%'),
   },
   submitButtonText: {
-    fontSize: 24,
+    fontSize: wp('6%'),
     fontWeight: '700',
     color: '#FFF',
   },
 });
+
 
 export default FamilyRegistration;

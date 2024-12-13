@@ -1,7 +1,11 @@
 import React, { useState } from "react";
+import {useEffect} from "react";
+
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useRouter } from "expo-router";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../backend/../hooks/useConfig";
 
 
 const CaregiverRegistration = () => {
@@ -11,7 +15,7 @@ const CaregiverRegistration = () => {
   const [age, setAge] = useState('');
   const [address, setAddress] = useState('');
   const [educations, setEducations] = useState([{ id: 1, degree: '' }]);
-
+  const { apiBaseUrl, loading, error } = useConfig();
 
   // Add education field
   const addEducationField = () => {
@@ -37,7 +41,7 @@ const CaregiverRegistration = () => {
     console.log("caregiver data,",caregiverData);
 
     try {
-      const response = await fetch('http://192.168.43.228:3000/submit/caregiver', {
+      const response = await fetch(`${apiBaseUrl}/submit/caregiver`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,15 +66,15 @@ const CaregiverRegistration = () => {
      }
    };
 
-  return (
+  
+   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
         <TouchableOpacity style={styles.backButton}>
-          <Icon name="arrow-left" size={20} color="#000" />
+          <Icon name="arrow-left" size={hp('3%')} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerText}>Caregiver Registration</Text>
         
-        {/* Caregiver Info Fields */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Name</Text>
           <TextInput style={styles.input} value={name} onChangeText={setName} />
@@ -88,7 +92,6 @@ const CaregiverRegistration = () => {
           <TextInput style={styles.input} value={address} onChangeText={setAddress} multiline />
         </View>
         
-        {/* Education Section */}
         <View style={styles.educationContainer}>
           <Text style={styles.label}>Education</Text>
           {educations.map((edu) => (
@@ -102,12 +105,11 @@ const CaregiverRegistration = () => {
             </View>
           ))}
           <TouchableOpacity style={styles.addButton} onPress={addEducationField}>
-            <Icon name="plus" size={20} color="#FFF" />
+            <Icon name="plus" size={hp('2.5%')} color="#FFF" />
             <Text style={styles.addButtonText}>Add Another</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Submit Button */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.submitButtonText}>REGISTER</Text>
         </TouchableOpacity>
@@ -116,72 +118,71 @@ const CaregiverRegistration = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    padding: 20,
+    padding: wp('5%'),
   },
   scrollViewContent: {
     flexGrow: 1,
   },
   backButton: {
-    padding: 10,
-    marginBottom: 20,
+    padding: hp('1%'),
+    marginBottom: hp('2%'),
   },
   headerText: {
-    fontSize: 32,
+    fontSize: hp('4%'),
     fontWeight: '700',
     color: '#263238',
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   label: {
-    fontSize: 16,
+    fontSize: hp('2%'),
     fontWeight: '400',
     color: '#000',
-    marginBottom: 5,
+    marginBottom: hp('0.5%'),
   },
   input: {
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: wp('2%'),
+    padding: hp('1%'),
     backgroundColor: '#F9F9F9',
   },
   educationContainer: {
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   educationField: {
-    marginBottom: 10,
+    marginBottom: hp('1%'),
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ADC1D8',
-    borderRadius: 30,
-    paddingVertical: 10,
-    marginTop: 10,
+    borderRadius: wp('5%'),
+    paddingVertical: hp('1%'),
+    marginTop: hp('1%'),
   },
   addButtonText: {
-    fontSize: 16,
+    fontSize: hp('2%'),
     fontWeight: '700',
     color: '#FFF',
-    marginLeft: 10,
+    marginLeft: wp('2%'),
   },
   submitButton: {
     backgroundColor: '#4CAF50',
-    borderRadius: 30,
-    paddingVertical: 15,
+    borderRadius: wp('5%'),
+    paddingVertical: hp('2%'),
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: hp('2%'),
   },
   submitButtonText: {
-    fontSize: 24,
+    fontSize: hp('3%'),
     fontWeight: '700',
     color: '#FFF',
   },

@@ -8,12 +8,19 @@ import {
   TouchableOpacity,
   ImageBackground,
 } from "react-native";
+import {useEffect} from "react";
+import useConfig from "../backend/../hooks/useConfig";
+
 import { useRouter } from "expo-router";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const LoginUser = () => {
   const [email, setEmail] = useState("");  
   const [password, setPassword] = useState("");  
   const router = useRouter();
+  const { apiBaseUrl, loading, error } = useConfig();
+
+  
 console.log("email ",email);
 console.log("password",password);
   // Function to handle caregiver login
@@ -22,7 +29,7 @@ console.log("password",password);
       alert("Please fill in both email and password");
       return;
     } console.log("hello i m in caregiver button")
-      const response = await fetch("http://192.168.43.228:3000/login/caregiver", {
+      const response = await fetch(`${apiBaseUrl}/login/caregiver`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -46,7 +53,7 @@ console.log("password",password);
       alert("Please fill in both email and password");
       return;
     } console.log("hello i m in caregiver button")
-      const response = await fetch("http://192.168.43.228:3000/login/family", {
+      const response = await fetch(`${apiBaseUrl}/login/family`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,82 +125,81 @@ console.log("password",password);
     </ImageBackground>
   );
 };
-
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
-    width: "100%", // Ensures it covers the full width
-    height: "100%", // Ensures it covers the full height
-    backgroundColor: "#000000", // Prevents black gaps
+    width: wp('100%'), // Full screen width
+    height: hp('100%'), // Full screen height
+    backgroundColor: "#000000",
   },
   container: {
     flex: 1,
-    justifyContent: "flex-start", // Move content to start
-    alignItems: "flex-start", // Align content to the left
-    paddingHorizontal: 20, // Add padding on the sides
-    paddingTop: 50, // Adjust spacing from the top
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    paddingHorizontal: wp('5%'), // 5% of screen width
+    paddingTop: hp('5%'), // 5% of screen height
   },
   topSection: {
-    width: "100%",
+    width: wp('100%'),
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   illustration: {
-    width: "70%",
-    height: 180,
+    width: wp('70%'),
+    height: hp('25%'), // Adjust height proportionally
     resizeMode: "contain",
-    marginBottom: 30,
+    marginBottom: hp('3%'),
   },
   title: {
-    fontSize: 28,
+    fontSize: wp('7%'), // Scales based on screen width
     color: "#4874A6",
     fontWeight: "bold",
-    textAlign: "left", // Align text to the left
-    marginTop: 40,
-    marginBottom: 30,
+    textAlign: "left",
+    marginTop: hp('2%'),
+    marginBottom: hp('3%'),
   },
   input: {
-    width: "100%",
+    width: wp('90%'), // Takes up 90% of screen width
     backgroundColor: "#FFFFFF",
     borderRadius: 10,
-    padding: 12,
-    marginVertical: 10,
+    padding: hp('2%'), // Scales padding
+    marginVertical: hp('1%'),
     borderWidth: 1,
     borderColor: "#4874A6",
-    fontSize: 16,
-    textAlign: "left", // Align placeholder text to the left
+    fontSize: wp('4%'),
+    textAlign: "left",
   },
   forgotPassword: {
     color: "#4874A6",
-    fontSize: 14,
-    textAlign: "center", // Align forgot password to the center
-    marginBottom: 20,
+    fontSize: wp('3.5%'),
+    textAlign: "center",
+    marginBottom: hp('2%'),
   },
   buttonContainer: {
-    width: "100%",
-    flexDirection: "row", // Place buttons in a row
-    justifyContent: "space-evenly", // Space buttons evenly
-    marginTop: -10,
+    width: wp('90%'),
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    marginTop: hp('2%'),
   },
   button: {
-    width: "35%",
+    width: wp('40%'),
     backgroundColor: "#80A3CC",
     borderRadius: 10,
-    paddingVertical: 15,
+    paddingVertical: hp('2%'),
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    boarderColor: "#000000",
-    margin: 20,
+    borderColor: "#000000",
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: wp('4%'),
     fontWeight: "bold",
   },
 });
+
 
 export default LoginUser;

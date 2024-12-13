@@ -7,20 +7,28 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+import {useEffect} from "react";
+
 import Icon from 'react-native-vector-icons/FontAwesome';
 import NavBar from '../components/NavBar';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
+import useConfig from "../backend/../hooks/useConfig";
+
 
 const NotificationScreen = () => {
+  const { apiBaseUrl, loading, error } = useConfig();
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton}>
-          <Icon name="arrow-left" size={20} color="#000" />
+          <Icon name="arrow-left" size={wp(5)} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>ALERTS</Text>
         <TouchableOpacity>
-          <Icon name="ellipsis-v" size={20} color="#000" />
+          <Icon name="ellipsis-v" size={wp(5)} color="#000" />
         </TouchableOpacity>
       </View>
 
@@ -81,17 +89,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#ADC1D8',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    paddingHorizontal: 20,
-    paddingTop: 50, // Ensure proper spacing at the top
-    paddingBottom: 15,
+    borderBottomLeftRadius: wp(8),
+    borderBottomRightRadius: wp(8),
+    paddingHorizontal: wp(5),
+    paddingTop: hp(6),
+    paddingBottom: hp(2),
   },
   backButton: {
-    padding: 10,
+    padding: wp(2),
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: wp(5),
     fontWeight: '700',
     color: '#000',
   },
@@ -99,21 +107,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: hp(2),
   },
   filterButton: {
-    borderWidth: 1.5,
+    borderWidth: wp(0.4),
     borderColor: '#ADC1D8',
-    borderRadius: 20,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
+    borderRadius: wp(5),
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(4),
     backgroundColor: '#FFFFFF',
   },
   activeFilter: {
     backgroundColor: '#ADC1D8',
   },
   filterText: {
-    fontSize: 12,
+    fontSize: wp(3.5),
     fontWeight: '700',
     color: '#000',
   },
@@ -122,16 +130,16 @@ const styles = StyleSheet.create({
   },
   notificationsContainer: {
     flex: 1,
-    padding: 20,
+    padding: wp(5),
   },
   notificationCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#ADC1D8',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 10,
+    borderRadius: wp(4),
+    padding: wp(4),
+    marginBottom: hp(1.5),
   },
   notificationContent: {
     flexDirection: 'row',
@@ -139,36 +147,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imagePlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: wp(12),
+    height: wp(12),
+    borderRadius: wp(6),
     backgroundColor: '#FFFFFF',
-    marginRight: 15,
+    marginRight: wp(3),
   },
   notificationTextContainer: {
     flex: 1,
   },
   notificationTitle: {
-    fontSize: 14,
+    fontSize: wp(4),
     fontWeight: '500',
     color: '#000',
-    marginBottom: 5,
+    marginBottom: hp(0.5),
   },
   notificationTime: {
-    fontSize: 12,
+    fontSize: wp(3),
     color: '#7E8C99',
   },
   viewButton: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    shadowOffset: { width: 0, height: 2 },
+    borderRadius: wp(3),
+    paddingVertical: hp(0.8),
+    paddingHorizontal: wp(4),
+    shadowOffset: { width: 0, height: hp(0.2) },
     shadowOpacity: 0.4,
-    shadowRadius: 4,
+    shadowRadius: wp(2),
   },
   viewButtonText: {
-    fontSize: 12,
+    fontSize: wp(3.5),
     fontWeight: '600',
     color: '#406B9E',
   },

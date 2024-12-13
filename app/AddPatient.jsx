@@ -1,7 +1,10 @@
 import React, { useState, useRef } from "react";
+import {useEffect} from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import PhoneInput from "react-native-phone-number-input";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../backend/../hooks/useConfig";
 
 const AddPatient = () => {
   const [value, setValue] = useState("");
@@ -9,42 +12,39 @@ const AddPatient = () => {
   const [valid, setValid] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const phoneInput = useRef(null);
+  const { apiBaseUrl, loading, error } = useConfig();
+
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
         <TouchableOpacity style={styles.backButton}>
-          <Icon name="arrow-left" size={20} color="#000" />
+          <Icon name="arrow-left" size={wp('6%')} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerText}>Add Patient</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>First Name</Text>
-          <TextInput style={styles.input} />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Last Name</Text>
-          <TextInput style={styles.input} />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>DOB:</Text>
-          <TextInput style={styles.input} />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Medical Condition:</Text>
-          <TextInput style={styles.input} />
-        </View>
+        {['First Name', 'Last Name', 'DOB:', 'Medical Condition:'].map((label, index) => (
+          <View style={styles.inputContainer} key={index}>
+            <Text style={styles.label}>{label}</Text>
+            <TextInput style={styles.input} />
+          </View>
+        ))}
+
         <View style={styles.uploadContainer}>
           <Text style={styles.label}>Reports:</Text>
           <View style={styles.uploadSection}>
-            <Icon name="upload" size={24} color="#8E8E8E" />
+            <Icon name="upload" size={wp('6%')} color="#8E8E8E" />
             <Text style={styles.uploadText}>Upload Additional File</Text>
           </View>
         </View>
+
         <Text style={styles.familyInfoText}>Family Information:</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Guardian Name:</Text>
-          <TextInput style={styles.input} />
-        </View>
+        {['Guardian Name:', 'Address:'].map((label, index) => (
+          <View style={styles.inputContainer} key={index}>
+            <Text style={styles.label}>{label}</Text>
+            <TextInput style={styles.input} />
+          </View>
+        ))}
+
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Contact Number:</Text>
           <PhoneInput
@@ -54,9 +54,6 @@ const AddPatient = () => {
             layout="second"
             onChangeText={(text) => setValue(text)}
             onChangeFormattedText={(text) => setFormattedValue(text)}
-            disabled={false}
-            disableArrowIcon={true}
-            placeholder="Enter phone number"
             containerStyle={styles.phoneInputContainer}
             textContainerStyle={styles.textContainer}
             textInputProps={{ keyboardType: 'phone-pad' }}
@@ -64,14 +61,10 @@ const AddPatient = () => {
             codeTextStyle={styles.codeText}
             flagButtonStyle={styles.flagButton}
             countryPickerButtonStyle={styles.countryPickerButton}
-            onChangeCountry={(country) => {}}
-            renderDropdownImage={<Icon name="arrow-down" size={18} color="#000" />}
+            renderDropdownImage={<Icon name="arrow-down" size={wp('4%')} color="#000" />}
           />
         </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Address:</Text>
-          <TextInput style={styles.input} />
-        </View>
+
         <TouchableOpacity style={styles.addButton}>
           <Text style={styles.addButtonText}>ADD</Text>
         </TouchableOpacity>
@@ -84,109 +77,102 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    padding: 20,
+    padding: wp('5%'),
   },
   scrollViewContent: {
     flexGrow: 1,
   },
   backButton: {
-    padding: 10,
-    marginBottom: 20,
+    padding: wp('2%'),
+    marginBottom: hp('2%'),
   },
   headerText: {
-    fontSize: 32,
+    fontSize: wp('8%'),
     fontWeight: '700',
     color: '#263238',
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   label: {
-    fontSize: 16,
+    fontSize: wp('4.5%'),
     fontWeight: '400',
     color: '#000',
-    marginBottom: 5,
+    marginBottom: hp('1%'),
   },
   input: {
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: wp('2%'),
+    padding: wp('3%'),
     backgroundColor: '#F9F9F9',
   },
   uploadContainer: {
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   uploadSection: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#8E8E8E',
-    padding: 10,
-    borderRadius: 10,
+    padding: wp('3%'),
+    borderRadius: wp('2%'),
   },
   uploadText: {
-    fontSize: 14,
+    fontSize: wp('4%'),
     color: '#000',
-    marginLeft: 10,
+    marginLeft: wp('3%'),
   },
   familyInfoText: {
-    fontSize: 18,
+    fontSize: wp('5%'),
     fontWeight: '700',
     color: '#000',
-    marginBottom: 10,
+    marginBottom: hp('1.5%'),
   },
   addButton: {
     backgroundColor: '#ADC1D8',
-    borderRadius: 30,
-    paddingVertical: 15,
+    borderRadius: wp('10%'),
+    paddingVertical: hp('2%'),
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: hp('2%'),
   },
   addButtonText: {
-    fontSize: 24,
+    fontSize: wp('6%'),
     fontWeight: '700',
     color: '#FFF',
   },
   phoneInputContainer: {
-    paddingHorizontal: 10,
-    marginVertical: 10,
+    paddingHorizontal: wp('2%'),
+    marginVertical: hp('1%'),
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: wp('2%'),
     borderColor: '#E0E0E0',
     backgroundColor: '#F9F9F9',
     width: '100%',
   },
   textContainer: {
     flex: 1,
-    marginLeft: 10,
+    marginLeft: wp('2%'),
     backgroundColor: '#F9F9F9',
-    borderWidth: 0.5,
-    borderLeftColor: '#E0E0E0',
-    borderRightColor: '#fff',
-    borderTopColor: '#fff',
-    borderBottomColor: '#fff',
   },
   textInput: {
-    fontSize: 16,
-    padding: 2,
+    fontSize: wp('4%'),
     color: '#333',
     flex: 1,
   },
   codeText: {
-    fontSize: 16,
-    backgroundColor: '#F9F9F9',
+    fontSize: wp('4%'),
   },
   flagButton: {
-    padding: 2,
+    padding: wp('1%'),
   },
   countryPickerButton: {
-    padding: 2,
+    padding: wp('1%'),
     backgroundColor: '#F9F9F9',
-    borderRadius: 8,
+    borderRadius: wp('2%'),
   },
 });
 

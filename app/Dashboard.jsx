@@ -1,14 +1,22 @@
 import React from 'react';
+import {useEffect,useState} from "react";
+
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import NavBar from '../components/NavBarPatients';
 import { useRouter } from 'expo-router';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../backend/../hooks/useConfig";
+
 
 const { width } = Dimensions.get('window');
 
 const Dashboard = () => {
+  const { apiBaseUrl, loading, error } = useConfig();
+
+  
   return (
     <View style={dashboardStyles.container}>
     <ScrollView style={dashboardStyles.container}>

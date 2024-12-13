@@ -3,12 +3,17 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions
 import { FontAwesome } from '@expo/vector-icons';
 import NavBar from '../components/NavBarPatients';
 import { useRouter } from 'expo-router';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
+import useConfig from "../backend/../hooks/useConfig";
 
 const { width } = Dimensions.get('window');
 
 const DoctorDashboard = () => {
   const [counts, setCounts] = useState({ total: 0, critical: 0, moderate: 0, stable: 0 });
   const router = useRouter();
+  const { apiBaseUrl, loading, error } = useConfig();
+
 
   const PatientInfoCard = ({ counts }) => {
     return (
@@ -45,7 +50,7 @@ const DoctorDashboard = () => {
   useEffect(() => {
     const fetchCriticalPatients = async () => {
       try {
-        const response = await fetch('http://192.168.43.228:3000/patients/critical');
+        const response = await fetch(`${apiBaseUrl}/patients/critical`);
         const data = await response.json();
         console.log('Critical Patients API Response:', data); 
         setCriticalPatients(Array.isArray(data) ? data : []); 
@@ -151,7 +156,7 @@ const ChartWithHeading = ({ title, source }) => {
   useEffect(() => {
     const fetchPatientCounts = async () => {
       try {
-        const response = await fetch('http://192.168.43.228:3000/patients/counts'); 
+        const response = await fetch(`${apiBaseUrl}/patients/counts`); 
         const data = await response.json();
         setCounts(data);
       } catch (error) {

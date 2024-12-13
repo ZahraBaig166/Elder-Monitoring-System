@@ -1,132 +1,131 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import {useEffect} from "react";
+
+import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router"; 
 import ScreenWrapper from "../components/ScreenWrapper";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const StartScreen = () => {
-  const router = useRouter(); 
+  const router = useRouter();
 
   return (
-    <ScreenWrapper bg="#80A3CC">
-      <LinearGradient
-        colors={["#80A3CC", "#91BEE3"]}
-        style={styles.container}
-      >
-        {/* Title */}
-        <Text style={styles.title}>
-          <Text style={styles.smartText}>SMART</Text>
-          {"\n"}
-          <Text style={styles.careText}>CARE</Text>
-        </Text>
+    <View style={styles.outercontainer}>
+      <ScreenWrapper bg="#80A3CC" style={styles.screenWrapper}>
+        <LinearGradient colors={["#80A3CC", "#91BEE3"]} style={styles.container}>
+          {/* Title */}
+          <Text style={styles.title}>
+            <Text style={styles.smartText}>SMART</Text>
+            {"\n"}
+            <Text style={styles.careText}>CARE</Text>
+          </Text>
 
-        {/* Image Container */}
-        <View style={styles.imageContainer}>
-          {/* Background Gear */}
-          <Image
-            source={require("@/assets/images/gear.png")}
-            style={styles.backgroundGear}
-          />
-          {/* Left Lady */}
-          <Image
-            source={require("@/assets/images/left.png")}
-            style={styles.image1}
-          />
-          {/* Watch */}
-          <Image
-            source={require("@/assets/images/watch.png")}
-            style={styles.watch}
-          />
-          {/* Right Lady */}
-          <Image
-            source={require("@/assets/images/right.png")}
-            style={styles.image2}
-          />
-        </View>
+          {/* Image Container */}
+          <View style={styles.imageContainer}>
+            <Image
+              source={require("@/assets/images/gear.png")}
+              style={styles.backgroundGear}
+            />
+            <Image
+              source={require("@/assets/images/left.png")}
+              style={styles.image1}
+            />
+            <Image
+              source={require("@/assets/images/watch.png")}
+              style={styles.watch}
+            />
+            <Image
+              source={require("@/assets/images/right.png")}
+              style={styles.image2}
+            />
+          </View>
 
-        {/* Buttons */}
-        <TouchableOpacity
-          style={styles.buttonAdmin}
-          onPress={() => router.push("/LoginAdmin")} // Navigate to Admin screen
-        >
-          <Text style={styles.buttonText}>Login as Admin</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.buttonUser}
-          onPress={() => router.push("/LoginUser")} // Navigate to User screen
-        >
-          <Text style={styles.buttonText}>Login as User</Text>
-        </TouchableOpacity>
-
-        {/* Small Links */}
-        <View style={styles.linksContainer}>
+          {/* Buttons */}
           <TouchableOpacity
-            onPress={() => router.push("/FamilyRegistration")} // Navigate to Register Family screen
+            style={styles.buttonAdmin}
+            onPress={() => router.push("/LoginAdmin")}
           >
-            <Text style={styles.linkText}>Register as Family</Text>
+            <Text style={styles.buttonText}>Login as Admin</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => router.push("/CaregiverRegistration")} // Navigate to Register Caregiver screen
+            style={styles.buttonUser}
+            onPress={() => router.push("/LoginUser")}
           >
-            <Text style={styles.linkText}>Register as Caregiver</Text>
+            <Text style={styles.buttonText}>Login as User</Text>
           </TouchableOpacity>
-        </View>
-      </LinearGradient>
-    </ScreenWrapper>
+
+          {/* Small Links */}
+          <View style={styles.linksContainer}>
+            <TouchableOpacity onPress={() => router.push("/FamilyRegistration")}>
+              <Text style={styles.linkText}>Register as Family</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/CaregiverRegistration")}>
+              <Text style={styles.linkText}>Register as Caregiver</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+      </ScreenWrapper>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  outercontainer: {
+    height: hp(100),
+    width: wp(100),
+  },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: wp(5),
   },
   imageContainer: {
     position: "relative",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
+    marginTop: hp(2),
+    marginBottom: hp(5),
   },
   backgroundGear: {
     position: "absolute",
-    width: 400,
-    height: 400,
+    width: wp(100),
+    height: hp(50),
     resizeMode: "contain",
-    top: -80,
-    right: 65,
+    top: -hp(10),
+    right: wp(10),
   },
   image1: {
-    width: 140,
-    height: 300,
+    width: wp(30),
+    height: hp(40),
     resizeMode: "contain",
-    left: 38,
+    left: wp(5),
   },
   image2: {
-    width: 110,
-    height: 300,
-    right: 15,
+    width: wp(25),
+    height: hp(40),
+    right: wp(5),
     resizeMode: "contain",
   },
   watch: {
-    width: 160,
-    height: 180,
+    width: wp(35),
+    height: hp(20),
     resizeMode: "contain",
-    marginHorizontal: 10,
+    marginHorizontal: wp(2),
   },
   buttonAdmin: {
     width: "80%",
     backgroundColor: "#80A3CC",
-    borderRadius: 25,
-    paddingVertical: 12,
-    marginVertical: 10,
+    borderRadius: wp(5),
+    paddingVertical: hp(1.5),
+    marginVertical: hp(1),
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: hp(0.5) },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: wp(1),
     elevation: 5,
     borderWidth: 2,
     borderColor: "#FFFFFF",
@@ -134,47 +133,47 @@ const styles = StyleSheet.create({
   buttonUser: {
     width: "80%",
     backgroundColor: "#91BEE3",
-    borderRadius: 25,
-    paddingVertical: 12,
-    marginVertical: 10,
+    borderRadius: wp(5),
+    paddingVertical: hp(1.5),
+    marginVertical: hp(1),
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: hp(0.5) },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: wp(1),
     elevation: 5,
     borderWidth: 2,
     borderColor: "#FFFFFF",
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: wp(4),
     fontWeight: "bold",
     color: "#FFFFFF",
   },
   title: {
-    fontSize: 36,
+    fontSize: wp(10),
     textAlign: "center",
-    paddingBottom: 30,
+    paddingBottom: hp(3),
   },
   smartText: {
     fontWeight: "bold",
-    fontSize: 48,
+    fontSize: wp(12),
     color: "#3768AF",
   },
   careText: {
     fontWeight: "bold",
-    fontSize: 48,
+    fontSize: wp(12),
     color: "#FFFFFF",
   },
   linksContainer: {
-    marginTop: 20,
+    marginTop: hp(3),
     alignItems: "center",
   },
   linkText: {
-    fontSize: 14,
+    fontSize: wp(3.5),
     color: "#FFFFFF",
     textDecorationLine: "underline",
-    marginVertical: 5,
+    marginVertical: hp(0.5),
   },
 });
 

@@ -36,8 +36,8 @@ router.post('/admin/login', (req, res) => {
       // Declare pendingFamilies outside the try block
       let pendingFamilies = [];
       let pendingCaregivers = [];
-  
-      try {
+      console.log("hello");
+            try {
         // Fetch data from models
         pendingCaregivers = await PendingCaregiver.findAll();
         pendingFamilies = await PendingFamily.findAll();

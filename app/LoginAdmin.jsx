@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
+
 import {
   View,
   Text,
@@ -10,11 +11,33 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../backend/../hooks/useConfig";
+
 // require('dotenv').config();
 
 
 const LoginAdmin = () => {
+  const { apiBaseUrl, loading, error } = useConfig();
+
   const router = useRouter();
+  // const [config, setConfig] = useState(null);
+  // State to manage email and password
+  // const [apiBaseUrl, setApiBaseUrl] = useState(""); // State for apiBaseUrl
+
+
+  // useEffect(() => {
+  //   // Fetch the environment variables from the backend
+  //   fetch('http://192.168.18.176:4000/config')
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       console.log('Received Data in front end:', data); // This will print the data to the terminal/console
+  //       setConfig(data); // Update the state with the received data
+  //       setApiBaseUrl(data.apiBaseUrl); // Store apiBaseUrl separately
+  //       console.log('API Base URL:', data.apiBaseUrl); // You can use apiBaseUrl in your logic here
+  //     })
+  //     .catch(error => console.error('Error fetching config:', error));
+  // }, []);
 
   // State to manage email and password
   const [email, setEmail] = useState("");
@@ -27,7 +50,7 @@ const LoginAdmin = () => {
       console.log("Password:", password);
 
       // Make a POST request to the /admin/login route
-      const response = await fetch("http://192.168.43.228:3000/admin/login", {
+      const response = await fetch(`${apiBaseUrl}/admin/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,78 +133,76 @@ const LoginAdmin = () => {
     </ImageBackground>
   );
 };
-
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
-    width: "100%", // Ensures it covers the full width
-    height: "100%", // Ensures it covers the full height
-    backgroundColor: "#000000", // Prevents black gaps
+    width: wp('100%'), // Full screen width
+    height: hp('100%'), // Full screen height
+    backgroundColor: "#000000",
   },
   container: {
     flex: 1,
-    justifyContent: "flex-start", // Move content to start
-    alignItems: "flex-start", // Align content to the left
-    paddingHorizontal: 20, // Add padding on the sides
-    paddingTop: 50, // Adjust spacing from the top
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    paddingHorizontal: wp('5%'), // 5% of screen width
+    paddingTop: hp('5%'), // 5% of screen height
   },
   topSection: {
-    width: "100%",
+    width: wp('100%'),
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   illustration: {
-    width: "70%",
-    height: 180,
+    width: wp('70%'),
+    height: hp('25%'), // Adjust height proportionally
     resizeMode: "contain",
-    marginBottom: 30,
+    marginBottom: hp('3%'),
   },
   title: {
-    fontSize: 28,
+    fontSize: wp('7%'), // Scales based on screen width
     color: "#4874A6",
     fontWeight: "bold",
-    textAlign: "left", // Align text to the left
-    marginTop: 40,
-    marginBottom: 30,
+    textAlign: "left",
+    marginTop: hp('2%'),
+    marginBottom: hp('3%'),
   },
   input: {
-    width: "100%",
+    width: wp('90%'), // Takes up 90% of screen width
     backgroundColor: "#FFFFFF",
     borderRadius: 10,
-    padding: 12,
-    marginVertical: 10,
+    padding: hp('2%'), // Scales padding
+    marginVertical: hp('1%'),
     borderWidth: 1,
     borderColor: "#4874A6",
-    fontSize: 16,
-    textAlign: "left", // Align placeholder text to the left
+    fontSize: wp('4%'),
+    textAlign: "left",
   },
   forgotPassword: {
     color: "#4874A6",
-    fontSize: 14,
-    textAlign: "center", // Align forgot password to the center
-    marginBottom: 20,
+    fontSize: wp('3.5%'),
+    textAlign: "center",
+    marginBottom: hp('2%'),
   },
   buttonContainer: {
-    width: "100%",
-    alignItems: "center", // Center the button horizontally
-    marginTop: 30,
+    width: wp('90%'),
+    alignItems: "center",
+    marginTop: hp('2%'),
   },
   button: {
-    width: "50%",
+    width: wp('40%'),
     backgroundColor: "#80A3CC",
     borderRadius: 10,
-    paddingVertical: 15,
+    paddingVertical: hp('2%'),
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    borderColor: "#000000",
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: wp('4%'),
     fontWeight: "bold",
   },
 });

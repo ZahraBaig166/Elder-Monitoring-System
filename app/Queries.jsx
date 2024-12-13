@@ -1,20 +1,28 @@
 import React from 'react';
+import {useEffect} from "react";
+
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import NavBar from '../components/NavBar'; 
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../backend/../hooks/useConfig";
+
 
 const QueriesPage = () => {
+  const { apiBaseUrl, loading, error } = useConfig();
+
+  
   return (
     <View style={styles.container}>
       <View style={styles.main}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton}>
-            <Icon name="arrow-left" size={20} color="#000" />
+            <Icon name="arrow-left" size={wp(5)} color="#000" />
           </TouchableOpacity>
           <Text style={styles.headerText}>QUERIES</Text>
           <TouchableOpacity style={styles.menuButton}>
-            <Icon name="ellipsis-v" size={20} color="#000" />
+            <Icon name="ellipsis-v" size={wp(5)} color="#000" />
           </TouchableOpacity>
         </View>
 
@@ -38,7 +46,7 @@ const QueriesPage = () => {
             placeholder="Search...."
             placeholderTextColor="#ADC1D8"
           />
-          <Icon name="search" size={18} style={styles.searchIcon} />
+          <Icon name="search" size={wp(4)} style={styles.searchIcon} />
         </View>
 
         {/* All Queries Section */}
@@ -46,7 +54,7 @@ const QueriesPage = () => {
           <View style={styles.queriesHeader}>
             <Text style={styles.allQueriesText}>ALL QUERIES</Text>
             <TouchableOpacity>
-              <Icon name="filter" size={20} color="#000" style={styles.filterIcon} />
+              <Icon name="filter" size={wp(5)} color="#000" style={styles.filterIcon} />
             </TouchableOpacity>
           </View>
           <ScrollView>
@@ -90,46 +98,46 @@ const styles = StyleSheet.create({
   },
   main: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 35,
+    paddingHorizontal: wp(5),
+    paddingTop: hp(5),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: hp(2),
   },
   backButton: {
-    padding: 10,
+    padding: wp(2.5),
   },
   headerText: {
-    fontSize: 18,
+    fontSize: wp(5),
     fontWeight: '700',
     color: '#1D1617',
   },
   menuButton: {
-    padding: 10,
+    padding: wp(2.5),
   },
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 10,
+    marginBottom: hp(2),
   },
   filterButton: {
-    borderWidth: 1.5,
+    borderWidth: wp(0.4),
     borderColor: '#ADC1D8',
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
+    borderRadius: wp(5),
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(4),
     backgroundColor: '#FFFFFF',
-    width: '30%',
+    width: wp(25),
   },
   activeFilter: {
     backgroundColor: '#ADC1D8',
     borderColor: '#ADC1D8',
   },
   filterText: {
-    fontSize: 12,
+    fontSize: wp(3),
     fontWeight: '700',
     color: '#000',
     textAlign: 'center',
@@ -141,60 +149,59 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F6F6F6',
-    borderRadius: 30,
-    paddingHorizontal: 15,
-    height: 50,
-    marginBottom: 20,
+    borderRadius: wp(8),
+    paddingHorizontal: wp(4),
+    height: hp(6),
+    marginBottom: hp(3),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: hp(0.5) },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: wp(1),
     elevation: 2,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: wp(3.5),
     color: '#ADC1D8',
-    paddingVertical: 5,
+    paddingVertical: hp(0.5),
   },
   searchIcon: {
-    marginLeft: 10,
+    marginLeft: wp(2),
     color: '#ADC1D8',
   },
   queriesContainer: {
     flex: 1,
     backgroundColor: '#F9F9F9',
-    borderRadius: 15,
-    padding: 10,
+    borderRadius: wp(5),
+    padding: wp(4),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: hp(0.5) },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowRadius: wp(2),
     elevation: 4,
   },
   queriesHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: hp(2),
   },
-  
   allQueriesText: {
-    fontSize: 18,
+    fontSize: wp(5),
     fontWeight: '700',
     color: '#000',
   },
   filterIcon: {
-    padding: 10,
+    padding: wp(2.5),
   },
   queryCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#ADC1D8',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 10,
+    borderRadius: wp(4),
+    padding: wp(4),
+    marginBottom: hp(2),
   },
   queryInfo: {
     flexDirection: 'row',
@@ -202,70 +209,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-    marginBottom: 60,
+    width: wp(12),
+    height: wp(12),
+    borderRadius: wp(6),
+    marginRight: wp(3),
   },
   queryDetails: {
     flex: 1,
   },
-
   userName: {
-    fontSize: 14,
+    fontSize: wp(4),
     fontWeight: '700',
     color: '#000',
-    marginBottom: 5,
+    marginBottom: hp(0.5),
   },
   querySubject: {
-    fontSize: 12,
+    fontSize: wp(3.5),
     fontWeight: '700',
-    color: '#1D1617',
-    marginBottom: 5,
+    color: '#406B9E',
+    marginBottom: hp(0.5),
   },
   queryDescription: {
-    fontSize: 12,
+    fontSize: wp(3.5),
     color: '#333',
   },
-  // respondButton: {
-  //   backgroundColor: '#FFFFFF',
-  //   borderRadius: 10,
-  //   paddingVertical: 8,
-  //   paddingHorizontal: 20,
-  //   marginLeft: 10, 
-  //   marginRight: -10,
-  //   shadowColor: '#000', 
-  //   shadowOffset: { width: 0, height: 2 },
-  //   shadowOpacity: 0.1,
-  //   shadowRadius: 4,
-  //   elevation: 2, 
-  // },
-  // respondButtonText: {
-  //   fontSize: 12,
-  //   fontWeight: '600',
-  //   color: '#000',
-  // },
   respondButton: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 },
+    borderRadius: wp(3),
+    paddingVertical: hp(0.8),
+    paddingHorizontal: wp(4),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: hp(0.5) },
     shadowOpacity: 0.4,
-    shadowRadius: 4,
+    shadowRadius: wp(2),
   },
   respondButtonText: {
-    fontSize: 12,
+    fontSize: wp(3.5),
     fontWeight: '600',
     color: '#000',
-  },
-  querySubject: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#406B9E', 
-    marginBottom: 5,
   },
 });
 

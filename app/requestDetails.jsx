@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Picker } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-// require('dotenv').config();
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../hooks/useConfig";
 
 const RequestDetails = () => {
   const router = useRouter();
@@ -10,89 +11,105 @@ const RequestDetails = () => {
   const [caregivers, setCaregivers] = useState([]);
   const [selectedCaregiver, setSelectedCaregiver] = useState(null);
 
+  const { apiBaseUrl, loading, error } = useConfig();
+
   useEffect(() => {
-    if (requestId && requestType) {
-      // Fetch the details of the selected request with requestType as part of the URL
-      const fetchRequestDetails = async () => {
+    if (loading || !apiBaseUrl || !requestId || !requestType) return;
+
+    // Fetch the details of the selected request
+    const fetchRequestDetails = async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl}/admin/requestDetails/${requestType}/${requestId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setRequestDetails(data);
+      } catch (err) {
+        console.error('Error fetching request details:', err);
+      }
+    };
+
+    fetchRequestDetails();
+  }, [apiBaseUrl, requestId, requestType, loading]); // Added dependencies
+
+  useEffect(() => {
+    if (requestType === 'family' && apiBaseUrl && !loading) {
+      // Fetch available caregivers only for family requests
+      const fetchCaregivers = async () => {
         try {
-          const response = await fetch(
-            `http://192.168.43.228:3000/admin/requestDetails/${requestType}/${requestId}` // Using /type/id format
-          );
-          const text = await response.text();
-  
-          const data = JSON.parse(text); // Parse JSON from text
-          setRequestDetails(data);
-        } catch (error) {
-          console.error('Error fetching request details:', error);
+          const response = await fetch(`${apiBaseUrl}/admin/caregivers`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          setCaregivers(data);
+        } catch (err) {
+          console.error('Error fetching caregivers:', err);
         }
       };
-  
-      fetchRequestDetails();
+
+      fetchCaregivers();
     }
-  }, [requestId, requestType]); 
-   // Trigger effect when requestId or requestType changes
-  useEffect(() => {
-    console.log("Request Type:", requestType); // Log whenever `requestType` changes
-    console.log(caregivers.length);
-  }, [requestType]);
-  
+  }, [requestType, apiBaseUrl, loading]);
+
   const handleApprove = async () => {
     try {
-      const response = await fetch(`http://192.168.43.228:3000/admin/approve/${requestType}/${requestId}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/approve/${requestType}/${requestId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error approving request:', errorData.message);
-        alert(`Approval failed: ${errorData.message}`);  // Use backticks for string interpolation
+        alert(`Approval failed: ${errorData.message}`);
         return;
       }
-  
+
       alert('Request approved successfully!');
-      router.push({ pathname: '/ViewRequest' });
-    } catch (error) {
-      console.error('Error approving request in frontend file:', error);
+      router.push('/ViewRequest');
+    } catch (err) {
+      console.error('Error approving request:', err);
       alert('An unexpected error occurred.');
     }
   };
-  
 
+  const handleDecline = async () => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/admin/decline/${requestType}/${requestId}`, {
+        method: 'POST',
+      });
 
-  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to decline the request');
+      }
 
-const handleDecline = async () => {
-  try {
-    const response = await fetch(`http://192.168.43.228:3000/admin/decline/${requestType}/${requestId}`, {
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to decline the request');
+      alert('Request declined successfully!');
+      router.push('/ViewRequest');
+    } catch (err) {
+      console.error('Error declining request:', err);
+      alert(err.message || 'Failed to decline request. Please try again.');
     }
+  };
 
-    alert('Request declined successfully!');
-    router.push({ pathname: '/ViewRequest' }); // Navigate back to the list page
-  } catch (error) {
-    console.error('Error declining request:', error);
-    alert(error.message || 'Failed to decline request. Please try again.');
-  }
-};
-
-
-  if (!requestDetails) {
+  if (loading || !apiBaseUrl) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <Text>Loading configuration...</Text>
       </View>
     );
   }
 
-
+  if (!requestDetails) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading request details...</Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Request Details</Text>
@@ -111,28 +128,27 @@ const handleDecline = async () => {
       <Text style={styles.info}>Patient Emergency Contact: {requestDetails.patient_emergency_contact}</Text>
 
       <View>
-      <Text> IM IN SJSJDJ</Text>
-      {requestType === 'family' && (
-  <>
-    <Text style={styles.info}>Assign Caregiver:</Text>
-    {caregivers.length > 0 ? (
-      <Picker
-        selectedValue={selectedCaregiver}
-        onValueChange={(itemValue) => setSelectedCaregiver(itemValue)}
-        style={styles.picker}
-      >
-        <Picker.Item label="Select a Caregiver" value={null} />
-        {caregivers.map((caregiver) => (
-          <Picker.Item key={caregiver.id} label={caregiver.name} value={caregiver.id} />
-        ))}
-      </Picker>
-    ) : (
-      <Text>No caregivers available</Text>
-    )}
-  </>
-)}
-    </View>
-     
+        <Text>IM IN SJSJDJ</Text>
+        {requestType === 'family' && (
+          <>
+            <Text style={styles.info}>Assign Caregiver:</Text>
+            {caregivers.length > 0 ? (
+              <Picker
+                selectedValue={selectedCaregiver}
+                onValueChange={(itemValue) => setSelectedCaregiver(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Select a Caregiver" value={null} />
+                {caregivers.map((caregiver) => (
+                  <Picker.Item key={caregiver.id} label={caregiver.name} value={caregiver.id} />
+                ))}
+              </Picker>
+            ) : (
+              <Text>No caregivers available</Text>
+            )}
+          </>
+        )}
+      </View>
 
       {/* Approve or Decline buttons */}
       <TouchableOpacity style={styles.approveButton} onPress={handleApprove}>
@@ -148,7 +164,7 @@ const handleDecline = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: wp('5%'), // Responsive padding
   },
   loadingContainer: {
     flex: 1,
@@ -156,24 +172,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 22,
+    fontSize: wp('6%'), // Responsive title font size
     fontWeight: '700',
-    marginBottom: 20,
+    marginBottom: hp('2%'), // Responsive margin
   },
   info: {
-    fontSize: 16,
-    marginBottom: 10,
+    fontSize: wp('4%'), // Responsive font size for text
+    marginBottom: hp('1.5%'), // Responsive margin
   },
   approveButton: {
     backgroundColor: '#4CAF50',
-    padding: 10,
-    borderRadius: 5,
-    marginVertical: 10,
+    padding: wp('3%'),
+    borderRadius: wp('2%'),
+    marginVertical: hp('2%'),
   },
   declineButton: {
     backgroundColor: '#F44336',
-    padding: 10,
-    borderRadius: 5,
+    padding: wp('3%'),
+    borderRadius: wp('2%'),
   },
   buttonText: {
     color: '#fff',
@@ -181,12 +197,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   picker: {
-    height: 50,
+    height: hp('6%'),
     width: '100%',
     backgroundColor: '#F6F6F6',
-    borderRadius: 5,
-    marginBottom: 20,
-    paddingLeft: 10,
+    borderRadius: wp('2%'),
+    marginBottom: hp('2%'),
+    paddingLeft: wp('2%'),
   },
 });
 

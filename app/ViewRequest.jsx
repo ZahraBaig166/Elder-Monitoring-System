@@ -1,32 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Link } from 'expo-router'; // For navigation
-// require('dotenv').config();
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { Link } from "expo-router"; // For navigation
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import useConfig from "../hooks/useConfig";
 
 const ViewRequest = () => {
-  const [pendingRequests, setPendingRequests] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]); // State for pending requests
+  const { apiBaseUrl, loading, error } = useConfig();
 
   // Fetch pending requests (Caregiver & Family)
   useEffect(() => {
+    if (loading || !apiBaseUrl) return; // Wait for apiBaseUrl to load
     const fetchRequests = async () => {
       try {
-        const response = await fetch('http://192.168.43.228:3000/admin/pending');
+        const response = await fetch(`${apiBaseUrl}/admin/pending`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
-        console.log('Received data:', data); // Debugging log
+        console.log("Received data:", data); // Debugging log
         const allRequests = [
-          ...(data.caregivers || []).map((item) => ({ ...item, type: 'Caregiver' })),
-          ...(data.families || []).map((item) => ({ ...item, type: 'Family' })),
+          ...(data.caregivers || []).map((item) => ({ ...item, type: "Caregiver" })),
+          ...(data.families || []).map((item) => ({ ...item, type: "Family" })),
         ];
-        console.log('Processed requests:', allRequests); // Debugging log
+        console.log("Processed requests:", allRequests); // Debugging log
         setPendingRequests(allRequests);
       } catch (error) {
-        console.error('Error fetching pending requests:', error);
+        console.error("Error fetching pending requests:", error);
       }
     };
-  
+
     fetchRequests();
-  }, []);
-  
+  }, [loading, apiBaseUrl]); // Depend on loading and apiBaseUrl
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text>Error: {error.message}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.main}>
@@ -41,7 +63,7 @@ const ViewRequest = () => {
             <Link
               key={index}
               href={{
-                pathname: '/requestDetails',
+                pathname: "/requestDetails",
                 params: { requestId: request.id, requestType: request.type },
               }}
             >
@@ -61,32 +83,32 @@ const ViewRequest = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   main: {
     flex: 1,
-    padding: 20,
+    padding: wp("5%"),
   },
   header: {
-    marginBottom: 10,
+    marginBottom: hp("2%"),
   },
   headerText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
+    fontSize: wp("5%"),
+    fontWeight: "700",
+    color: "#000",
   },
   requestsContainer: {
-    marginTop: 10,
+    marginTop: hp("2%"),
   },
   requestCard: {
-    padding: 15,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 10,
-    marginBottom: 10,
+    padding: wp("4%"),
+    backgroundColor: "#f0f0f0",
+    borderRadius: wp("2%"),
+    marginBottom: hp("2%"),
   },
   requestText: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: wp("4%"),
+    color: "#333",
   },
 });
 

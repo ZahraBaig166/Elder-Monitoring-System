@@ -1,15 +1,24 @@
 import React from "react";
+import {useEffect} from "react";
+
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView,TouchableOpacity } from "react-native";
 import { LineChart,BarChart } from "react-native-chart-kit";
 import NavBar from '../components/NavBar';
 import { useRouter } from "expo-router";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import useConfig from "../backend/../hooks/useConfig";
+
 
 const DashboardHeartRateAndStats = () => {
   const router = useRouter();  // Initialize useRouter
+  const { apiBaseUrl, loading, error } = useConfig();
+
   const handlemed = () => {
     router.push("/Medication"); 
     
   };
+  
+  
   return (
     <View style={{ flex: 1 }}>
             {/* Header Section */}
