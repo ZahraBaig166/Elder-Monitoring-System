@@ -173,15 +173,17 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
         if (!validStatus.includes(pendingFamily.patient_status)) {
           return res.status(400).json({ message: 'Invalid status value' });
         }
+        console.log("PENDING FAMILY DATA IN ADMIN ROUTE",pendingFamily);
 
         // Create new patient
         const newPatient = await Patient.create({
           name: pendingFamily.patient_name,
           age: pendingFamily.patient_age,
-          medical_conditions: pendingFamily.medical_conditions,
-          emergency_contact: pendingFamily.emergency_contact,
+          medical_conditions: pendingFamily.patient_medical_conditions,  // Corrected this line
+          emergency_contact: pendingFamily.patient_emergency_contact,
           status: pendingFamily.patient_status,
         });
+
 
         // Log the created patient for debugging
         console.log('Created New Patient:', newPatient);

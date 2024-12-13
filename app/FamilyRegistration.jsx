@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import PhoneInput from "react-native-phone-number-input";
+import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import useConfig from "../backend/../hooks/useConfig";
@@ -26,7 +27,7 @@ const FamilyRegistration = () => {
   const [patientName, setPatientName] = useState("");
   const [patientAge, setPatientAge] = useState("");
   const [medicalCondition, setMedicalCondition] = useState("");
-  const [patientStatus, setPatientStatus] = useState("");
+  const [patientStatus, setPatientStatus] = useState("Stable"); // Default option
   const [emergencyContact, setEmergencyContact] = useState("");
   const phoneInput = useRef(null);
   const { apiBaseUrl, loading, error } = useConfig();
@@ -61,7 +62,7 @@ const FamilyRegistration = () => {
       console.log("Response Text: ", responseText);
 
       if (response.ok) {
-        alert(responseText);
+        alert("Family Registration Successful!\n" + responseText);
         router.push("/");
       } else {
         alert("Error registering family: " + responseText || "Unknown error");
@@ -79,7 +80,7 @@ const FamilyRegistration = () => {
     >
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
-        keyboardShouldPersistTaps="handled" // Ensures taps are passed through to inputs
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.container}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.push("/")}>
@@ -154,9 +155,21 @@ const FamilyRegistration = () => {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Patient Status:</Text>
-            <TextInput style={styles.input} value={patientStatus} onChangeText={setPatientStatus} />
-          </View>
+  <Text style={styles.label}>Patient Status:</Text>
+  <View style={styles.pickerContainer}>
+    <Picker
+      selectedValue={patientStatus}
+      onValueChange={(itemValue) => setPatientStatus(itemValue)}
+      style={styles.picker} // Apply style to Picker
+      dropdownIconColor="#000" // Black color for dropdown icon
+    >
+      <Picker.Item label="stable" value="stable" style={styles.pickerItem} />
+      <Picker.Item label="moderate" value="moderate" style={styles.pickerItem} />
+      <Picker.Item label="critical" value="critical" style={styles.pickerItem} />
+    </Picker>
+  </View>
+</View>
+
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Emergency Contact:</Text>
             <PhoneInput
@@ -188,7 +201,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     flexGrow: 1,
-    paddingBottom: hp("5%"), // Space at the bottom of the form
+    paddingBottom: hp("5%"),
   },
   backButton: {
     padding: wp("2%"),
@@ -216,6 +229,12 @@ const styles = StyleSheet.create({
     padding: wp("3%"),
     backgroundColor: "#F9F9F9",
     fontSize: wp("4%"),
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: wp("2%"),
+    backgroundColor: "Black",
   },
   patientSectionText: {
     fontSize: wp("5%"),

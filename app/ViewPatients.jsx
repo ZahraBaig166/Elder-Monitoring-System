@@ -14,35 +14,47 @@ import NavBar from '../components/NavBarPatients';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
 
-
 const ViewPatients = () => {
-  const [patients, setPatients] = useState([]); 
+  const [patients, setPatients] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [isLoading, setIsLoading] = useState(true); 
-  
+  const [isLoading, setIsLoading] = useState(true);
+
   const { apiBaseUrl, loading, error } = useConfig();
 
-
   useEffect(() => {
+    // Fetch patients only when apiBaseUrl is ready
     const fetchPatients = async () => {
+      if (!apiBaseUrl) {
+        return; // Do nothing if apiBaseUrl is not ready
+      }
+
+      setIsLoading(true);
       try {
-        const response = await fetch('${apiBaseUrl}/patients'); 
+        const response = await fetch(`${apiBaseUrl}/patients`);
         const data = await response.json();
-        setPatients(data); 
+        setPatients(data);
       } catch (error) {
         console.error('Error fetching patients:', error);
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
     fetchPatients();
-  }, []);
+  }, [apiBaseUrl]); // Trigger fetch whenever apiBaseUrl is ready
 
   // Filter patients based on search text
   const filteredPatients = patients.filter((patient) =>
     patient.name.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  if (loading || isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -78,9 +90,7 @@ const ViewPatients = () => {
               <Icon name="filter" size={20} color="#000" style={styles.filterIcon} />
             </TouchableOpacity>
           </View>
-          {isLoading ? (
-            <ActivityIndicator size="large" color="#000" />
-          ) : filteredPatients.length > 0 ? (
+          {filteredPatients.length > 0 ? (
             <ScrollView>
               {filteredPatients.map((patient) => (
                 <View key={patient.id} style={styles.patientCard}>
@@ -277,6 +287,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: '#333',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

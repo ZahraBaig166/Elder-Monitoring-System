@@ -1,19 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import NavBar from '../components/NavBarPatients';
 import { useRouter } from 'expo-router';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-
 import useConfig from "../backend/../hooks/useConfig";
 
 const { width } = Dimensions.get('window');
 
 const DoctorDashboard = () => {
   const [counts, setCounts] = useState({ total: 0, critical: 0, moderate: 0, stable: 0 });
+  const [loading, setLoading] = useState(true); // Add loading state for counts
+  const [criticalPatients, setCriticalPatients] = useState([]);
+  const [isMedScheduleExpanded, setIsMedScheduleExpanded] = useState(false); 
+  const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
-  const { apiBaseUrl, loading, error } = useConfig();
+  const { apiBaseUrl, loading: configLoading, error } = useConfig();
 
+  // Fetch Patient Counts
+  useEffect(() => {
+    if (!apiBaseUrl) return; // Wait for apiBaseUrl to be available
+
+    const fetchPatientCounts = async () => {
+      setLoading(true); // Set loading to true while fetching counts
+      try {
+        const response = await fetch(`${apiBaseUrl}/patients/counts`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setCounts(data);
+      } catch (error) {
+        console.error('Error fetching patient counts:', error);
+      } finally {
+        setLoading(false); // Stop loading once data is fetched
+      }
+    };
+
+    fetchPatientCounts();
+  }, [apiBaseUrl]); // Re-fetch when apiBaseUrl changes
+
+  // Fetch Critical Patients
+  useEffect(() => {
+    if (!apiBaseUrl) return; // Wait for apiBaseUrl to be available
+
+    const fetchCriticalPatients = async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl}/patients/critical`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setCriticalPatients(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error fetching critical patients:', error);
+        setCriticalPatients([]);
+      }
+    };
+
+    fetchCriticalPatients();
+  }, [apiBaseUrl]); // Re-fetch when apiBaseUrl changes
 
   const PatientInfoCard = ({ counts }) => {
     return (
@@ -43,175 +89,150 @@ const DoctorDashboard = () => {
   };
 
   const CriticalPatientList = () => {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [criticalPatients, setCriticalPatients] = useState([]);
-    const router = useRouter();
-
-  useEffect(() => {
-    const fetchCriticalPatients = async () => {
-      try {
-        const response = await fetch(`${apiBaseUrl}/patients/critical`);
-        const data = await response.json();
-        console.log('Critical Patients API Response:', data); 
-        setCriticalPatients(Array.isArray(data) ? data : []); 
-      } catch (error) {
-        console.error('Error fetching critical patients:', error);
-        setCriticalPatients([]); 
-      }
+    const handleToggle = () => {
+      setIsExpanded((prevState) => !prevState);
     };
 
-    fetchCriticalPatients();
-  }, []);
-
-  const handleToggle = () => {
-    setIsExpanded((prevState) => !prevState);
-  };
-
-  const handleListPress = () => {
-    router.push('/ViewPatients'); 
-  };
-
-  return (
-    <View style={styles.criticalListContainer}>
-      <TouchableOpacity onPress={handleToggle} style={styles.headerContainer}>
-        <Text style={styles.title}>Critical Patient List</Text>
-        <FontAwesome
-          name={isExpanded ? 'chevron-up' : 'chevron-down'}
-          size={22}
-          color="#000"
-          style={styles.filterIcon}
-        />
-      </TouchableOpacity>
-
-      {isExpanded && (
-        criticalPatients.length > 0 ? (
-          criticalPatients.map((patient) => (
-            <View key={patient.patient_id} style={styles.card}>
-              <FontAwesome name="user" size={24} color="#000" style={styles.avatar} />
-              <View style={styles.infoContainer}>
-                <Text style={styles.name}>{patient.name}</Text>
-                <Text style={styles.condition}>{patient.medical_conditions}</Text>
-              </View>
-            </View>
-          ))
-        ) : (
-          <Text>No critical patients found.</Text>
-        )
-      )}
-    </View>
-  );
-};
-const MedicationScheduleList = () => {
-  const [isMedScheduleExpanded, setIsMedScheduleExpanded] = useState(false);  // New state for medication list
-  const router = useRouter();
-  const handleMedToggle = () => {
-    setIsMedScheduleExpanded(prevState => !prevState);
-  };
-  const handleViewSchedule = () => {
-    // Navigate to the ViewPatient screen
-    router.push('/Medication');  // Replace '/ViewPatient' with the actual path of the ViewPatient screen
-  };
-  return (
-    <View style={styles.criticalListContainer}>
-      <TouchableOpacity onPress={handleMedToggle} style={styles.headerContainer}>
-        <Text style={styles.title}>Medication Schedule</Text>
-        <FontAwesome
-          name={isMedScheduleExpanded ? "chevron-up" : "chevron-down"}
-          size={22}
-          color="#000"
-          style={styles.filterIcon}
-        />
-      </TouchableOpacity>
-
-      {isMedScheduleExpanded && (
-        <View style={styles.medicationList}>
-          {[1, 2, 3].map((item, index) => (
-            <View key={index} style={styles.card}>
-              <FontAwesome name="medkit" size={24} color="#000" style={styles.avatar} />
-              <View style={styles.infoContainer}>
-                <Text style={styles.name}>Patient Name</Text>
-                <Text style={styles.medicationname}>Medication Name</Text>
-                <Text style={styles.condition}>Time: 8:00 AM</Text>
-                <TouchableOpacity onPress={handleViewSchedule} style={styles.ScheduleButton}>
-                  <Text style={styles.ScheduleText}>View Schedule</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-};
-
-const ChartWithHeading = ({ title, source }) => {
-  return (
-    <View style={styles.chartContainer}>
-      <Text style={styles.chartTitle}>{title}</Text>
-      <Image source={source} style={styles.chartImage} />
-    </View>
-  );
-};
-
-  useEffect(() => {
-    const fetchPatientCounts = async () => {
-      try {
-        const response = await fetch(`${apiBaseUrl}/patients/counts`); 
-        const data = await response.json();
-        setCounts(data);
-      } catch (error) {
-        console.error('Error fetching patient counts:', error);
-      }
+    const handleListPress = () => {
+      router.push('/ViewPatients'); 
     };
 
-    fetchPatientCounts();
-  }, []);
+    return (
+      <View style={styles.criticalListContainer}>
+        <TouchableOpacity onPress={handleToggle} style={styles.headerContainer}>
+          <Text style={styles.title}>Critical Patient List</Text>
+          <FontAwesome
+            name={isExpanded ? 'chevron-up' : 'chevron-down'}
+            size={22}
+            color="#000"
+            style={styles.filterIcon}
+          />
+        </TouchableOpacity>
+
+        {isExpanded && (
+          criticalPatients.length > 0 ? (
+            criticalPatients.map((patient) => (
+              <View key={patient.patient_id} style={styles.card}>
+                <FontAwesome name="user" size={24} color="#000" style={styles.avatar} />
+                <View style={styles.infoContainer}>
+                  <Text style={styles.name}>{patient.name}</Text>
+                  <Text style={styles.condition}>{patient.medical_conditions}</Text>
+                </View>
+              </View>
+            ))
+          ) : (
+            <Text>No critical patients found.</Text>
+          )
+        )}
+      </View>
+    );
+  };
+
+  const MedicationScheduleList = () => {
+    const handleMedToggle = () => {
+      setIsMedScheduleExpanded(prevState => !prevState);
+    };
+    
+    const handleViewSchedule = () => {
+      router.push('/Medication');
+    };
+
+    return (
+      <View style={styles.criticalListContainer}>
+        <TouchableOpacity onPress={handleMedToggle} style={styles.headerContainer}>
+          <Text style={styles.title}>Medication Schedule</Text>
+          <FontAwesome
+            name={isMedScheduleExpanded ? "chevron-up" : "chevron-down"}
+            size={22}
+            color="#000"
+            style={styles.filterIcon}
+          />
+        </TouchableOpacity>
+
+        {isMedScheduleExpanded && (
+          <View style={styles.medicationList}>
+            {[1, 2, 3].map((item, index) => (
+              <View key={index} style={styles.card}>
+                <FontAwesome name="medkit" size={24} color="#000" style={styles.avatar} />
+                <View style={styles.infoContainer}>
+                  <Text style={styles.name}>Patient Name</Text>
+                  <Text style={styles.medicationname}>Medication Name</Text>
+                  <Text style={styles.condition}>Time: 8:00 AM</Text>
+                  <TouchableOpacity onPress={handleViewSchedule} style={styles.ScheduleButton}>
+                    <Text style={styles.ScheduleText}>View Schedule</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const ChartWithHeading = ({ title, source }) => {
+    return (
+      <View style={styles.chartContainer}>
+        <Text style={styles.chartTitle}>{title}</Text>
+        <Image source={source} style={styles.chartImage} />
+      </View>
+    );
+  };
+
+  if (configLoading || loading) {
+    return (
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.dashboardContainer}>
-    <ScrollView style={styles.dashboadContainer}>
-      <View style={styles.header}>
-        <Image
-          source={{ uri: 'https://placeholder.pics/svg/50x50' }}
-          style={styles.profileImage}
-        />
-        <Text style={styles.welcomeText}>Welcome Name</Text>
-        <Text style={styles.subText}>Have a Nice day</Text>
-        <View style={styles.searchContainer}>
-          <Text style={styles.searchText}>Search....</Text>
+      <ScrollView style={styles.dashboadContainer}>
+        <View style={styles.header}>
           <Image
-            source={{ uri: 'https://placeholder.pics/svg/20x20' }}
-            style={styles.searchIcon}
+            source={{ uri: 'https://placeholder.pics/svg/50x50' }}
+            style={styles.profileImage}
           />
+          <Text style={styles.welcomeText}>Welcome Name</Text>
+          <Text style={styles.subText}>Have a Nice day</Text>
+          <View style={styles.searchContainer}>
+            <Text style={styles.searchText}>Search....</Text>
+            <Image
+              source={{ uri: 'https://placeholder.pics/svg/20x20' }}
+              style={styles.searchIcon}
+            />
+          </View>
         </View>
-      </View>
-      <PatientInfoCard counts={counts} />
-      <TouchableOpacity
-          style={styles.viewAllButton}
-          onPress={() => router.push('/ViewPatients')}
-        >
-          <Text style={styles.viewAllButtonText}>View All Patients</Text>
-        </TouchableOpacity>
-      <CriticalPatientList />
-      <MedicationScheduleList />
-      <ChartWithHeading
-        title="Patient Status Transition Trends"
-        source={require('../assets/images/G1.png')}
-      />
-      <ChartWithHeading
-        title="Heart Rate Trends"
-        source={require('../assets/images/G2.png')}
-      />
-      <ChartWithHeading
-        title="Blood Pressure Analysis"
-        source={require('../assets/images/G3.png')}
-      />
-      <ChartWithHeading
-        title="Activity Levels Over Time"
-        source={require('../assets/images/G4.png')}
-      />
-    
-    </ScrollView>
+        <PatientInfoCard counts={counts} />
+        <TouchableOpacity
+            style={styles.viewAllButton}
+            onPress={() => router.push('/ViewPatients')}
+          >
+            <Text style={styles.viewAllButtonText}>View All Patients</Text>
+          </TouchableOpacity>
+        <CriticalPatientList />
+        <MedicationScheduleList />
+        <ChartWithHeading
+          title="Patient Status Transition Trends"
+          source={require('../assets/images/G1.png')}
+        />
+        <ChartWithHeading
+          title="Heart Rate Trends"
+          source={require('../assets/images/G2.png')}
+        />
+        <ChartWithHeading
+          title="Blood Pressure Analysis"
+          source={require('../assets/images/G3.png')}
+        />
+        <ChartWithHeading
+          title="Activity Levels Over Time"
+          source={require('../assets/images/G4.png')}
+        />
+      
+      </ScrollView>
       <NavBar />
     </View>
   );

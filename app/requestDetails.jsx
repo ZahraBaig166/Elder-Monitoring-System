@@ -62,35 +62,49 @@ const RequestDetails = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
+  
       if (!response.ok) {
         const errorData = await response.json();
         alert(`Approval failed: ${errorData.message}`);
         return;
       }
-      alert("Request approved successfully!");
-      router.push("/ViewRequest");
+  
+      // Show success alert after approval
+      alert("Request has been approved successfully!");
+      
+      // Redirect to ViewRequest page after approval
+      router.replace("/ViewRequest");
+  
     } catch (err) {
       console.error("Error approving request:", err);
       alert("An unexpected error occurred.");
     }
   };
+  
 
   const handleDecline = async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/decline/${requestType}/${requestId}`, {
         method: "POST",
       });
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to decline the request");
       }
-      alert("Request declined successfully!");
+  
+      // Show success alert after decline
+      alert("Request has been declined successfully!");
+      
+      // Redirect to ViewRequest page after decline
       router.push("/ViewRequest");
+  
     } catch (err) {
       console.error("Error declining request:", err);
       alert(err.message || "Failed to decline request. Please try again.");
     }
   };
+  
 
   if (loading || !apiBaseUrl) {
     return (

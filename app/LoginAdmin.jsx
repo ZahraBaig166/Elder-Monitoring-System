@@ -1,5 +1,4 @@
-import React, { useState,useEffect } from "react";
-
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -14,38 +13,16 @@ import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
 
-// require('dotenv').config();
-
-
 const LoginAdmin = () => {
   const { apiBaseUrl, loading, error } = useConfig();
-
   const router = useRouter();
-  // const [config, setConfig] = useState(null);
-  // State to manage email and password
-  // const [apiBaseUrl, setApiBaseUrl] = useState(""); // State for apiBaseUrl
-
-
-  // useEffect(() => {
-  //   // Fetch the environment variables from the backend
-  //   fetch('http://192.168.18.176:4000/config')
-  //     .then(response => response.json())
-  //     .then(data => {
-  //       console.log('Received Data in front end:', data); // This will print the data to the terminal/console
-  //       setConfig(data); // Update the state with the received data
-  //       setApiBaseUrl(data.apiBaseUrl); // Store apiBaseUrl separately
-  //       console.log('API Base URL:', data.apiBaseUrl); // You can use apiBaseUrl in your logic here
-  //     })
-  //     .catch(error => console.error('Error fetching config:', error));
-  // }, []);
-
+  
   // State to manage email and password
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  
   const handleLogin = async () => {
     try {
-
       console.log("Email:", email);
       console.log("Password:", password);
 
@@ -60,10 +37,12 @@ const LoginAdmin = () => {
       
       const data = await response.json(); // Parse the JSON response
       console.log(data.message); // Log the response message
-  
+
       if (response.ok) {
-        // If login is successful, navigate to the dashboard
-        router.push("/Dashboard");
+        // If login is successful, redirect to the dashboard
+        setTimeout(() => {
+          router.push("/Dashboard");
+        }, 500); // Redirect after a brief delay to ensure smooth user experience
       } else {
         // Handle login error
         if (data.message === "Invalid email (username)") {
@@ -79,7 +58,6 @@ const LoginAdmin = () => {
       Alert.alert("Error", "An error occurred while logging in. Please try again.");
     }
   };
-  
 
   return (
     <ImageBackground
@@ -133,6 +111,7 @@ const LoginAdmin = () => {
     </ImageBackground>
   );
 };
+
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,

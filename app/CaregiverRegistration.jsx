@@ -8,6 +8,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { useRouter } from "expo-router";
@@ -58,14 +59,30 @@ const CaregiverRegistration = () => {
       console.log("Response Text:", responseText);
 
       if (response.ok) {
-        alert(responseText);
-        router.push("/");
+        // Success alert and redirection after a brief delay
+        Alert.alert(
+          "Registration Successful",
+          "Caregiver registered successfully!",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                // Redirect back to start screen after alert
+                setTimeout(() => {
+                  router.push("/"); // Redirect to the start screen
+                }, 1500); // Wait for 1.5 seconds before redirecting
+              },
+            },
+          ],
+          { cancelable: false }
+        );
       } else {
-        alert("Error registering caregiver: " + responseText || "Unknown error");
+        // Handle form submission failure
+        Alert.alert("Error", responseText || "Error registering caregiver.");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("Error submitting the form");
+      Alert.alert("Error", "An error occurred while submitting the form.");
     }
   };
 

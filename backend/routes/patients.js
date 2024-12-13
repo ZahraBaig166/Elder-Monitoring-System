@@ -28,9 +28,15 @@ router.get('/patients/critical', async (req, res) => {
 router.get('/patients/counts', async (req, res) => {
   try {
     const total = await Patient.count();
-    const critical = await Patient.count({ where: { status: 'Critical' } });
-    const moderate = await Patient.count({ where: { status: 'Moderate' } });
-    const stable = await Patient.count({ where: { status: 'Stable' } });
+    console.log("total",total)
+    const critical = await Patient.count({ where: { status: 'critical' } });
+    console.log("critical",critical)
+
+    const moderate = await Patient.count({ where: { status: 'moderate' } });
+    console.log("moderate",moderate)
+
+    const stable = await Patient.count({ where: { status: 'stable' } });
+    console.log("stable",stable)
 
     res.status(200).json({ total, critical, moderate, stable });
   } catch (error) {
