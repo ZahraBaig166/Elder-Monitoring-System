@@ -39,6 +39,7 @@ router.post('/submit/family', async (req, res) => {
     // Explicitly assign relationship_to_patient to relationship
     const newPendingFamily = await PendingFamily.create({
       name,
+
       email,
       relationship_to_patient: relationship, // Explicitly assign the relationship
       phone_number:phone,            // This should match the model field
@@ -117,15 +118,6 @@ router.post('/login/family', async (req, res) => {
       return res.status(400).send('Invalid credentials');
     }
 
-    // // Generate a JWT token
-    // const token = jwt.sign(
-    //   { id: caregiver.id, role: 'caregiver' }, // Payload with caregiver id and role
-    //   'your_secret_key', // Secret key for signing the JWT
-    //   { expiresIn: '1h' } // Set token expiration to 1 hour
-    // );
-
-    // // Send response with token
-    // res.status(200).send({ message: 'Family logged in successfully', token });
   } catch (error) {
     console.error(error);
     res.status(500).send('Error logging in caregiver');

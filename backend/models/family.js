@@ -1,6 +1,5 @@
 'use strict';
 const { DataTypes } = require('sequelize');
-
 const { Model } = require('sequelize');
 const bcrypt = require('bcrypt');
 
@@ -9,14 +8,13 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // Define the association with the Patient model (assuming a 'patients' model exists)
       FamilyMember.belongsTo(models.Patient, {
-        foreignKey: 'patient_id', // Foreign key linking to Patient model
-        onDelete: 'CASCADE', // Delete family member if patient is deleted
+        foreignKey: 'patient_id', 
+        onDelete: 'CASCADE', 
       });
       FamilyMember.hasMany(models.Query, {
         foreignKey: 'raised_by',
-        as: 'queries', // Alias to fetch queries raised by the family member
+        as: 'queries',
       });
-      
     }
 
     // Method to check if the password matches
@@ -27,10 +25,10 @@ module.exports = (sequelize, DataTypes) => {
 
   FamilyMember.init(
     {
-      family_id: {
+      user_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true, // Automatically increment the ID
+        autoIncrement: true,
       },
       name: {
         type: DataTypes.STRING,
@@ -54,10 +52,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         onDelete: 'CASCADE', // Optionally, delete family member if the related patient is deleted
       },
-      age: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
       address: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -66,19 +60,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false, // Relationship to the patient (e.g., son, daughter, etc.)
       },
-      date_created: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      last_login: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
     },
     {
       sequelize,
       modelName: 'family',
       tableName: 'family', // Name of the table
+      timestamps: false,  // This enables automatic management of createdAt and updatedAt
+      // underscored: true,  // Use snake_case for the database fields
       hooks: {
         beforeCreate: async (familyMember) => {
           const salt = await bcrypt.genSalt(10);
@@ -97,5 +85,3 @@ module.exports = (sequelize, DataTypes) => {
 
   return FamilyMember;
 };
-
-

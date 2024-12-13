@@ -31,6 +31,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      address: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       patient_id: {
         type: Sequelize.BIGINT,
         references: {
@@ -38,11 +42,16 @@ module.exports = {
           key: 'patient_id',
         },
         onDelete: 'CASCADE',
-      },
-      date_created: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
       },
+      relationship: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      // date_updated: {
+      //   type: Sequelize.DATE,
+      //   defaultValue: Sequelize.NOW,
+      // },
+
       last_login: {
         type: Sequelize.DATE,
         allowNull: true,

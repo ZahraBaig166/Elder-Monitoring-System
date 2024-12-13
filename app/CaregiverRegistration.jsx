@@ -37,7 +37,7 @@ const CaregiverRegistration = () => {
     console.log("caregiver data,",caregiverData);
 
     try {
-      const response = await fetch('http://10.135.53.147:3000/submit/caregiver', {
+      const response = await fetch('http://192.168.43.228:3000/submit/caregiver', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

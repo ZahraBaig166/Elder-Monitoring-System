@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "postgres",
-    "password": "khunsha",
+    "password": "Zahra166",
     "database": "ElderlyMonitoring",
     "host": "localhost",
     "dialect": "postgres", 
@@ -9,7 +9,7 @@
   },
   "test": {
     "username": "postgres",
-    "password": "khunsha",
+    "password": "Zahra166",
     "database": "ElderlyMonitoring_test",
     "host": "localhost",
     "dialect": "postgres",
@@ -17,7 +17,7 @@
   },
   "production": {
     "username": "postgres",
-    "password": "khunsha",
+    "password": "Zahra166",
     "database": "ElderlyMonitoring_prod",
     "host": "localhost",
     "dialect": "postgres",

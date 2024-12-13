@@ -11,39 +11,33 @@ import {
 import { useRouter } from "expo-router";
 
 const LoginUser = () => {
-  const [email, setEmail] = useState("");  // Store email input value
-  const [password, setPassword] = useState("");  // Store password input value
+  const [email, setEmail] = useState("");  
+  const [password, setPassword] = useState("");  
   const router = useRouter();
-
+console.log("email ",email);
+console.log("password",password);
   // Function to handle caregiver login
   const handleLoginCaregiver = async () => {
     if (!email || !password) {
       alert("Please fill in both email and password");
       return;
-    }
-
-    try {
-      const response = await fetch("/login/caregiver", {
+    } console.log("hello i m in caregiver button")
+      const response = await fetch("http://192.168.43.228:3000/login/caregiver", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),  // Sending email and password to backend
+        body: JSON.stringify({ email, password }),  
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // On successful login, navigate to DoctorDashboard
         router.push("/DoctorDashboard");
       } else {
-        // Handle error (e.g., wrong credentials)
         alert(data.message || "Login failed");
       }
-    } catch (error) {
-      console.error("Error logging in caregiver:", error);
-      alert("Error logging in caregiver");
-    }
+
   };
 
   // Function to handle family login
@@ -51,30 +45,22 @@ const LoginUser = () => {
     if (!email || !password) {
       alert("Please fill in both email and password");
       return;
-    }
-
-    try {
-      const response = await fetch("/login/family", {
+    } console.log("hello i m in caregiver button")
+      const response = await fetch("http://192.168.43.228:3000/login/family", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),  // Sending email and password to backend
+        body: JSON.stringify({ email, password }),  
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // On successful login, navigate to FamilyDashboard
         router.push("/FamilyDashboard");
       } else {
-        // Handle error (e.g., wrong credentials)
         alert(data.message || "Login failed");
       }
-    } catch (error) {
-      console.error("Error logging in family:", error);
-      alert("Error logging in family");
-    }
   };
 
   return (

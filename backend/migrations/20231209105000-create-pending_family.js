@@ -51,7 +51,7 @@ module.exports = {
         allowNull: true, // Could be empty if there are no medical conditions
       },
       patient_status: {
-        type: Sequelize.ENUM('stable', 'critical', 'moderate'),
+        type: Sequelize.ENUM('stable', 'critical', 'moderate','Stable', 'Critical', 'Moderate'),  
         allowNull: false,
       },
       patient_emergency_contact: {

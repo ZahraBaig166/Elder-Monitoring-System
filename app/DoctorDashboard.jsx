@@ -1,95 +1,101 @@
-import React, { useState }  from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import NavBar from '../components/NavBarPatients';
 import { useRouter } from 'expo-router';
 
-
 const { width } = Dimensions.get('window');
 
-const PatientInfoCard = () => {
- 
-  return (
-    <View style={styles.cardContainer}>
-      <Text style={styles.totalPatientsText}>Total Patients: <Text style={styles.totalNumber}>56</Text></Text>
-      <View style={styles.statusContainer}>
-        <View style={styles.statusBox}>
-          <FontAwesome name="exclamation-circle" size={46} color="#ff5053" style={styles.statusIcon} />
-          <Text style={styles.criticalText}>Critical</Text>
-          <Text style={styles.criticalNumber}>10</Text>
-        </View>
-        <View style={styles.statusBox}>
-          <FontAwesome name="bed" size={46} color="#da840d" style={styles.statusIcon} />
-          <Text style={styles.moderateText}>Moderate</Text>
-          <Text style={styles.moderateNumber}>26</Text>
-        </View>
-        <View style={styles.statusBox}>
-          <FontAwesome name="user" size={46} color="#48742c" style={styles.statusIcon} />
-          <Text style={styles.stableText}>Stable</Text>
-          <Text style={styles.stableNumber}>20</Text>
+const DoctorDashboard = () => {
+  const [counts, setCounts] = useState({ total: 0, critical: 0, moderate: 0, stable: 0 });
+  const router = useRouter();
+
+  const PatientInfoCard = ({ counts }) => {
+    return (
+      <View style={styles.cardContainer}>
+        <Text style={styles.totalPatientsText}>
+          Total Patients: <Text style={styles.totalNumber}>{counts.total || 0}</Text>
+        </Text>
+        <View style={styles.statusContainer}>
+          <View style={styles.statusBox}>
+            <FontAwesome name="exclamation-circle" size={46} color="#ff5053" style={styles.statusIcon} />
+            <Text style={styles.criticalText}>Critical</Text>
+            <Text style={styles.criticalNumber}>{counts.critical || 0}</Text>
+          </View>
+          <View style={styles.statusBox}>
+            <FontAwesome name="bed" size={46} color="#da840d" style={styles.statusIcon} />
+            <Text style={styles.moderateText}>Moderate</Text>
+            <Text style={styles.moderateNumber}>{counts.moderate || 0}</Text>
+          </View>
+          <View style={styles.statusBox}>
+            <FontAwesome name="user" size={46} color="#48742c" style={styles.statusIcon} />
+            <Text style={styles.stableText}>Stable</Text>
+            <Text style={styles.stableNumber}>{counts.stable || 0}</Text>
+          </View>
         </View>
       </View>
-    </View>
-  );
-};
-
-const CriticalPatientList = () => {
-  const [isExpanded, setIsExpanded] = useState(false);  // State to track if list is expanded
-  const router = useRouter();  // Initialize useRouter
-  const handleToggle = () => {
-    setIsExpanded(prevState => !prevState);  // Toggle the state
+    );
   };
+
+  const CriticalPatientList = () => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [criticalPatients, setCriticalPatients] = useState([]);
+    const router = useRouter();
+
+  useEffect(() => {
+    const fetchCriticalPatients = async () => {
+      try {
+        const response = await fetch('http://192.168.43.228:3000/patients/critical');
+        const data = await response.json();
+        console.log('Critical Patients API Response:', data); 
+        setCriticalPatients(Array.isArray(data) ? data : []); 
+      } catch (error) {
+        console.error('Error fetching critical patients:', error);
+        setCriticalPatients([]); 
+      }
+    };
+
+    fetchCriticalPatients();
+  }, []);
+
+  const handleToggle = () => {
+    setIsExpanded((prevState) => !prevState);
+  };
+
   const handleListPress = () => {
-    // Navigate to the ViewPatient screen
-    router.push('/ViewPatients');  // Replace '/ViewPatient' with the actual path of the ViewPatient screen
+    router.push('/ViewPatients'); 
   };
 
   return (
     <View style={styles.criticalListContainer}>
-      {/* Title that toggles the list visibility */}
       <TouchableOpacity onPress={handleToggle} style={styles.headerContainer}>
         <Text style={styles.title}>Critical Patient List</Text>
         <FontAwesome
-          name={isExpanded ? "chevron-up" : "chevron-down"}
+          name={isExpanded ? 'chevron-up' : 'chevron-down'}
           size={22}
           color="#000"
           style={styles.filterIcon}
         />
       </TouchableOpacity>
 
-      {/* Show the list only if the state is expanded */}
       {isExpanded && (
-        <>
-        {/* <View style={styles.criticalListContainer}> */}
-           <TouchableOpacity onPress={handleListPress} style={styles.criticalList}>
-      {[1, 2, 3].map((item, index) => (
-        <View key={index} style={styles.card}>
-          <FontAwesome name="user" size={24} color="#000" style={styles.avatar} />
-          <View style={styles.infoContainer}>
-            <Text style={styles.name}>Patient Name</Text>
-            <Text style={styles.condition}>Heart Patient</Text>
-            <TouchableOpacity style={styles.ScheduleButton}>
-              <Text style={styles.detailsText}>Details</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity>
-              <FontAwesome name="phone" size={15} color="#000" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="envelope" size={15} color="#000" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      ))}
-    </TouchableOpacity>
-        {/* </View> */}
-        </> 
+        criticalPatients.length > 0 ? (
+          criticalPatients.map((patient) => (
+            <View key={patient.patient_id} style={styles.card}>
+              <FontAwesome name="user" size={24} color="#000" style={styles.avatar} />
+              <View style={styles.infoContainer}>
+                <Text style={styles.name}>{patient.name}</Text>
+                <Text style={styles.condition}>{patient.medical_conditions}</Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text>No critical patients found.</Text>
+        )
       )}
     </View>
   );
 };
-
 const MedicationScheduleList = () => {
   const [isMedScheduleExpanded, setIsMedScheduleExpanded] = useState(false);  // New state for medication list
   const router = useRouter();
@@ -133,9 +139,6 @@ const MedicationScheduleList = () => {
   );
 };
 
-
-
-
 const ChartWithHeading = ({ title, source }) => {
   return (
     <View style={styles.chartContainer}>
@@ -145,7 +148,20 @@ const ChartWithHeading = ({ title, source }) => {
   );
 };
 
-const DoctorDashboard = () => {
+  useEffect(() => {
+    const fetchPatientCounts = async () => {
+      try {
+        const response = await fetch('http://192.168.43.228:3000/patients/counts'); 
+        const data = await response.json();
+        setCounts(data);
+      } catch (error) {
+        console.error('Error fetching patient counts:', error);
+      }
+    };
+
+    fetchPatientCounts();
+  }, []);
+
   return (
     <View style={styles.dashboardContainer}>
     <ScrollView style={styles.dashboadContainer}>
@@ -164,7 +180,13 @@ const DoctorDashboard = () => {
           />
         </View>
       </View>
-      <PatientInfoCard />
+      <PatientInfoCard counts={counts} />
+      <TouchableOpacity
+          style={styles.viewAllButton}
+          onPress={() => router.push('/ViewPatients')}
+        >
+          <Text style={styles.viewAllButtonText}>View All Patients</Text>
+        </TouchableOpacity>
       <CriticalPatientList />
       <MedicationScheduleList />
       <ChartWithHeading
@@ -547,8 +569,21 @@ const styles = StyleSheet.create({
       justifyContent: 'space-between',
       width: 60,
     },
- 
-
+    viewAllButton: {
+      backgroundColor: '#4CAF50', // Green background
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginVertical: 10, // Space above and below the button
+      marginHorizontal: 20, // Space from the sides
+    },
+    viewAllButtonText: {
+      color: '#FFFFFF', // White text
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    
 });
 
 export default DoctorDashboard;

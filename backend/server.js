@@ -22,6 +22,7 @@ db.sequelize.authenticate()
   .catch(err => {
     console.error('Error connecting to PostgreSQL using Sequelize:', err);
   });
+// db.sequelize.sync({ alter: true });
 
 // Sync Models with Database
 db.sequelize.sync({ force: false }) // Use force: true only during development
@@ -43,7 +44,8 @@ const familyRouter = require('./routes/familyauthentication');
 app.use("/",familyRouter);
 const caregiverRouter = require('./routes/caregiverauthentication');
 app.use("/",caregiverRouter);
-
+const patientRoutes = require('./routes/patients');
+app.use("/", patientRoutes);
 
 app.get('/checktables', async (req, res) => {
   try {

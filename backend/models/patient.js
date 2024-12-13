@@ -18,22 +18,27 @@ module.exports = (sequelize, DataTypes) => {
       patient_id: {
         type: DataTypes.BIGINT,
         primaryKey: true,
-         autoIncrement: true,
+        autoIncrement: true,
+        field: 'patient_id', 
       },
       name: DataTypes.STRING,
       age: DataTypes.INTEGER,
       medical_conditions: DataTypes.TEXT,
       status: {
-        type: DataTypes.ENUM('Stable', 'Critical', 'Moderate'),
+        type: DataTypes.ENUM('stable', 'critical', 'moderate','Stable', 'Critical', 'Moderate'),  
         allowNull: false,
       },
       emergency_contact: DataTypes.STRING,
       // assigned_caregiver_id: DataTypes.INTEGER,
+
     },
+
     {
       sequelize,
       modelName: 'Patient',
       tableName: 'patient',
+      timestamps: false,
+      primaryKey: 'patient_id', 
     }
   );
   return Patient;

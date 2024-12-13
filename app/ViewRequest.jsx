@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Link } from 'expo-router'; // For navigation
+// require('dotenv').config();
 
 const ViewRequest = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -9,7 +10,7 @@ const ViewRequest = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await fetch('http://10.135.20.162:3000/admin/pending');
+        const response = await fetch('http://192.168.43.228:3000/admin/pending');
         const data = await response.json();
         console.log('Received data:', data); // Debugging log
         const allRequests = [

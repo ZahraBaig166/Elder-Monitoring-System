@@ -4,6 +4,7 @@ const { PendingCaregiver } = require('../models'); // Import PendingCaregiver mo
 const app= express();
 const router = express.Router();
 router.use(express.json());
+
 // Registration route for Caregiver
 router.post('/submit/caregiver', async (req, res) => {
   console.log("caregiver request body",req.body);
@@ -43,38 +44,26 @@ const { Caregiver } = require('../models'); // Import both models
 const crypto = require('crypto'); // For generating a random password
 
 
-
 // Login route for Caregiver
 router.post('/login/caregiver', async (req, res) => {
   const { email, password } = req.body;
+  console.log("hello")
+  console.log(email,password);
+    console.log("hello")
 
-  try {
-    // Find caregiver by email
     const caregiver = await Caregiver.findOne({ where: { email } });
+    console.log(caregiver);
 
     if (!caregiver) {
       return res.status(400).send('Caregiver not found');
     }
+    // const isPasswordValid = await bcrypt.compare(password, caregiver.password);
 
-    // Compare password with the stored hash
-    const isPasswordValid = await bcrypt.compare(password, caregiver.password);
-
-    if (!isPasswordValid) {
+    if (password!=caregiver.password) {
       return res.status(400).send('Invalid credentials');
     }
-
-    // // Generate a JWT token
-    // const token = jwt.sign(
-    //   { id: caregiver.id, role: 'caregiver' }, // Payload with caregiver id and role
-    //   'your_secret_key', // Secret key for signing the JWT
-    //   { expiresIn: '1h' } // Set token expiration to 1 hour
-    // );
-
     // Send response with token
-    res.status(200).send({ message: 'Caregiver logged in successfully', token });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error logging in caregiver');
-  }
+    res.status(200).send({ message: 'Caregiver logged in successfully' });
+
 });
 module.exports = router;

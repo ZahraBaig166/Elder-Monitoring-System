@@ -10,6 +10,8 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
+// require('dotenv').config();
+
 
 const LoginAdmin = () => {
   const router = useRouter();
@@ -25,7 +27,7 @@ const LoginAdmin = () => {
       console.log("Password:", password);
 
       // Make a POST request to the /admin/login route
-      const response = await fetch("http://10.135.20.162:3000/admin/login", {
+      const response = await fetch("http://192.168.43.228:3000/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

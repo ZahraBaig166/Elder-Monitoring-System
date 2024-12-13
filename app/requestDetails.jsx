@@ -1,93 +1,97 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Picker } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+// require('dotenv').config();
 
 const RequestDetails = () => {
   const router = useRouter();
   const { requestId, requestType } = useLocalSearchParams(); // Extract query params
-
-
   const [requestDetails, setRequestDetails] = useState(null);
   const [caregivers, setCaregivers] = useState([]);
   const [selectedCaregiver, setSelectedCaregiver] = useState(null);
 
   useEffect(() => {
     if (requestId && requestType) {
-      // Fetch the details of the selected request
+      // Fetch the details of the selected request with requestType as part of the URL
       const fetchRequestDetails = async () => {
         try {
-          const response = await fetch(`http://10.135.20.162:3000/admin/requestDetails/${requestId}`);
-          const text = await response.text(); // Get raw response as text
-
+          const response = await fetch(
+            `http://192.168.43.228:3000/admin/requestDetails/${requestType}/${requestId}` // Using /type/id format
+          );
+          const text = await response.text();
+  
           const data = JSON.parse(text); // Parse JSON from text
           setRequestDetails(data);
         } catch (error) {
           console.error('Error fetching request details:', error);
         }
       };
-
-      // Fetch caregivers if the request type is 'family'
-      const fetchCaregivers = async () => {
-        try {
-          const response = await fetch('http://10.135.20.162:3000/admin/caregivers');
-          const data = await response.json();
-          console.log("front end caregiver",data);
-          setCaregivers(data);
-
-
-          if (data.length === 0) {
-            console.log("No caregivers available.");
-          }
-        } catch (error) {
-          console.error('Error fetching caregivers:', error);
-        }
-      };
-
+  
       fetchRequestDetails();
-
-      fetchCaregivers();
     }
-  }, [requestId, requestType]); // Trigger effect when requestId or requestType changes
+  }, [requestId, requestType]); 
+   // Trigger effect when requestId or requestType changes
   useEffect(() => {
     console.log("Request Type:", requestType); // Log whenever `requestType` changes
     console.log(caregivers.length);
   }, [requestType]);
   
-
   const handleApprove = async () => {
     try {
-      const body = requestType === 'family' ? { caregiverId: selectedCaregiver } : {}; // Include caregiverId if type is 'family'
-      await fetch(`http://10.135.20.162:3000/admin/approve/${requestId}`, {
+      const response = await fetch(`http://192.168.43.228:3000/admin/approve/${requestType}/${requestId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(body),
       });
-      router.push({ pathname: '/ViewRequest' }); // Navigate back to the list page after approving
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error approving request:', errorData.message);
+        alert(`Approval failed: ${errorData.message}`);  // Use backticks for string interpolation
+        return;
+      }
+  
+      alert('Request approved successfully!');
+      router.push({ pathname: '/ViewRequest' });
     } catch (error) {
-      console.error('Error approving request:', error);
+      console.error('Error approving request in frontend file:', error);
+      alert('An unexpected error occurred.');
     }
   };
+  
 
-  const handleDecline = async () => {
-    try {
-      await fetch(`http://10.135.20.162:3000/admin/decline/${requestId}`, {
-        method: 'POST',
-      });
-      router.push({ pathname: '/ViewRequest' }); // Navigate back to the list page after declining
-    } catch (error) {
-      console.error('Error declining request:', error);
+
+  
+
+const handleDecline = async () => {
+  try {
+    const response = await fetch(`http://192.168.43.228:3000/admin/decline/${requestType}/${requestId}`, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to decline the request');
     }
-  };
+
+    alert('Request declined successfully!');
+    router.push({ pathname: '/ViewRequest' }); // Navigate back to the list page
+  } catch (error) {
+    console.error('Error declining request:', error);
+    alert(error.message || 'Failed to decline request. Please try again.');
+  }
+};
+
 
   if (!requestDetails) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading request details...</Text>
+        <Text>Loading...</Text>
       </View>
     );
   }
+
 
   return (
     <View style={styles.container}>
