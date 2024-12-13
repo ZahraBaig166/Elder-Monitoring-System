@@ -1,7 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Picker } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Picker,
+  ScrollView,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import Icon from "react-native-vector-icons/FontAwesome";
 import useConfig from "../hooks/useConfig";
 
 const RequestDetails = () => {
@@ -10,42 +18,37 @@ const RequestDetails = () => {
   const [requestDetails, setRequestDetails] = useState(null);
   const [caregivers, setCaregivers] = useState([]);
   const [selectedCaregiver, setSelectedCaregiver] = useState(null);
-
   const { apiBaseUrl, loading, error } = useConfig();
 
+  // Fetch request details
   useEffect(() => {
     if (loading || !apiBaseUrl || !requestId || !requestType) return;
 
-    // Fetch the details of the selected request
     const fetchRequestDetails = async () => {
       try {
         const response = await fetch(`${apiBaseUrl}/admin/requestDetails/${requestType}/${requestId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setRequestDetails(data);
       } catch (err) {
-        console.error('Error fetching request details:', err);
+        console.error("Error fetching request details:", err);
       }
     };
 
     fetchRequestDetails();
-  }, [apiBaseUrl, requestId, requestType, loading]); // Added dependencies
+  }, [apiBaseUrl, requestId, requestType, loading]);
 
+  // Fetch caregivers (if family request)
   useEffect(() => {
-    if (requestType === 'family' && apiBaseUrl && !loading) {
-      // Fetch available caregivers only for family requests
+    if (requestType === "family" && apiBaseUrl && !loading) {
       const fetchCaregivers = async () => {
         try {
           const response = await fetch(`${apiBaseUrl}/admin/caregivers`);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           const data = await response.json();
           setCaregivers(data);
         } catch (err) {
-          console.error('Error fetching caregivers:', err);
+          console.error("Error fetching caregivers:", err);
         }
       };
 
@@ -56,42 +59,36 @@ const RequestDetails = () => {
   const handleApprove = async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/approve/${requestType}/${requestId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         alert(`Approval failed: ${errorData.message}`);
         return;
       }
-
-      alert('Request approved successfully!');
-      router.push('/ViewRequest');
+      alert("Request approved successfully!");
+      router.push("/ViewRequest");
     } catch (err) {
-      console.error('Error approving request:', err);
-      alert('An unexpected error occurred.');
+      console.error("Error approving request:", err);
+      alert("An unexpected error occurred.");
     }
   };
 
   const handleDecline = async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/decline/${requestType}/${requestId}`, {
-        method: 'POST',
+        method: "POST",
       });
-
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to decline the request');
+        throw new Error(errorData.message || "Failed to decline the request");
       }
-
-      alert('Request declined successfully!');
-      router.push('/ViewRequest');
+      alert("Request declined successfully!");
+      router.push("/ViewRequest");
     } catch (err) {
-      console.error('Error declining request:', err);
-      alert(err.message || 'Failed to decline request. Please try again.');
+      console.error("Error declining request:", err);
+      alert(err.message || "Failed to decline request. Please try again.");
     }
   };
 
@@ -110,53 +107,78 @@ const RequestDetails = () => {
       </View>
     );
   }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Request Details</Text>
-      <Text style={styles.info}>Request ID: {requestDetails.id}</Text>
-      <Text style={styles.info}>Name: {requestDetails.name}</Text>
-      <Text style={styles.info}>Email: {requestDetails.email}</Text>
-      <Text style={styles.info}>Relationship to Patient: {requestDetails.relationship_to_patient}</Text>
-      <Text style={styles.info}>Phone Number: {requestDetails.phone_number || 'N/A'}</Text>
-      <Text style={styles.info}>Address: {requestDetails.address}</Text>
-      <Text style={styles.info}>Approval Status: {requestDetails.is_approved ? 'Approved' : 'Pending'}</Text>
-      <Text style={styles.info}>Date Created: {new Date(requestDetails.date_created).toLocaleString()}</Text>
-      <Text style={styles.info}>Patient Name: {requestDetails.patient_name}</Text>
-      <Text style={styles.info}>Patient Age: {requestDetails.patient_age}</Text>
-      <Text style={styles.info}>Patient Medical Conditions: {requestDetails.patient_medical_conditions}</Text>
-      <Text style={styles.info}>Patient Status: {requestDetails.patient_status}</Text>
-      <Text style={styles.info}>Patient Emergency Contact: {requestDetails.patient_emergency_contact}</Text>
-
-      <View>
-        <Text>IM IN SJSJDJ</Text>
-        {requestType === 'family' && (
-          <>
-            <Text style={styles.info}>Assign Caregiver:</Text>
-            {caregivers.length > 0 ? (
-              <Picker
-                selectedValue={selectedCaregiver}
-                onValueChange={(itemValue) => setSelectedCaregiver(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select a Caregiver" value={null} />
-                {caregivers.map((caregiver) => (
-                  <Picker.Item key={caregiver.id} label={caregiver.name} value={caregiver.id} />
-                ))}
-              </Picker>
-            ) : (
-              <Text>No caregivers available</Text>
-            )}
-          </>
-        )}
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.push("/ViewRequest")}>
+          <Icon name="arrow-left" size={wp("5%")} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Request Details</Text>
       </View>
 
-      {/* Approve or Decline buttons */}
-      <TouchableOpacity style={styles.approveButton} onPress={handleApprove}>
-        <Text style={styles.buttonText}>Approve</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.declineButton} onPress={handleDecline}>
-        <Text style={styles.buttonText}>Decline</Text>
-      </TouchableOpacity>
+      {/* Request Details */}
+      <ScrollView
+  contentContainerStyle={{
+    paddingHorizontal: wp("5%"),
+    paddingBottom: hp("5%"), // Adds space at the bottom of the page
+  }}
+>
+  {[
+    { label: "Name", value: requestDetails.name },
+    { label: "Email", value: requestDetails.email },
+    { label: "Phone", value: requestDetails.phone_number || "N/A" },
+    { label: "Address", value: requestDetails.address },
+    { label: "Patient Name", value: requestDetails.patient_name },
+    { label: "Patient Age", value: requestDetails.patient_age },
+    {
+      label: "Medical Conditions",
+      value: requestDetails.patient_medical_conditions || "N/A",
+    },
+    { label: "Patient Status", value: requestDetails.patient_status },
+    {
+      label: "Emergency Contact",
+      value: requestDetails.patient_emergency_contact,
+    },
+  ].map((item, index) => (
+    <View key={index} style={styles.card}>
+      <Text style={styles.label}>{item.label}</Text>
+      <Text style={styles.value}>{item.value}</Text>
+    </View>
+  ))}
+
+  {requestType === "family" && (
+    <View style={styles.card}>
+      <Text style={styles.label}>Assign Caregiver:</Text>
+      {caregivers.length > 0 ? (
+        <Picker
+          selectedValue={selectedCaregiver}
+          onValueChange={(itemValue) => setSelectedCaregiver(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Select a Caregiver" value={null} />
+          {caregivers.map((caregiver) => (
+            <Picker.Item key={caregiver.id} label={caregiver.name} value={caregiver.id} />
+          ))}
+        </Picker>
+      ) : (
+        <Text>No caregivers available</Text>
+      )}
+    </View>
+  )}
+
+  {/* Approve and Decline Buttons */}
+  <View style={styles.buttonContainer}>
+    <TouchableOpacity style={styles.approveButton} onPress={handleApprove}>
+      <Text style={styles.buttonText}>Approve</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.declineButton} onPress={handleDecline}>
+      <Text style={styles.buttonText}>Decline</Text>
+    </TouchableOpacity>
+  </View>
+</ScrollView>
+
     </View>
   );
 };
@@ -164,46 +186,76 @@ const RequestDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: wp('5%'), // Responsive padding
+    paddingTop: hp("6%"), // Increased padding at the top for more space
+    backgroundColor: "#F9F9F9",
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: hp("2%"),
+    paddingHorizontal: wp("5%"),
   },
-  title: {
-    fontSize: wp('6%'), // Responsive title font size
-    fontWeight: '700',
-    marginBottom: hp('2%'), // Responsive margin
+  headerTitle: {
+    fontSize: wp("5%"),
+    fontWeight: "700",
+    marginLeft: wp("3%"),
   },
-  info: {
-    fontSize: wp('4%'), // Responsive font size for text
-    marginBottom: hp('1.5%'), // Responsive margin
+  scrollView: {
+    paddingHorizontal: wp("5%"),
   },
-  approveButton: {
-    backgroundColor: '#4CAF50',
-    padding: wp('3%'),
-    borderRadius: wp('2%'),
-    marginVertical: hp('2%'),
+  card: {
+    marginBottom: hp("2%"),
+    padding: wp("4%"),
+    backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
+    borderRadius: wp("3%"),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  declineButton: {
-    backgroundColor: '#F44336',
-    padding: wp('3%'),
-    borderRadius: wp('2%'),
+  label: {
+    fontSize: wp("4%"),
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: hp("0.5%"),
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '700',
-    textAlign: 'center',
+  value: {
+    fontSize: wp("4%"),
+    color: "#555",
   },
   picker: {
-    height: hp('6%'),
-    width: '100%',
-    backgroundColor: '#F6F6F6',
-    borderRadius: wp('2%'),
-    marginBottom: hp('2%'),
-    paddingLeft: wp('2%'),
+    height: hp("6%"),
+    width: "100%",
+    backgroundColor: "#F6F6F6",
+    borderRadius: wp("2%"),
+    marginTop: hp("1%"),
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: hp("3%"),
+  },
+  approveButton: {
+    flex: 1,
+    backgroundColor: "#4CAF50",
+    padding: hp("2%"),
+    borderRadius: wp("2%"),
+    marginRight: wp("2%"),
+  },
+  declineButton: {
+    flex: 1,
+    backgroundColor: "#F44336",
+    padding: hp("2%"),
+    borderRadius: wp("2%"),
+  },
+  buttonText: {
+    color: "#FFF",
+    fontWeight: "700",
+    textAlign: "center",
+    fontSize: wp("4%"),
   },
 });
+
 
 export default RequestDetails;
