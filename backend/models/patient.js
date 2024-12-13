@@ -29,6 +29,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       emergency_contact: DataTypes.STRING,
+      
+      assigned_caregiver_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,  // If this field is optional
+      },
       // assigned_caregiver_id: DataTypes.INTEGER,
 
     },

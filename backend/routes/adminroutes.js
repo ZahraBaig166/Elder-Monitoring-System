@@ -159,12 +159,22 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
         return res.status(404).json({ message: 'Caregiver request not found' });
       }
     } else if (requestType === 'Family') {
-      // Handle pending family request approval without assigning a caregiver initially
+      // Handle pending family request approval
       const pendingFamily = await PendingFamily.findByPk(requestId);
       if (pendingFamily) {
         const randomPassword = crypto.randomBytes(8).toString('hex');
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
+        // Log the pendingFamily data
+        console.log('Pending Family Data:', pendingFamily);
+
+        // Ensure status matches the model's ENUM
+        const validStatus = ['stable', 'critical', 'moderate', 'Stable', 'Critical', 'Moderate'];
+        if (!validStatus.includes(pendingFamily.patient_status)) {
+          return res.status(400).json({ message: 'Invalid status value' });
+        }
+
+        // Create new patient
         const newPatient = await Patient.create({
           name: pendingFamily.patient_name,
           age: pendingFamily.patient_age,
@@ -173,6 +183,10 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
           status: pendingFamily.patient_status,
         });
 
+        // Log the created patient for debugging
+        console.log('Created New Patient:', newPatient);
+
+        // Create new family
         const newFamily = await Family.create({
           name: pendingFamily.name,
           email: pendingFamily.email,
@@ -180,8 +194,11 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
           relationship: pendingFamily.relationship_to_patient,
           phone_number: pendingFamily.phone_number,
           address: pendingFamily.address,
-          patient_id: newPatient.patient_id,
+          patient_id: newPatient.patient_id, // Link the patient to the family
         });
+
+        // Log the new family entry for debugging
+        console.log('Created New Family:', newFamily);
 
         // Remove pending family entry
         await PendingFamily.destroy({ where: { id: requestId } });

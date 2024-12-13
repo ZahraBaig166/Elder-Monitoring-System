@@ -29,13 +29,10 @@ module.exports = {
         allowNull: true,
       },
       assigned_caregiver_id: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'caregiver',
-          key: 'user_id',
-        },
-        onDelete: 'SET NULL',
+        type: DataTypes.INTEGER,
+        allowNull: true,  // If this field is optional
       },
+
     });
   },
 

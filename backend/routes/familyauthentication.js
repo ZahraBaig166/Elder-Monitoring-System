@@ -63,26 +63,21 @@ router.post('/submit/family', async (req, res) => {
 // const jwt = require('jsonwebtoken');
 
 // Login route for Admin or Caregiver
-router.post('/login', async (req, res) => {
+router.post('/login/family', async (req, res) => {
   const { email, password } = req.body;
 
   try {
     // Check if the email belongs to a Caregiver or Admin
-    let user = await Caregiver.findOne({ where: { email } });
+    let user = await Family.findOne({ where: { email } });
 
     if (!user) {
-      // If no caregiver is found, check if it's an Admin (assuming admin is another model)
-      user = await Admin.findOne({ where: { email } });
-
-      if (!user) {
-        return res.status(400).send('User not found');
-      }
+          return res.status(400).send('Family not found');
     }
-
+      
     // Check if password is correct
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    // const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordValid) {
+    if (password!=user.password) {
       return res.status(400).send('Invalid credentials');
     }
 
@@ -91,36 +86,11 @@ router.post('/login', async (req, res) => {
 
     // // Return the token in the response
     // res.status(200).json({ message: 'Login successful', token });
+    res.status(200).send({ message: 'Family logged in successfully' });
+
   } catch (error) {
     console.error(error);
     res.status(500).send('Error during login');
-  }
-});
-
-
-
-// Login route for Caregiver
-router.post('/login/family', async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    // Find caregiver by email
-    const family = await Family.findOne({ where: { email } });
-
-    if (!family) {
-      return res.status(400).send('Caregiver not found');
-    }
-
-    // Compare password with the stored hash
-    const isPasswordValid = await bcrypt.compare(password, family.password);
-
-    if (!isPasswordValid) {
-      return res.status(400).send('Invalid credentials');
-    }
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error logging in caregiver');
   }
 });
 module.exports = router;
