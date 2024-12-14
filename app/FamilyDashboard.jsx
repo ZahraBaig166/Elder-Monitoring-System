@@ -3,10 +3,11 @@ import {useEffect} from "react";
 
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView,TouchableOpacity } from "react-native";
 import { LineChart,BarChart } from "react-native-chart-kit";
-import NavBar from '../components/NavBar';
+import NavBarPatients from '../components/NavBarPatients';
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
+import { UserProvider } from '../context/userContext';  // Adjust the path if needed
 
 
 const DashboardHeartRateAndStats = () => {
@@ -20,6 +21,7 @@ const DashboardHeartRateAndStats = () => {
   
   
   return (
+    <UserProvider>
     <View style={{ flex: 1 }}>
             {/* Header Section */}
             <View style={styles.header}>
@@ -240,9 +242,9 @@ const DashboardHeartRateAndStats = () => {
 
       </View>
     </ScrollView>
-     <NavBar />
+     <NavBarPatients />
      </View>
-
+</UserProvider>
   );
 };
 

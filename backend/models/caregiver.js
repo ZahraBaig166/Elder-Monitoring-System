@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // A caregiver can have many queries raised by them
       Caregiver.hasMany(models.Query, {
-        foreignKey: 'raised_by',
+        foreignKey: 'sender_id',
         as: 'query', // Alias to fetch queries raised by the caregiver
       });
 

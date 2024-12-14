@@ -145,7 +145,6 @@ const CaregiverRegistration = () => {
                 />
               </View>
             ))}
-            
             <TouchableOpacity style={styles.addButton} onPress={addEducationField}>
               <Icon name="plus" size={hp("2.5%")} color="#FFF" />
               <Text style={styles.addButtonText}>Add Another</Text>

@@ -12,6 +12,9 @@ import {
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
+import AsyncStorage from '@react-native-async-storage/async-storage';  // Import AsyncStorage
+import { UserProvider } from '../context/userContext';  // Adjust the path if needed
+
 
 const LoginAdmin = () => {
   const { apiBaseUrl, loading, error } = useConfig();
@@ -39,9 +42,14 @@ const LoginAdmin = () => {
       console.log(data.message); // Log the response message
 
       if (response.ok) {
+        // Store the token after successful login
+        const token = data.token; // Assuming the token is returned as 'token'
+        console.log("this is token",token);
+        await AsyncStorage.setItem('authToken', token); // Store the token in AsyncStorage
+
         // If login is successful, redirect to the dashboard
         setTimeout(() => {
-          router.push("/Dashboard");
+          router.replace("/Dashboard");
         }, 500); // Redirect after a brief delay to ensure smooth user experience
       } else {
         // Handle login error

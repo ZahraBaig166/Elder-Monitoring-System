@@ -13,6 +13,8 @@ import useConfig from "../backend/../hooks/useConfig";
 
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { UserProvider } from '../context/userContext';  // Adjust the path if needed
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginUser = () => {
   const [email, setEmail] = useState("");  
@@ -28,23 +30,46 @@ console.log("password",password);
     if (!email || !password) {
       alert("Please fill in both email and password");
       return;
-    } console.log("hello i m in caregiver button")
-      const response = await fetch(`${apiBaseUrl}/login/caregiver`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),  
-      });
+    }
 
-      const data = await response.json();
+    const response = await fetch(`${apiBaseUrl}/login/caregiver`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),  
+    });
 
-      if (response.ok) {
-        router.push("/DoctorDashboard");
-      } else {
-        alert(data.message || "Login failed");
+    const data = await response.json();
+
+    if (response.ok) {
+      const token = data.token; // Assuming the token is returned as 'token'
+      const userId = data.userId; // Assuming the userId is returned as 'userId'
+      const type= data.type;
+      console.log("Token:", token);
+      console.log("UserId:", userId);
+      console.log("Type:",type);
+
+      // Save token and userId in AsyncStorage
+      try {
+        await AsyncStorage.setItem("authToken", token);
+        await AsyncStorage.setItem("userId", String(userId));
+        await AsyncStorage.setItem("type",type);
+
+        console.log("Saved successfully");
+      } catch (error) {
+        console.error("AsyncStorage Error:", error);
       }
+      
+      
+      // Once AsyncStorage operations are done, navigate
+      console.log('Token and UserId saved, navigating...');
 
+      // Redirect based on user type
+      router.replace('DoctorDashboard');
+    } else {
+      Alert.alert("Login Failed", data.message || "Invalid credentials");
+    }
   };
 
   // Function to handle family login
@@ -52,22 +77,47 @@ console.log("password",password);
     if (!email || !password) {
       alert("Please fill in both email and password");
       return;
-    } console.log("hello i m in caregiver button")
-      const response = await fetch(`${apiBaseUrl}/login/family`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),  
-      });
+    }
 
-      const data = await response.json();
+    const response = await fetch(`${apiBaseUrl}/login/family`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),  
+    });
 
-      if (response.ok) {
-        router.push("/FamilyDashboard");
-      } else {
-        alert(data.message || "Login failed");
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const token = data.token; // Assuming the token is returned as 'token'
+      const userId = data.userId; // Assuming the userId is returned as 'userId'
+      const type= data.type;
+      console.log("Token:", token);
+      console.log("UserId:", userId);
+      console.log("Type:",type);
+
+      // Save token and userId in AsyncStorage
+      try {
+        await AsyncStorage.setItem("authToken", token);
+        await AsyncStorage.setItem("userId", String(userId));
+        await AsyncStorage.setItem("type",type);
+
+        console.log("Saved successfully");
+      } catch (error) {
+        console.error("AsyncStorage Error:", error);
       }
+      
+      
+      // Once AsyncStorage operations are done, navigate
+      console.log('Token and UserId saved, navigating...');
+
+      // Redirect based on user type
+      router.replace('/FamilyDashboard');
+    } else {
+      Alert.alert("Login Failed", data.message || "Invalid credentials");
+    }
   };
 
   return (

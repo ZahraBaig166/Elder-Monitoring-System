@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { PendingFamily, Family, Patient, PendingCaregiver, Caregiver, sequelize } = require('../models');
 const {patient} = require('../models/patient');
+const jwt = require('jsonwebtoken');
 
 
 const router = express.Router();
@@ -12,25 +13,27 @@ require('dotenv').config();
 // Correct usage: Apply express.json() as middleware
 router.use(express.json());
 router.post('/admin/login', (req, res) => {
-    const { email, password } = req.body;
-    
-    console.log("Received username:", email);
-    console.log("Received password:", password);
-    console.log("actual email", process.env.ADMIN_USERNAME);
-    console.log("actual password", process.env.ADMIN_PASSWORD);
+  const { email, password } = req.body;
+  
+  console.log("Received username:", email);
+  console.log("Received password:", password);
+  console.log("actual email", process.env.ADMIN_USERNAME);
+  console.log("actual password", process.env.ADMIN_PASSWORD);
 
 
-    if (email !== process.env.ADMIN_USERNAME) {
-      return res.status(401).json({ message: 'Invalid email (username)' });
-    }
-  
-    if (password !== process.env.ADMIN_PASSWORD) {
-      return res.status(401).json({ message: 'Invalid password' });
-    }
-  
-    return res.status(200).json({ message: 'Login successful' });
-  });
-  
+  if (email !== process.env.ADMIN_USERNAME) {
+    return res.status(401).json({ message: 'Invalid email (username)' });
+  }
+
+  if (password !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ message: 'Invalid password' });
+  }
+
+  const token = jwt.sign({ email }, "secret", { expiresIn: '1h' }); // Adjust expiration as needed
+
+  return res.status(200).json({ message: 'Login successful' ,token});
+});
+
   router.get('/admin/pending', async (req, res) => {
     try {
       // Declare pendingFamilies outside the try block

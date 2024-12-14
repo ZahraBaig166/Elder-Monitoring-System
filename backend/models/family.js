@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE', 
       });
       FamilyMember.hasMany(models.Query, {
-        foreignKey: 'raised_by',
+        foreignKey: 'sender_id',
         as: 'queries',
       });
     }

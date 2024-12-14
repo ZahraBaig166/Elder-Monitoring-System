@@ -4,22 +4,27 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Query extends Model {
     static associate(models) {
-      // Query is raised by either a Caregiver or FamilyMember
-      // It has a foreign key that links to either Caregiver or FamilyMember
-
+      // Polymorphic relationship: sender_id can reference either Caregiver or Family
       Query.belongsTo(models.Caregiver, {
-        foreignKey: 'raised_by',
-        as: 'caregiver', // Alias for the caregiver association
-        constraints: false, // This will allow a polymorphic relationship
+        foreignKey: 'sender_id',
+        as: 'caregiver',
+        constraints: false,
+        scope: {
+          sender_type: 'caregiver',
+        },
       });
 
       Query.belongsTo(models.Family, {
-        foreignKey: 'raised_by',
-        as: 'family', // Alias for the family member association
-        constraints: false, // This will allow a polymorphic relationship
+        foreignKey: 'sender_id',
+        as: 'family',
+        constraints: false,
+        scope: {
+          sender_type: 'family',
+        },
       });
     }
   }
+
   Query.init(
     {
       query_id: {
@@ -27,12 +32,29 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      raised_by: DataTypes.INTEGER,
-      raised_to: DataTypes.INTEGER,
-      message: DataTypes.TEXT,
-      timestamp: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+      subject: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      recepient:{
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      phone_number: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      message: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      sender_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      sender_type: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       is_resolved: {
         type: DataTypes.BOOLEAN,
@@ -43,7 +65,9 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       modelName: 'query',
       tableName: 'query',
+      timestamps: false,
     }
   );
+
   return Query;
 };

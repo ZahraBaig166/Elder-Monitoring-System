@@ -2,42 +2,88 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import Icon from 'react-native-vector-icons/FontAwesome';
 import PhoneInput from 'react-native-phone-number-input';
 import React, { useState, useRef } from "react";
-import {useEffect} from "react";
-import useConfig from "../backend/../hooks/useConfig";
-
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import useConfig from "../hooks/useConfig";
+import RNPickerSelect from 'react-native-picker-select'; 
 
 const AddQueryComponent = () => {
-  const [value, setValue] = useState("");
-  const [formattedValue, setFormattedValue] = useState("");
-  const [valid, setValid] = useState(false);
-  const [showMessage, setShowMessage] = useState(false);
+  const [subject, setSubject] = useState("");  
+  const [phone, setPhone] = useState("");  
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [userchoice, setUserchoice] = useState('');  // Default value for family type selection
   const phoneInput = useRef(null);
-  const { apiBaseUrl, loading, error } = useConfig();
+  const router = useRouter();
+  const { apiBaseUrl } = useConfig();
+  const { userId, type } = useLocalSearchParams();
 
-  
+  const handleSubmit = async () => {
+    if (!subject || !phone || !message) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/add-query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId, // Include userId from query params
+          subject,
+          recepient: type === 'family' ? userchoice : 'admin',  // Set recipient based on the condition
+          phone,
+          message,
+          type
+        }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Query submitted successfully');
+        router.replace('/DoctorDashboard'); // Navigate to a success page
+      } else {
+        alert('Failed to submit query');
+      }
+    } catch (error) {
+      console.error('Error submitting query:', error);
+      alert('An error occurred. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Icon name="plus-circle" size={hp('6%')} color="#FFFFFF" style={styles.plusIcon} />
+        <Icon name="plus-circle" size={30} color="#FFFFFF" style={styles.plusIcon} />
         <Text style={styles.headerText}>Add Query</Text>
       </View>
 
       <View style={styles.formContainer}>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Subject</Text>
-          <TextInput style={styles.input} placeholder="Enter the query subject" placeholderTextColor="#D3D3D3" />
+          <TextInput
+            style={styles.input}
+            placeholder="Enter the query subject"
+            placeholderTextColor="#D3D3D3"
+            value={subject}
+            onChangeText={setSubject}
+          />
         </View>
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Phone Number</Text>
           <PhoneInput
             ref={phoneInput}
-            defaultValue={value}
+            defaultValue={phone}
             defaultCode="PK"
             layout="second"
-            onChangeText={(text) => setValue(text)}
-            onChangeFormattedText={(text) => setFormattedValue(text)}
+            onChangeText={(text) => setPhone(text)}
+            onChangeFormattedText={(text) => setPhone(text)}
             placeholder="Enter phone number"
             containerStyle={styles.phoneInputContainer}
             textContainerStyle={styles.textContainer}
@@ -51,14 +97,49 @@ const AddQueryComponent = () => {
             style={styles.textArea}
             placeholder="Write your message here"
             placeholderTextColor="#D3D3D3"
+            value={message}
+            onChangeText={setMessage}
             multiline
             numberOfLines={4}
           />
         </View>
+
+        {/* Conditional Dropdown for Family type */}
+        {type === 'family' && (
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Select Recipient</Text>
+            <RNPickerSelect
+  onValueChange={(value) => setUserchoice(value)}
+  items={[
+    { label: 'Admin', value: 'admin' },
+    { label: 'Caregiver', value: 'caregiver' }
+  ]}
+  placeholder={{ label: "Select a recipient...", value: 'admin' }}
+  style={{
+    inputAndroid: {
+      ...styles.input,
+      paddingRight: 30, // Ensure space for the icon
+    },
+    inputIOS: {
+      ...styles.input,
+      paddingRight: 30, // Ensure space for the icon
+    },
+    placeholder: { color: '#D3D3D3' },
+    iconContainer: {
+      top: 10,
+      right: 12, // Adjust position of the icon
+    },
+  }}
+  Icon={() => <Icon name="caret-down" size={20} color="#B0C4DE" />}
+  useNativeAndroidPickerStyle={false}
+/>
+
+          </View>
+        )}
       </View>
 
-      <TouchableOpacity style={styles.submitButton}>
-        <Text style={styles.submitButtonText}>Submit</Text>
+      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
+        <Text style={styles.submitButtonText}>{loading ? 'Submitting...' : 'Submit'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -73,81 +154,82 @@ const styles = StyleSheet.create({
     backgroundColor: '#ADC1D8',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: hp('4%'),
-    borderBottomLeftRadius: wp('8%'),
-    borderBottomRightRadius: wp('8%'),
-    height: hp('25%'),
+    paddingVertical: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    height: 100,
   },
   plusIcon: {
-    marginBottom: hp('1%'),
+    marginBottom: 10,
   },
   headerText: {
-    fontSize: hp('3%'),
+    fontSize: 24,
     fontWeight: '700',
     color: '#FFFFFF',
     textTransform: 'uppercase',
   },
   formContainer: {
-    paddingHorizontal: wp('5%'),
-    marginTop: hp('2%'),
+    paddingHorizontal: 20,
+    marginTop: 10,
   },
   inputContainer: {
-    marginBottom: hp('2%'),
+    marginBottom: 20,
   },
   label: {
-    fontSize: hp('2%'),
+    fontSize: 16,
     fontWeight: '600',
     color: '#263238',
-    marginBottom: hp('1%'),
+    marginBottom: 10,
   },
   input: {
     borderWidth: 1,
     borderColor: '#B0C4DE',
-    borderRadius: wp('2%'),
-    paddingHorizontal: wp('4%'),
-    paddingVertical: hp('1.5%'),
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     backgroundColor: '#F9F9F9',
-    fontSize: hp('2%'),
+    fontSize: 16,
     color: '#263238',
   },
+  
   phoneInputContainer: {
     borderWidth: 1,
     borderColor: '#B0C4DE',
-    borderRadius: wp('2%'),
+    borderRadius: 8,
     backgroundColor: '#F9F9F9',
-    paddingHorizontal: wp('4%'),
-    paddingVertical: hp('1.5%'),
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
   textContainer: {
     backgroundColor: '#F9F9F9',
   },
   textInput: {
-    fontSize: hp('2%'),
+    fontSize: 16,
     color: '#000',
   },
   textArea: {
     borderWidth: 1,
     borderColor: '#B0C4DE',
-    borderRadius: wp('2%'),
-    paddingHorizontal: wp('4%'),
-    paddingVertical: hp('2%'),
-    height: hp('15%'),
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    height: 120,
     backgroundColor: '#F9F9F9',
     textAlignVertical: 'top',
-    fontSize: hp('2%'),
+    fontSize: 16,
     color: '#263238',
   },
   submitButton: {
     backgroundColor: '#ADC1D8',
-    borderRadius: wp('6%'),
-    paddingVertical: hp('2%'),
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: 'center',
-    marginHorizontal: wp('5%'),
-    marginTop: hp('3%'),
+    marginHorizontal: 20,
+    marginTop: 30,
   },
   submitButtonText: {
     color: '#FFFFFF',
-    fontSize: hp('2.5%'),
+    fontSize: 18,
     fontWeight: '700',
   },
 });

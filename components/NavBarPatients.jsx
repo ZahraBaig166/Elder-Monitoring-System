@@ -1,40 +1,52 @@
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useContext } from 'react';
+import { View, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useRouter } from 'expo-router';
+import { Link } from 'expo-router';
+import { UserContext } from '../context/userContext';
 
 const NavBarPatients = () => {
-  const router = useRouter();
-  const handleAddQueryPress = () => {
-    router.push('/AddQuery'); // Navigate to AddQuery screen
-  };
+  const { user, loading } = useContext(UserContext); 
 
-  const handleNotificationPress = () => {
-    router.push('/NotificationComponent'); // Navigate to NotificationComponent screen
-  };
-
-  const handleCommentPress = () => {
-    router.push('/AddQuery'); // Navigate to AddQuery screen when comment icon is pressed
-  };
+  if (loading) {
+    // Show loading indicator while context is being fetched
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#576574" />
+      </View>
+    );
+  }
+  const type= user?.type;
+  const userId = user?.userId; 
+  console.log("Retrieved User ID:", userId);
 
   return (
     <View style={styles.navContainer}>
-      <TouchableOpacity style={styles.navIcon}>
+      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Dashboard">
         <Icon name="th-large" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navIcon}>
+
+      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Analytics">
         <Icon name="pie-chart" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navCenter}  onPress={handleAddQueryPress}>
-        <View style={styles.centerButton}>
-          <Icon name="comment" size={24} color="#576574" /> {/* Updated Icon */}
-        </View>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.navIcon} onPress={handleNotificationPress}>
+
+      {userId && (
+        <Link href={{
+                pathname: "/AddQuery",
+                params: { userId: userId, type: type},
+              }} asChild>
+          <TouchableOpacity style={styles.navCenter} accessibilityLabel="Add Query">
+            <View style={styles.centerButton}>
+              <Icon name="comment" size={24} color="#576574" />
+            </View>
+          </TouchableOpacity>
+        </Link>
+      )}
+
+      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Notifications">
         <Icon name="bell" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navIcon}>
+
+      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Profile">
         <Icon name="user" size={20} color="#576574" />
       </TouchableOpacity>
     </View>
@@ -42,6 +54,12 @@ const NavBarPatients = () => {
 };
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
   navContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -55,17 +73,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
     elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   navIcon: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    width: "70%",
-    height: "70%",
   },
   navCenter: {
     justifyContent: 'center',
@@ -79,13 +91,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 30,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
     position: 'absolute',
     top: -25,
+    elevation: 10,
   },
 });
 

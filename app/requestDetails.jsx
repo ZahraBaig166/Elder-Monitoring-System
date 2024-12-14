@@ -11,6 +11,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import Icon from "react-native-vector-icons/FontAwesome";
 import useConfig from "../hooks/useConfig";
+import { UserProvider } from '../context/userContext';  // Adjust the path if needed
 
 const RequestDetails = () => {
   const router = useRouter();
@@ -80,6 +81,7 @@ const RequestDetails = () => {
       alert("An unexpected error occurred.");
     }
   };
+  
 
   const handleDecline = async () => {
     try {
@@ -103,6 +105,7 @@ const RequestDetails = () => {
       alert(err.message || "Failed to decline request. Please try again.");
     }
   };
+  
 
   if (loading || !apiBaseUrl) {
     return (
@@ -120,36 +123,6 @@ const RequestDetails = () => {
     );
   }
 
-  // Define labels based on the requestType
-  const labels =
-    requestType === "family"
-      ? [
-          { label: "Name", value: requestDetails.name },
-          { label: "Email", value: requestDetails.email },
-          { label: "Phone", value: requestDetails.phone_number || "N/A" },
-          { label: "Address", value: requestDetails.address },
-          { label: "Patient Name", value: requestDetails.patient_name },
-          { label: "Patient Age", value: requestDetails.patient_age },
-          {
-            label: "Medical Conditions",
-            value: requestDetails.patient_medical_conditions || "N/A",
-          },
-          { label: "Patient Status", value: requestDetails.patient_status },
-          {
-            label: "Emergency Contact",
-            value: requestDetails.patient_emergency_contact,
-          },
-        ]
-      : [
-          { label: "Name", value: requestDetails.name },
-          { label: "Email", value: requestDetails.email },
-          { label: "Age", value: requestDetails.age },
-          { label: "Address", value: requestDetails.address },
-          {label: "Education", value: requestDetails.educations},
-          // console.log(requestDetails.educations),
-          // { label: "Education", value: requestDetails. },
-        ];
-
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -162,52 +135,65 @@ const RequestDetails = () => {
 
       {/* Request Details */}
       <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: wp("5%"),
-          paddingBottom: hp("5%"), // Adds space at the bottom of the page
-        }}
-      >
-        {labels.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <Text style={styles.label}>{item.label}</Text>
-            <Text style={styles.value}>{item.value}</Text>
-          </View>
-        ))}
+  contentContainerStyle={{
+    paddingHorizontal: wp("5%"),
+    paddingBottom: hp("5%"), // Adds space at the bottom of the page
+  }}
+>
+  {[
+    { label: "Name", value: requestDetails.name },
+    { label: "Email", value: requestDetails.email },
+    { label: "Phone", value: requestDetails.phone_number || "N/A" },
+    { label: "Address", value: requestDetails.address },
+    { label: "Patient Name", value: requestDetails.patient_name },
+    { label: "Patient Age", value: requestDetails.patient_age },
+    {
+      label: "Medical Conditions",
+      value: requestDetails.patient_medical_conditions || "N/A",
+    },
+    { label: "Patient Status", value: requestDetails.patient_status },
+    {
+      label: "Emergency Contact",
+      value: requestDetails.patient_emergency_contact,
+    },
+  ].map((item, index) => (
+    <View key={index} style={styles.card}>
+      <Text style={styles.label}>{item.label}</Text>
+      <Text style={styles.value}>{item.value}</Text>
+    </View>
+  ))}
 
-        {requestType === "family" && (
-          <View style={styles.card}>
-            <Text style={styles.label}>Assign Caregiver:</Text>
-            {caregivers.length > 0 ? (
-              <Picker
-                selectedValue={selectedCaregiver}
-                onValueChange={(itemValue) => setSelectedCaregiver(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select a Caregiver" value={null} />
-                {caregivers.map((caregiver) => (
-                  <Picker.Item
-                    key={caregiver.id}
-                    label={caregiver.name}
-                    value={caregiver.id}
-                  />
-                ))}
-              </Picker>
-            ) : (
-              <Text>No caregivers available</Text>
-            )}
-          </View>
-        )}
+  {requestType === "family" && (
+    <View style={styles.card}>
+      <Text style={styles.label}>Assign Caregiver:</Text>
+      {caregivers.length > 0 ? (
+        <Picker
+          selectedValue={selectedCaregiver}
+          onValueChange={(itemValue) => setSelectedCaregiver(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Select a Caregiver" value={null} />
+          {caregivers.map((caregiver) => (
+            <Picker.Item key={caregiver.id} label={caregiver.name} value={caregiver.id} />
+          ))}
+        </Picker>
+      ) : (
+        <Text>No caregivers available</Text>
+      )}
+    </View>
+  )}
 
-        {/* Approve and Decline Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.approveButton} onPress={handleApprove}>
-            <Text style={styles.buttonText}>Approve</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.declineButton} onPress={handleDecline}>
-            <Text style={styles.buttonText}>Decline</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+  {/* Approve and Decline Buttons */}
+  <View style={styles.buttonContainer}>
+    <TouchableOpacity style={styles.approveButton} onPress={handleApprove}>
+      <Text style={styles.buttonText}>Approve</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.declineButton} onPress={handleDecline}>
+      <Text style={styles.buttonText}>Decline</Text>
+    </TouchableOpacity>
+  </View>
+</ScrollView>
+
     </View>
   );
 };
@@ -228,6 +214,9 @@ const styles = StyleSheet.create({
     fontSize: wp("5%"),
     fontWeight: "700",
     marginLeft: wp("3%"),
+  },
+  scrollView: {
+    paddingHorizontal: wp("5%"),
   },
   card: {
     marginBottom: hp("2%"),
@@ -268,25 +257,20 @@ const styles = StyleSheet.create({
     padding: hp("2%"),
     borderRadius: wp("2%"),
     marginRight: wp("2%"),
-    alignItems: "center",
   },
   declineButton: {
     flex: 1,
     backgroundColor: "#F44336",
     padding: hp("2%"),
     borderRadius: wp("2%"),
-    alignItems: "center",
   },
   buttonText: {
+    color: "#FFF",
+    fontWeight: "700",
+    textAlign: "center",
     fontSize: wp("4%"),
-    fontWeight: "600",
-    color: "#fff",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
 });
+
 
 export default RequestDetails;

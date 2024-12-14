@@ -5,6 +5,8 @@ import NavBar from '../components/NavBarPatients';
 import { useRouter } from 'expo-router';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
+import { UserProvider } from '../context/userContext';  // Adjust the path if needed
+
 
 const { width } = Dimensions.get('window');
 
@@ -189,6 +191,7 @@ const DoctorDashboard = () => {
   }
 
   return (
+    <UserProvider>
     <View style={styles.dashboardContainer}>
       <ScrollView style={styles.dashboadContainer}>
         <View style={styles.header}>
@@ -235,6 +238,7 @@ const DoctorDashboard = () => {
       </ScrollView>
       <NavBar />
     </View>
+    </UserProvider>
   );
 };
 

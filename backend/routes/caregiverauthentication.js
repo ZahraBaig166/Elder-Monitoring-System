@@ -1,10 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const { PendingCaregiver } = require('../models'); // Import PendingCaregiver model
+const { PendingCaregiver,Query} = require('../models'); // Import PendingCaregiver model
 const app= express();
 const router = express.Router();
 router.use(express.json());
-
+const jwt = require('jsonwebtoken');
 // Registration route for Caregiver
 router.post('/submit/caregiver', async (req, res) => {
   console.log("caregiver request body",req.body);
@@ -46,27 +46,65 @@ alert("Caregiver registration request has been submitted for approval");
 const { Caregiver } = require('../models'); // Import both models
 const crypto = require('crypto'); // For generating a random password
 
-
-// Login route for Caregiver
 router.post('/login/caregiver', async (req, res) => {
   const { email, password } = req.body;
-  console.log("hello")
-  console.log(email,password);
-    console.log("hello")
+ 
+  const caregiver = await Caregiver.findOne({ where: { email } });
+  if (!caregiver) {
+    return res.status(400).send('Caregiver not found');
+  }
 
-    const caregiver = await Caregiver.findOne({ where: { email } });
-    console.log(caregiver);
+  // Assuming you use bcrypt to validate the password
+  if (password !== caregiver.password) {
+    return res.status(400).send('Invalid credentials');
 
-    if (!caregiver) {
-      return res.status(400).send('Caregiver not found');
-    }
-    // const isPasswordValid = await bcrypt.compare(password, caregiver.password);
+  }
 
-    if (password!=caregiver.password) {
-      return res.status(400).send('Invalid credentials');
-    }
-    // Send response with token
-    res.status(200).send({ message: 'Caregiver logged in successfully' });
-
+  // Generate a JWT token with user_id
+  const token = jwt.sign({ id: caregiver.user_id }, 'secret', { expiresIn: '1h' });
+  // Send both the token and the userId in the response
+  res.status(200).send({
+    message: 'Caregiver logged in successfully',
+    token,
+    userId: caregiver.user_id,
+    type: 'caregiver'
+  });
 });
+
+router.post('/add-query', async (req, res) => {
+  const { userId, subject, recepient, phone, message, type } = req.body;
+  console.log(userId);
+  console.log(subject);
+  console.log("hello im,",recepient);
+  console.log(phone);
+  console.log(message);
+  console.log(type);
+  try {
+    if (!userId || !subject || !phone || !message || !type ||!recepient) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    // Check if senderType is either 'caregiver' or 'family'
+    if (!['caregiver', 'family'].includes(type)) {
+      return res.status(400).json({ success: false, message: 'Invalid sender type' });
+    }
+
+    // Save query to the database
+    const newQuery = await Query.create({
+      sender_id: userId,
+      sender_type: type,
+      recepient:recepient,
+      subject,
+      phone_number: phone,
+      message,
+      dateCreated: new Date(),
+    });
+
+    return res.status(200).json({ success: true, message: 'Query submitted successfully' });
+  } catch (error) {
+    console.error('Error adding query:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router;

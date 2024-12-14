@@ -5,6 +5,7 @@ const app = express();
 
 const router = express.Router();
 router.use(express.json());
+const jwt = require('jsonwebtoken');
 
 router.post('/submit/family', async (req, res) => {
   console.log("IN BACK END");
@@ -66,7 +67,6 @@ router.post('/submit/family', async (req, res) => {
 router.post('/login/family', async (req, res) => {
   const { email, password } = req.body;
 
-  try {
     // Check if the email belongs to a Caregiver or Admin
     let user = await Family.findOne({ where: { email } });
 
@@ -82,15 +82,15 @@ router.post('/login/family', async (req, res) => {
     }
 
     // // Generate a JWT token
-    // const token = jwt.sign({ id: user.id, role: user.role }, 'your_secret_key', { expiresIn: '1h' });
-
-    // // Return the token in the response
-    // res.status(200).json({ message: 'Login successful', token });
-    res.status(200).send({ message: 'Family logged in successfully' });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error during login');
+    // Generate a JWT token with user_id
+  const token = jwt.sign({ id: user.user_id }, 'secret', { expiresIn: '1h' });
+  // Send both the token and the userId in the response
+  res.status(200).send({
+    message: 'Family logged in successfully',
+    token,
+    userId: user.user_id,
+    type: 'family'
   }
+);
 });
 module.exports = router;
