@@ -5,7 +5,7 @@ import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Image, Dimensions
 import Svg, { Path, Circle } from 'react-native-svg';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
-import NavBar from '../components/NavBarPatients';
+import NavBar from '../components/NavBar';
 import { useRouter } from 'expo-router';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
