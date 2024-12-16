@@ -8,22 +8,19 @@ import {
   TouchableOpacity,
   ImageBackground,
 } from "react-native";
-import {useEffect} from "react";
-import useConfig from "../backend/../hooks/useConfig";
-
+import { Ionicons } from "@expo/vector-icons"; // Import Ionicons for eye icon
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useConfig from "../backend/../hooks/useConfig";
 
 const LoginUser = () => {
-  const [email, setEmail] = useState("");  
-  const [password, setPassword] = useState("");  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
   const router = useRouter();
-  const { apiBaseUrl, loading, error } = useConfig();
+  const { apiBaseUrl } = useConfig();
 
-  
-console.log("email ",email);
-console.log("password",password);
   // Function to handle caregiver login
   const handleLoginCaregiver = async () => {
     if (!email || !password) {
@@ -33,38 +30,26 @@ console.log("password",password);
 
     const response = await fetch(`${apiBaseUrl}/login/caregiver`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),  
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      const token = data.token; // Assuming the token is returned as 'token'
-      const userId = data.userId; // Assuming the userId is returned as 'userId'
-      const type= data.type;
-      console.log("Token:", token);
-      console.log("UserId:", userId);
-      console.log("Type:",type);
+      const { token, userId, type } = data;
 
       // Save token and userId in AsyncStorage
       try {
         await AsyncStorage.setItem("authToken", String(token));
         await AsyncStorage.setItem("userId", String(userId));
         await AsyncStorage.setItem("type", String(type));
-
         console.log("Saved successfully");
       } catch (error) {
         console.error("AsyncStorage Error:", error);
       }
-      
-      
-      // Once AsyncStorage operations are done, navigate
-      console.log('Token and UserId saved, navigating...');
 
-      // Redirect based on user type
+      // Redirect to Doctor Dashboard
       router.replace('DoctorDashboard');
     } else {
       Alert.alert("Login Failed", data.message || "Invalid credentials");
@@ -80,39 +65,26 @@ console.log("password",password);
 
     const response = await fetch(`${apiBaseUrl}/login/family`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),  
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
-
 
     const data = await response.json();
 
     if (response.ok) {
-      const token = data.token; // Assuming the token is returned as 'token'
-      const userId = data.userId; // Assuming the userId is returned as 'userId'
-      const type= data.type;
-      console.log("Token:", token);
-      console.log("UserId:", userId);
-      console.log("Type:",type);
+      const { token, userId, type } = data;
 
       // Save token and userId in AsyncStorage
       try {
         await AsyncStorage.setItem("authToken", token);
         await AsyncStorage.setItem("userId", String(userId));
-        await AsyncStorage.setItem("type",type);
-
+        await AsyncStorage.setItem("type", type);
         console.log("Saved successfully");
       } catch (error) {
         console.error("AsyncStorage Error:", error);
       }
-      
-      
-      // Once AsyncStorage operations are done, navigate
-      console.log('Token and UserId saved, navigating...');
 
-      // Redirect based on user type
+      // Redirect to Family Dashboard
       router.replace('/FamilyDashboard');
     } else {
       Alert.alert("Login Failed", data.message || "Invalid credentials");
@@ -142,26 +114,38 @@ console.log("password",password);
           style={styles.input}
           placeholder="Email"
           placeholderTextColor="#4874A6"
-          value={email}  // Bind the value to the state
-          onChangeText={setEmail}  // Update the email state when input changes
+          value={email}
+          onChangeText={setEmail}
         />
 
-        {/* Password Input */}
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#4874A6"
-          secureTextEntry
-          value={password}  // Bind the value to the state
-          onChangeText={setPassword}  // Update the password state when input changes
-        />
+        {/* Password Input with Eye Icon */}
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Password"
+            placeholderTextColor="#4874A6"
+            secureTextEntry={!showPassword} // Toggle visibility
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)} // Toggle the state
+          >
+            <Ionicons
+              name={showPassword ? "eye" : "eye-off"}
+              size={24}
+              color="#4874A6"
+              style={styles.eyeIcon}
+            />
+          </TouchableOpacity>
+        </View>
 
         {/* Forgot Password */}
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.replace("/ForgotPassword")}>
           <Text style={styles.forgotPassword}>Forgot Password?</Text>
         </TouchableOpacity>
 
-        {/* Login Button */}
+        {/* Login Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={handleLoginCaregiver}>
             <Text style={styles.buttonText}>Login Caregiver</Text>
@@ -174,81 +158,91 @@ console.log("password",password);
     </ImageBackground>
   );
 };
+
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
-    width: wp('100%'), // Full screen width
-    height: hp('100%'), // Full screen height
+    width: wp("100%"),
+    height: hp("100%"),
     backgroundColor: "#000000",
   },
   container: {
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "flex-start",
-    paddingHorizontal: wp('5%'), // 5% of screen width
-    paddingTop: hp('5%'), // 5% of screen height
+    paddingHorizontal: wp("5%"),
+    paddingTop: hp("5%"),
   },
   topSection: {
-    width: wp('100%'),
+    width: wp("100%"),
     alignItems: "center",
-    marginBottom: hp('2%'),
+    marginBottom: hp("2%"),
   },
   illustration: {
-    width: wp('70%'),
-    height: hp('25%'), // Adjust height proportionally
+    width: wp("70%"),
+    height: hp("25%"),
     resizeMode: "contain",
-    marginBottom: hp('3%'),
+    marginBottom: hp("3%"),
   },
   title: {
-    fontSize: wp('7%'), // Scales based on screen width
+    fontSize: wp("7%"),
     color: "#4874A6",
     fontWeight: "bold",
-    textAlign: "left",
-    marginTop: hp('2%'),
-    marginBottom: hp('3%'),
+    marginBottom: hp("3%"),
   },
   input: {
-    width: wp('90%'), // Takes up 90% of screen width
+    width: wp("90%"),
     backgroundColor: "#FFFFFF",
     borderRadius: 10,
-    padding: hp('2%'), // Scales padding
-    marginVertical: hp('1%'),
+    padding: hp("2%"),
+    marginVertical: hp("1%"),
     borderWidth: 1,
     borderColor: "#4874A6",
-    fontSize: wp('4%'),
-    textAlign: "left",
+    fontSize: wp("4%"),
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: wp("90%"),
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#4874A6",
+    marginVertical: hp("1%"),
+    paddingLeft: hp("2%"),
+  },
+  passwordInput: {
+    flex: 1,
+    fontSize: wp("4%"),
+  },
+  eyeIcon: {
+    padding: 10,
   },
   forgotPassword: {
     color: "#4874A6",
-    fontSize: wp('3.5%'),
+    fontSize: wp("3.5%"),
     textAlign: "center",
-    marginBottom: hp('2%'),
+    marginBottom: hp("2%"),
   },
   buttonContainer: {
-    width: wp('90%'),
+    width: wp("90%"),
     flexDirection: "row",
     justifyContent: "space-evenly",
-    marginTop: hp('2%'),
+    marginTop: hp("2%"),
   },
   button: {
-    width: wp('40%'),
+    width: wp("40%"),
     backgroundColor: "#80A3CC",
     borderRadius: 10,
-    paddingVertical: hp('2%'),
+    paddingVertical: hp("2%"),
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
     elevation: 5,
-    borderColor: "#000000",
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: wp('4%'),
+    fontSize: wp("4%"),
     fontWeight: "bold",
   },
 });
-
 
 export default LoginUser;

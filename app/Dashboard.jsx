@@ -1,50 +1,70 @@
 import React from 'react';
 import {useEffect,useState} from "react";
-import { ActivityIndicator } from 'react-native'; // Add this import at the top of your file
+
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import NavBar from '../components/NavBar';
-import { useRouter,Link } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
-import useAuth from "../hooks/useAuth";
-
+import { useFocusEffect } from 'expo-router';
+import { BackHandler } from 'react-native';
 
 
 const { width } = Dimensions.get('window');
 
 const Dashboard = () => {
-  const { apiBaseUrl, loading, error } = useConfig();
-  const { user, loading: authLoading } = useAuth();
-  if (authLoading) {
-    return (
-      <View style={dashboardStyles.loadingContainer}>
-        <ActivityIndicator size="large" color="#576574" />
-      </View>
-    );
-  }
 
-  // Extract user data once the auth data is available
-  const type = user?.type;
-  const userId = user?.userId;
-  console.log("Retrieved User ID on navbarpatients:", userId);
- return (
+  const { apiBaseUrl, loading, error } = useConfig();
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        router.replace('/'); // Replace with Login screen
+        return true; // Prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  );
+
+  const [showCharts, setShowCharts] = useState(false); // State to toggle charts view
+
+  const handleChartButtonClick = () => {
+    setShowCharts(true); // Set to show charts only
+  };
+ 
+  
+  return (
     <View style={dashboardStyles.container}>
     <ScrollView style={dashboardStyles.container}>
-      <Header />
-      <NavigationButtons user={user}/>
-      <LineChart />
-      {/* <BarChart /> */}
-      {/* <StackedBarChart /> */}
-      <ActivityBarChart/>
-      <Chart />
-    </ScrollView>
-    <NavBar/>
-    </View>
-    
-  );
+          {/* Conditionally render content */}
+    {showCharts ? (
+      <>
+        {/* Render only charts */}
+
+        <LineChart />
+        <ActivityBarChart />
+        <Chart />
+      </>
+    ) : (
+      <>
+        {/* Render full dashboard */}
+        <Header />
+        <NavigationButtons />
+        <LineChart />
+        {/* <BarChart /> */}
+        {/* <StackedBarChart /> */}
+        <ActivityBarChart />
+        <Chart />
+      </>
+    )}
+  </ScrollView>
+  <NavBar onChartButtonClick={handleChartButtonClick} />
+</View>  );
 };
 
 const dashboardStyles = StyleSheet.create({
@@ -52,18 +72,31 @@ const dashboardStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#adc1d8',
   },
-  loadingContainer:{
-
-  }
 });
 
 
 const Header = () => {
-  const navigation = useNavigation(); // Access navigation
 
+  const navigation = useNavigation(); // Access navigation
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        router.replace('/'); // Replace with Login screen
+        return true; // Prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  );
+
+  const handleBackPress = () => {
+    router.replace('/'); // Navigate to Login and clear stack
+  };
   return (
     <View style={headerStyles.container}>
-      <TouchableOpacity style={headerStyles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={headerStyles.backButton} onPress={handleBackPress} >
         <Icon name="arrow-left" size={24} color="#fff" />
       </TouchableOpacity>
       <Text style={headerStyles.greeting}>Hello,</Text>
@@ -100,17 +133,17 @@ const headerStyles = StyleSheet.create({
   },
 });
 
-const NavigationButtons =  ({ user }) => {
+const NavigationButtons = () => {
   const router = useRouter();
 
   return (
     <View style={navStyles.container}>
       <TouchableOpacity
         style={[navStyles.button, navStyles.addUser]}
-        onPress={() => router.push('/AddUser')} // Navigate to AddUser
+        // onPress={() => router.replace('/AddUser')} // Navigate to AddUser
       >
         <Icon name="plus-square" size={30} color="#d2416e" />
-        <Text style={navStyles.addUserText}>Add User</Text>
+        <Text style={navStyles.addUserText}>View Devices</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[navStyles.button, navStyles.viewUser]}
@@ -126,20 +159,13 @@ const NavigationButtons =  ({ user }) => {
         <Icon name="plus-square" size={30} color="#0db1ad" />
         <Text style={navStyles.addPatientText}>View Requests</Text>
       </TouchableOpacity>
-          <Link style={[navStyles.button,navStyles.viewQuery]}
-      href={{
-        pathname: '/Queries',
-        params: { userId: user.userId, type: user.type }, // Passing userId and type
-      }}
-      asChild
-    >
-      <TouchableOpacity >
+      <TouchableOpacity
+        style={[navStyles.button, navStyles.viewQuery]}
+        onPress={() => router.push('/Queries')} // Navigate to ViewQuery
+      >
         <Icon name="comments" size={30} color="#157fdd" />
         <Text style={navStyles.viewQueryText}>View Query</Text>
       </TouchableOpacity>
-    </Link>
-
-      
     </View>
   );
 };

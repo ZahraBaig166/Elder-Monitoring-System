@@ -10,66 +10,58 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import useConfig from "../backend/../hooks/useConfig";
-import AsyncStorage from '@react-native-async-storage/async-storage';  // Import AsyncStorage
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Icon from "react-native-vector-icons/FontAwesome"; // Import the icon library
 
 const LoginAdmin = () => {
-  const { apiBaseUrl, loading, error } = useConfig();
+  const { apiBaseUrl } = useConfig();
   const router = useRouter();
-  
-  // State to manage email and password
+
+  // States for email, password, and password visibility
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevState) => !prevState);
+  };
+
   const handleLogin = async () => {
     try {
       console.log("Email:", email);
       console.log("Password:", password);
 
-      // Make a POST request to the /admin/login route
       const response = await fetch(`${apiBaseUrl}/admin/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      
-      const data = await response.json(); // Parse the JSON response
-      console.log(data.message); // Log the response message
+
+      const data = await response.json();
+      console.log(data.message);
 
       if (response.ok) {
-        // Store the token after successful login
-        const token = data.token; // Assuming the token is returned as 'token'   
+        const token = data.token;
         console.log("Token:", token);
 
-        try{
+        try {
           await AsyncStorage.setItem("authToken", String(token));
           await AsyncStorage.setItem("userId", String("1"));
           await AsyncStorage.setItem("type", String("admin"));
           console.log("Saved successfully");
-        }
-        catch(error){
+        } catch (error) {
           console.error("AsyncStorage Error:", error);
-
         }
-        console.log('Token and UserId saved, navigating...');
-       
-        // If login is successful, redirect to the dashboard
+
+        console.log("Token and UserId saved, navigating...");
         setTimeout(() => {
           router.replace("/Dashboard");
-        }, 500); // Redirect after a brief delay to ensure smooth user experience
+        }, 500);
       } else {
-        // Handle login error
-        if (data.message === "Invalid email (username)") {
-          Alert.alert("Login Failed", "The email you entered is incorrect.");
-        } else if (data.message === "Invalid password") {
-          Alert.alert("Login Failed", "The password you entered is incorrect.");
-        } else {
-          Alert.alert("Login Failed", data.message || "Invalid credentials");
-        }
+        Alert.alert("Login Failed", data.message || "Invalid credentials");
       }
     } catch (error) {
       console.error("Error during login:", error);
@@ -79,20 +71,18 @@ const LoginAdmin = () => {
 
   return (
     <ImageBackground
-      source={require("@/assets/images/rectangles1.png")} // Update the background image
+      source={require("@/assets/images/rectangles1.png")}
       style={styles.backgroundImage}
       resizeMode="cover"
     >
       <View style={styles.container}>
-        {/* Illustration */}
         <View style={styles.topSection}>
           <Image
-            source={require("../assets/images/login.png")} // Ensure the path is correct
+            source={require("../assets/images/login.png")}
             style={styles.illustration}
           />
         </View>
 
-        {/* Welcome Text */}
         <Text style={styles.title}>Hello there,</Text>
 
         {/* Email Input */}
@@ -101,25 +91,29 @@ const LoginAdmin = () => {
           placeholder="Email"
           placeholderTextColor="#4874A6"
           value={email}
-          onChangeText={(text) => setEmail(text)} // Update email state
+          onChangeText={(text) => setEmail(text)}
         />
 
-        {/* Password Input */}
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#4874A6"
-          secureTextEntry
-          value={password}
-          onChangeText={(text) => setPassword(text)} // Update password state
-        />
+        {/* Password Input with Eye Icon */}
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Password"
+            placeholderTextColor="#4874A6"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+          />
+          <TouchableOpacity onPress={togglePasswordVisibility}>
+            <Icon
+              name={showPassword ? "eye" : "eye-slash"}
+              size={wp(5)}
+              color="#4874A6"
+              style={styles.eyeIcon}
+            />
+          </TouchableOpacity>
+        </View>
 
-        {/* Forgot Password */}
-        <TouchableOpacity>
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
-        </TouchableOpacity>
-
-        {/* Login Button */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Login</Text>
@@ -133,73 +127,80 @@ const LoginAdmin = () => {
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
-    width: wp('100%'), // Full screen width
-    height: hp('100%'), // Full screen height
+    width: wp("100%"),
+    height: hp("100%"),
     backgroundColor: "#000000",
   },
   container: {
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "flex-start",
-    paddingHorizontal: wp('5%'), // 5% of screen width
-    paddingTop: hp('5%'), // 5% of screen height
+    paddingHorizontal: wp("5%"),
+    paddingTop: hp("5%"),
   },
   topSection: {
-    width: wp('100%'),
+    width: wp("100%"),
     alignItems: "center",
-    marginBottom: hp('2%'),
+    marginBottom: hp("2%"),
   },
   illustration: {
-    width: wp('70%'),
-    height: hp('25%'), // Adjust height proportionally
+    width: wp("70%"),
+    height: hp("25%"),
     resizeMode: "contain",
-    marginBottom: hp('3%'),
+    marginBottom: hp("3%"),
   },
   title: {
-    fontSize: wp('7%'), // Scales based on screen width
+    fontSize: wp("7%"),
     color: "#4874A6",
     fontWeight: "bold",
-    textAlign: "left",
-    marginTop: hp('2%'),
-    marginBottom: hp('3%'),
+    marginBottom: hp("3%"),
   },
   input: {
-    width: wp('90%'), // Takes up 90% of screen width
+    width: wp("90%"),
     backgroundColor: "#FFFFFF",
     borderRadius: 10,
-    padding: hp('2%'), // Scales padding
-    marginVertical: hp('1%'),
+    padding: hp("2%"),
+    marginVertical: hp("1%"),
     borderWidth: 1,
     borderColor: "#4874A6",
-    fontSize: wp('4%'),
-    textAlign: "left",
+    fontSize: wp("4%"),
   },
-  forgotPassword: {
-    color: "#4874A6",
-    fontSize: wp('3.5%'),
-    textAlign: "center",
-    marginBottom: hp('2%'),
+  passwordContainer: {
+    width: wp("90%"),
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#4874A6",
+    marginVertical: hp("1%"),
+    paddingHorizontal: wp("2%"),
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: hp("2%"),
+    fontSize: wp("4%"),
+    color: "#000",
+  },
+  eyeIcon: {
+    marginRight: wp("3%"),
   },
   buttonContainer: {
-    width: wp('90%'),
+    width: wp("90%"),
     alignItems: "center",
-    marginTop: hp('2%'),
+    marginTop: hp("2%"),
   },
   button: {
-    width: wp('40%'),
+    width: wp("40%"),
     backgroundColor: "#80A3CC",
     borderRadius: 10,
-    paddingVertical: hp('2%'),
+    paddingVertical: hp("2%"),
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
     elevation: 5,
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: wp('4%'),
+    fontSize: wp("4%"),
     fontWeight: "bold",
   },
 });

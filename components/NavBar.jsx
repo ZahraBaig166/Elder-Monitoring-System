@@ -4,15 +4,16 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 
 
-const NavBar = () => {
+const NavBar = ({ onChartButtonClick }) => {
   const router = useRouter();
  
   return (
     <View style={styles.navContainer}>
-      <TouchableOpacity style={styles.navIcon}>
+      <TouchableOpacity style={styles.navIcon }
+      onPress={() => router.push("/Dashboard")}>
         <Icon name="th-large" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navIcon}>
+      <TouchableOpacity style={styles.navIcon} onPress={onChartButtonClick} >
         <Icon name="pie-chart" size={20} color="#576574" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.navCenter}>
@@ -20,10 +21,10 @@ const NavBar = () => {
           <Icon name="comment" size={24} color="#576574" />
         </View>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navIcon}>
+      <TouchableOpacity style={styles.navIcon} onPress={() => router.push("/Alerts")}>
         <Icon name="bell" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navIcon}>
+      <TouchableOpacity style={styles.navIcon} onPress={() => router.push("/AdminProfile")}>
         <Icon name="user" size={20} color="#576574" />
       </TouchableOpacity>
     </View>
