@@ -1,23 +1,25 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { View, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Link } from 'expo-router';
-import { UserContext } from '../context/userContext';
+import useAuth from "../hooks/useAuth";
 
 const NavBarPatients = () => {
-  const { user, loading } = useContext(UserContext); 
+  const { user, loading: authLoading } = useAuth();
 
-  if (loading) {
-    // Show loading indicator while context is being fetched
+  // If the authentication is still loading, show a loading spinner
+  if (authLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#576574" />
       </View>
     );
   }
-  const type= user?.type;
-  const userId = user?.userId; 
-  console.log("Retrieved User ID:", userId);
+
+  // Extract user data once the auth data is available
+  const type = user?.type;
+  const userId = user?.userId;
+  console.log("Retrieved User ID on navbarpatients:", userId);
 
   return (
     <View style={styles.navContainer}>
@@ -30,10 +32,13 @@ const NavBarPatients = () => {
       </TouchableOpacity>
 
       {userId && (
-        <Link href={{
-                pathname: "/AddQuery",
-                params: { userId: userId, type: type},
-              }} asChild>
+        <Link
+          href={{
+            pathname: "/AddQuery",
+            params: { userId: userId, type: type },
+          }}
+          asChild
+        >
           <TouchableOpacity style={styles.navCenter} accessibilityLabel="Add Query">
             <View style={styles.centerButton}>
               <Icon name="comment" size={24} color="#576574" />

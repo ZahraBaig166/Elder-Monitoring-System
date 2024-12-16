@@ -1,17 +1,144 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const { PendingFamily, Family, Patient, PendingCaregiver, Caregiver, sequelize } = require('../models');
+const { PendingFamily, Family, Patient, PendingCaregiver, Caregiver, Query,sequelize } = require('../models');
 const {patient} = require('../models/patient');
 const jwt = require('jsonwebtoken');
-
-
+const { send } = require('process');
 const router = express.Router();
 require('dotenv').config();
-
-
-// Correct usage: Apply express.json() as middleware
 router.use(express.json());
+router.post('/admin/queries', async (req, res) => {
+  try {
+    console.log("hello, I'm in queries");
+
+    const { userId, type } = req.body;
+    console.log(type);
+
+    // Fetch all unresolved queries from the database
+    const queries = await Query.findAll({
+      where: {
+        is_resolved: false, // Only unresolved queries
+      }
+    });
+
+    // If a type is provided in the body, filter queries based on recipient type
+    if (type) {
+      // Compare the `type` to the `recipient` field (adjust according to your schema)
+      const filteredQueries = queries.filter(query => query.recepient === type);
+
+      console.log("Filtered unresolved queries based on type:", filteredQueries);
+
+      return res.json({ success: true, data: filteredQueries });
+    }
+
+    // If no type is provided, return all unresolved queries
+    console.log("Fetched unresolved queries without type filtering:", queries);
+    return res.json({ success: true, data: queries });
+
+  } catch (error) {
+    console.error('Error fetching queries:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch queries' });
+  }
+});
+
+
+
+router.post('/admin/allqueries', async (req, res) => {
+  try {
+ 
+
+    const { userId,sender_type } = req.body;
+    console.log(sender_type);
+
+    // Fetch all unresolved queries from the database
+    const queries = await Query.findAll({
+      where: {
+        sender_id: userId,
+        sender_type: sender_type,
+      }
+    });
+    console.log(queries);
+    return res.json({ success: true, data: queries });
+
+  } catch (error) {
+    console.error('Error fetching queries:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch queries' });
+  }
+});
+
+
+router.post('/admin/allfamily', async (req, res) => {
+  try {
+
+    const { sender_id,sender_type } = req.body;
+
+    // Fetch all unresolved queries from the database
+    const queries = await Query.findAll({
+      where: {
+        sender_id: sender_id,
+        sender_type: sender_type,
+      }
+    });
+    console.log(queries);
+    return res.json({ success: true, data: queries });
+
+  } catch (error) {
+    console.error('Error fetching queries:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch queries' });
+  }
+});
+
+
+router.patch('/admin/queries_respond', async (req, res) => {
+  const { query_id, response } = req.body;
+  console.log("from routes",query_id);
+  console.log(response);
+
+  if (!query_id || !response) {
+    return res.status(400).json({ success: false, message: 'Query ID and response are required' });
+  }
+
+  try {
+    // Find the query by ID
+    const query = await Query.findByPk(query_id);
+
+    if (!query) {
+      return res.status(404).json({ success: false, message: 'Query not found' });
+    }
+
+    // Update the query with the response and mark it as resolved
+    await query.update({
+      is_resolved: true,
+      response: response, // Add the response to the query
+    });
+
+    return res.status(200).json({ success: true, message: 'Query marked as resolved and response stored' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: 'Error updating query status and storing response' });
+  }
+});
+router.get('/admin/users', async (req, res) => {
+  try {
+    // Fetch data from the database
+    const caregivers = await Caregiver.findAll(); 
+    const family = await Family.findAll(); 
+    console.log("this is caregiver",caregivers);
+    console.log("this is family",family);
+    // Combine the data into a single response object
+    return res.status(200).json({ caregivers,family});
+
+    // Send the response
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
 router.post('/admin/login', (req, res) => {
   const { email, password } = req.body;
   
@@ -136,80 +263,99 @@ router.get('/admin/caregivers', async (req, res) => {
 
 
 // Route to approve caregiver or family request
+const nodemailer = require('nodemailer'); // Add this for sending emails
+
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // Use your email service
+  auth: {
+    user: 'laibar1002@gmail.com', // Replace with your email
+    pass: 'tawq zmns rfxx kuur', // Replace with your email password or app-specific password
+  },
+});
+
 router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
   const { requestType, requestId } = req.params;
   try {
     if (requestType === 'Caregiver') {
-      // Handle pending caregiver request approval
       const pendingCaregiver = await PendingCaregiver.findByPk(requestId);
       if (pendingCaregiver) {
-        const randomPassword = crypto.randomBytes(8).toString('hex');
-        const hashedPassword = await bcrypt.hash(randomPassword, 10);
+        const randomPassword = crypto.randomBytes(3).toString('hex');
+        // const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-        // Create caregiver in database
         const newCaregiver = await Caregiver.create({
           name: pendingCaregiver.name,
           email: pendingCaregiver.email,
-          password: hashedPassword,
+          password: randomPassword,
           age: pendingCaregiver.age,
           address: pendingCaregiver.address,
           education: pendingCaregiver.education,
         });
 
-        // Remove pending caregiver entry
         await PendingCaregiver.destroy({ where: { id: requestId } });
+
+        // Send email to caregiver
+        const mailOptions = {
+          from: 'laibar1002@gmail.com',
+          to: pendingCaregiver.email,
+          subject: 'Account Approved - Caregiver',
+          text: `Dear ${pendingCaregiver.name},\n\nYour account has been approved.\n\nHere is your auto-generated password: ${randomPassword}\n\nPlease login.\n\nThank you.`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error('Error sending email:', error);
+          } else {
+            console.log('Email sent:', info.response);
+          }
+        });
 
         return res.status(200).json({ message: 'Caregiver approved and registered successfully' });
       } else {
         return res.status(404).json({ message: 'Caregiver request not found' });
       }
     } else if (requestType === 'Family') {
-      // Handle pending family request approval
       const pendingFamily = await PendingFamily.findByPk(requestId);
       if (pendingFamily) {
-        const randomPassword = crypto.randomBytes(8).toString('hex');
-        const hashedPassword = await bcrypt.hash(randomPassword, 10);
+        const randomPassword = crypto.randomBytes(3).toString('hex');
+        // const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-        // Log the pendingFamily data
-        console.log('Pending Family Data:', pendingFamily);
-
-        // Ensure status matches the model's ENUM
-        const validStatus = ['stable', 'critical', 'moderate', 'Stable', 'Critical', 'Moderate'];
-        if (!validStatus.includes(pendingFamily.patient_status)) {
-          return res.status(400).json({ message: 'Invalid status value' });
-        }
-        console.log("PENDING FAMILY DATA IN ADMIN ROUTE",pendingFamily);
-
-        // Create new patient
         const newPatient = await Patient.create({
           name: pendingFamily.patient_name,
           age: pendingFamily.patient_age,
-          medical_conditions: pendingFamily.patient_medical_conditions,  // Corrected this line
+          medical_conditions: pendingFamily.patient_medical_conditions,
           emergency_contact: pendingFamily.patient_emergency_contact,
           status: pendingFamily.patient_status,
         });
 
-
-        // Log the created patient for debugging
-        console.log('Created New Patient:', newPatient);
-
-        // Create new family
         const newFamily = await Family.create({
           name: pendingFamily.name,
           email: pendingFamily.email,
-          password: hashedPassword,
+          password: randomPassword, // Save the random password as plain text
           relationship: pendingFamily.relationship_to_patient,
           phone_number: pendingFamily.phone_number,
           address: pendingFamily.address,
-          patient_id: newPatient.patient_id, // Link the patient to the family
+          patient_id: newPatient.patient_id,
         });
 
-        // Log the new family entry for debugging
-        console.log('Created New Family:', newFamily);
-
-        // Remove pending family entry
         await PendingFamily.destroy({ where: { id: requestId } });
-        
+
+        // Send email to family
+        const mailOptions = {
+          from: 'laibar1002@gmail.com',
+          to: pendingFamily.email,
+          subject: 'Account Approved - Family',
+          text: `Dear ${pendingFamily.name},\n\nYour account has been approved.\n\nHere is your auto-generated password: ${randomPassword}\n\nPlease login.\n\nThank you.`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error('Error sending email:', error);
+          } else {
+            console.log('Email sent:', info.response);
+          }
+        });
+
         return res.status(200).json({ message: 'Family approved successfully' });
       } else {
         return res.status(404).json({ message: 'Family request not found' });
@@ -222,9 +368,6 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
     return res.status(500).json({ message: 'Error approving request', error });
   }
 });
-
-
-
   
   // Decline a request
   router.post('/admin/decline/:requestType/:requestId', async (req, res) => {

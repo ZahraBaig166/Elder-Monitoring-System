@@ -3,11 +3,12 @@ import {useEffect} from "react";
 
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView,TouchableOpacity } from "react-native";
 import { LineChart,BarChart } from "react-native-chart-kit";
+import Icon from 'react-native-vector-icons/FontAwesome';  // Example import
+
 import NavBarPatients from '../components/NavBarPatients';
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
-import { UserProvider } from '../context/userContext';  // Adjust the path if needed
 
 
 const DashboardHeartRateAndStats = () => {
@@ -18,22 +19,27 @@ const DashboardHeartRateAndStats = () => {
     router.push("/Medication"); 
     
   };
-  
+  const handleBack = () => {
+    router.back("/"); // Navigate back to the previous screen
+  };
   
   return (
-    <UserProvider>
-    <View style={{ flex: 1 }}>
+<View style={{ flex: 1 }}>
             {/* Header Section */}
-            <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Text style={styles.backButtonText}></Text>
-        </TouchableOpacity>
-      </View>
-        
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+            <Icon name="arrow-left" size={24} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Dashboard</Text>
+        </View>
 
-  
+      <TouchableOpacity style={styles.queriesButton} onPress={() => router.push('/UserQueries')}>
+        <Text style={styles.queriesButtonText}>Queries</Text>
+      </TouchableOpacity>
+    
 
     <ScrollView style={styles.scrollView}>
+    
     <Text style={styles.patientName}>Patient Name</Text>
       {/* Heart Rate Section */}
       <View style={styles.heartRateContainer}>
@@ -244,7 +250,6 @@ const DashboardHeartRateAndStats = () => {
     </ScrollView>
      <NavBarPatients />
      </View>
-</UserProvider>
   );
 };
 
@@ -365,6 +370,21 @@ const styles = StyleSheet.create({
     padding: 10,
     marginHorizontal: 5,
   },
+  queriesButton: {
+  backgroundColor: "#FFF",
+  paddingVertical: 8,
+  paddingHorizontal: 15,
+  borderRadius: 8,
+  position: "absolute",
+  right: 20, // Adjust to position the button to the top right
+  top: 50,   // Adjust to match header spacing
+},
+queriesButtonText: {
+  color: "#000",
+  fontWeight: "bold",
+  fontSize: 16,
+},
+
  statCardblood:{
   // flex: 1,
   width: 220,

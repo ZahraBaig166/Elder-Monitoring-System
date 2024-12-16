@@ -59,7 +59,11 @@ module.exports = (sequelize, DataTypes) => {
       is_resolved: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
-      },
+      },response: {
+  type: DataTypes.TEXT,
+  allowNull: true, // You can make this non-null if required
+},
+
     },
     {
       sequelize,

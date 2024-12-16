@@ -17,7 +17,7 @@ const NavBar = () => {
       </TouchableOpacity>
       <TouchableOpacity style={styles.navCenter}>
         <View style={styles.plusButton}>
-          <Icon name="plus" size={24} color="#000" />
+          <Icon name="comment" size={24} color="#576574" />
         </View>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navIcon}>

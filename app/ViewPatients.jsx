@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useContext } from 'react';
 import {
   View,
   Text,
@@ -18,8 +18,8 @@ const ViewPatients = () => {
   const [patients, setPatients] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-
   const { apiBaseUrl, loading, error } = useConfig();
+
 
   useEffect(() => {
     // Fetch patients only when apiBaseUrl is ready

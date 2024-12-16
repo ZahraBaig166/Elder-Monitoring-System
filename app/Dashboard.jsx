@@ -1,27 +1,40 @@
 import React from 'react';
 import {useEffect,useState} from "react";
-
+import { ActivityIndicator } from 'react-native'; // Add this import at the top of your file
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import NavBar from '../components/NavBar';
-import { useRouter } from 'expo-router';
+import { useRouter,Link } from 'expo-router';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
+import useAuth from "../hooks/useAuth";
+
 
 
 const { width } = Dimensions.get('window');
 
 const Dashboard = () => {
   const { apiBaseUrl, loading, error } = useConfig();
+  const { user, loading: authLoading } = useAuth();
+  if (authLoading) {
+    return (
+      <View style={dashboardStyles.loadingContainer}>
+        <ActivityIndicator size="large" color="#576574" />
+      </View>
+    );
+  }
 
-  
-  return (
+  // Extract user data once the auth data is available
+  const type = user?.type;
+  const userId = user?.userId;
+  console.log("Retrieved User ID on navbarpatients:", userId);
+ return (
     <View style={dashboardStyles.container}>
     <ScrollView style={dashboardStyles.container}>
       <Header />
-      <NavigationButtons />
+      <NavigationButtons user={user}/>
       <LineChart />
       {/* <BarChart /> */}
       {/* <StackedBarChart /> */}
@@ -39,6 +52,9 @@ const dashboardStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#adc1d8',
   },
+  loadingContainer:{
+
+  }
 });
 
 
@@ -84,7 +100,7 @@ const headerStyles = StyleSheet.create({
   },
 });
 
-const NavigationButtons = () => {
+const NavigationButtons =  ({ user }) => {
   const router = useRouter();
 
   return (
@@ -110,13 +126,20 @@ const NavigationButtons = () => {
         <Icon name="plus-square" size={30} color="#0db1ad" />
         <Text style={navStyles.addPatientText}>View Requests</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={[navStyles.button, navStyles.viewQuery]}
-        onPress={() => router.push('/Queries')} // Navigate to ViewQuery
-      >
+          <Link style={[navStyles.button,navStyles.viewQuery]}
+      href={{
+        pathname: '/Queries',
+        params: { userId: user.userId, type: user.type }, // Passing userId and type
+      }}
+      asChild
+    >
+      <TouchableOpacity >
         <Icon name="comments" size={30} color="#157fdd" />
         <Text style={navStyles.viewQueryText}>View Query</Text>
       </TouchableOpacity>
+    </Link>
+
+      
     </View>
   );
 };

@@ -70,13 +70,13 @@ module.exports = (sequelize, DataTypes) => {
       hooks: {
         beforeCreate: async (familyMember) => {
           const salt = await bcrypt.genSalt(10);
-          familyMember.password = await bcrypt.hash(familyMember.password, salt); // Hash the password before saving it
+          // familyMember.password = await bcrypt.hash(familyMember.password, salt); // Hash the password before saving it
         },
         // Hash the password before updating the user if password has changed
         beforeUpdate: async (familyMember) => {
           if (familyMember.changed('password')) {
             const salt = await bcrypt.genSalt(10);
-            familyMember.password = await bcrypt.hash(familyMember.password, salt);
+            // familyMember.password = await bcrypt.hash(familyMember.password, salt);
           }
         },
       },

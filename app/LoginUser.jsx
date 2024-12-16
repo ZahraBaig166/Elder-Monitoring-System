@@ -13,7 +13,6 @@ import useConfig from "../backend/../hooks/useConfig";
 
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { UserProvider } from '../context/userContext';  // Adjust the path if needed
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginUser = () => {
@@ -52,9 +51,9 @@ console.log("password",password);
 
       // Save token and userId in AsyncStorage
       try {
-        await AsyncStorage.setItem("authToken", token);
+        await AsyncStorage.setItem("authToken", String(token));
         await AsyncStorage.setItem("userId", String(userId));
-        await AsyncStorage.setItem("type",type);
+        await AsyncStorage.setItem("type", String(type));
 
         console.log("Saved successfully");
       } catch (error) {

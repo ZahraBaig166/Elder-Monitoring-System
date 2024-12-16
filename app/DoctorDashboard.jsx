@@ -1,57 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions ,Image} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 import NavBar from '../components/NavBarPatients';
-import { useRouter } from 'expo-router';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import useConfig from "../backend/../hooks/useConfig";
-import { UserProvider } from '../context/userContext';  // Adjust the path if needed
-
+import useConfig from "../hooks/useConfig";
+import useAuth from "../hooks/useAuth";
 
 const { width } = Dimensions.get('window');
 
 const DoctorDashboard = () => {
   const [counts, setCounts] = useState({ total: 0, critical: 0, moderate: 0, stable: 0 });
-  const [loading, setLoading] = useState(true); // Add loading state for counts
+  const [loading, setLoading] = useState(true);
   const [criticalPatients, setCriticalPatients] = useState([]);
-  const [isMedScheduleExpanded, setIsMedScheduleExpanded] = useState(false); 
+  const [isMedScheduleExpanded, setIsMedScheduleExpanded] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const router = useRouter();
-  const { apiBaseUrl, loading: configLoading, error } = useConfig();
 
-  // Fetch Patient Counts
+  const { apiBaseUrl, loading: configLoading } = useConfig();
+  const { user, loading: authLoading } = useAuth();
+
   useEffect(() => {
-    if (!apiBaseUrl) return; // Wait for apiBaseUrl to be available
-
+    if (!apiBaseUrl) return;
     const fetchPatientCounts = async () => {
-      setLoading(true); // Set loading to true while fetching counts
+      setLoading(true);
       try {
         const response = await fetch(`${apiBaseUrl}/patients/counts`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch: ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
         const data = await response.json();
         setCounts(data);
       } catch (error) {
         console.error('Error fetching patient counts:', error);
       } finally {
-        setLoading(false); // Stop loading once data is fetched
+        setLoading(false);
       }
     };
-
     fetchPatientCounts();
-  }, [apiBaseUrl]); // Re-fetch when apiBaseUrl changes
+  }, [apiBaseUrl]);
 
-  // Fetch Critical Patients
   useEffect(() => {
-    if (!apiBaseUrl) return; // Wait for apiBaseUrl to be available
-
+    if (!apiBaseUrl) return;
     const fetchCriticalPatients = async () => {
       try {
         const response = await fetch(`${apiBaseUrl}/patients/critical`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch: ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
         const data = await response.json();
         setCriticalPatients(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -59,9 +49,8 @@ const DoctorDashboard = () => {
         setCriticalPatients([]);
       }
     };
-
     fetchCriticalPatients();
-  }, [apiBaseUrl]); // Re-fetch when apiBaseUrl changes
+  }, [apiBaseUrl]);
 
   const PatientInfoCard = ({ counts }) => {
     return (
@@ -93,10 +82,6 @@ const DoctorDashboard = () => {
   const CriticalPatientList = () => {
     const handleToggle = () => {
       setIsExpanded((prevState) => !prevState);
-    };
-
-    const handleListPress = () => {
-      router.push('/ViewPatients'); 
     };
 
     return (
@@ -135,10 +120,6 @@ const DoctorDashboard = () => {
       setIsMedScheduleExpanded(prevState => !prevState);
     };
     
-    const handleViewSchedule = () => {
-      router.push('/Medication');
-    };
-
     return (
       <View style={styles.criticalListContainer}>
         <TouchableOpacity onPress={handleMedToggle} style={styles.headerContainer}>
@@ -160,9 +141,6 @@ const DoctorDashboard = () => {
                   <Text style={styles.name}>Patient Name</Text>
                   <Text style={styles.medicationname}>Medication Name</Text>
                   <Text style={styles.condition}>Time: 8:00 AM</Text>
-                  <TouchableOpacity onPress={handleViewSchedule} style={styles.ScheduleButton}>
-                    <Text style={styles.ScheduleText}>View Schedule</Text>
-                  </TouchableOpacity>
                 </View>
               </View>
             ))}
@@ -191,7 +169,6 @@ const DoctorDashboard = () => {
   }
 
   return (
-    <UserProvider>
     <View style={styles.dashboardContainer}>
       <ScrollView style={styles.dashboadContainer}>
         <View style={styles.header}>
@@ -201,6 +178,17 @@ const DoctorDashboard = () => {
           />
           <Text style={styles.welcomeText}>Welcome Name</Text>
           <Text style={styles.subText}>Have a Nice day</Text>
+
+          {/* Query Button */}
+          <Link href={{
+            pathname: "/Queries",
+            params: { userId: user?.userId, type: user?.type }
+          }} asChild>
+            <TouchableOpacity style={styles.queryButton}>
+              <Text style={styles.queryButtonText}>Query</Text>
+            </TouchableOpacity>
+          </Link>
+          
           <View style={styles.searchContainer}>
             <Text style={styles.searchText}>Search....</Text>
             <Image
@@ -209,13 +197,15 @@ const DoctorDashboard = () => {
             />
           </View>
         </View>
+
         <PatientInfoCard counts={counts} />
         <TouchableOpacity
-            style={styles.viewAllButton}
-            onPress={() => router.push('/ViewPatients')}
-          >
-            <Text style={styles.viewAllButtonText}>View All Patients</Text>
-          </TouchableOpacity>
+          style={styles.viewAllButton}
+          onPress={() => router.push('/ViewPatients')}
+        >
+          <Text style={styles.viewAllButtonText}>View All Patients</Text>
+        </TouchableOpacity>
+
         <CriticalPatientList />
         <MedicationScheduleList />
         <ChartWithHeading
@@ -234,11 +224,9 @@ const DoctorDashboard = () => {
           title="Activity Levels Over Time"
           source={require('../assets/images/G4.png')}
         />
-      
       </ScrollView>
       <NavBar />
     </View>
-    </UserProvider>
   );
 };
 
@@ -278,6 +266,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     width: '90%',
     height: 40,
+  },
+  queryButton: {
+    position: 'absolute',
+    right: 20,
+    top: 20,
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+    elevation: 5,
+  },
+  queryButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   searchText: {
     flex: 1,

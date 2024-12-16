@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
-import { Link } from "expo-router"; // For navigation
+import { Link } from "expo-router"; 
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -78,9 +78,9 @@ const ViewRequest = () => {
       <View style={styles.main}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton}>
+          <Link href="/Dashboard" style={styles.backButton}>
             <Icon name="arrow-left" size={wp(5)} color="#000" />
-          </TouchableOpacity>
+          </Link>
           <Text style={styles.headerText}>Pending Requests</Text>
           <TouchableOpacity style={styles.menuButton}>
             <Icon name="ellipsis-v" size={wp(5)} color="#000" />
@@ -129,15 +129,14 @@ const ViewRequest = () => {
                 pathname: "/requestDetails",
                 params: { requestId: request.id, requestType: request.type },
               }}
+              style={styles.requestCard}
             >
-              <View style={styles.requestCard}>
-                <View style={styles.cardContent}>
-                  <Text style={styles.requestName}>{request.name}</Text>
-                  <Text style={styles.requestType}>Request Type: {request.type}</Text>
-                </View>
-                <TouchableOpacity style={styles.detailsButton}>
-                  <Text style={styles.detailsButtonText}>View Details</Text>
-                </TouchableOpacity>
+              <View style={styles.cardContent}>
+                <Text style={styles.requestName}>{request.name}</Text>
+                <Text style={styles.requestType}>Request Type: {request.type}</Text>
+              </View>
+              <View style={styles.detailsButton}>
+                <Text style={styles.detailsButtonText}>View Details</Text>
               </View>
             </Link>
           ))}
@@ -225,15 +224,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9F9F9",
     borderRadius: wp(5),
     padding: wp(4),
-    paddingBottom: hp(4), // Adds spacing at the bottom
+    paddingBottom: hp(4),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: hp(0.5) },
     shadowOpacity: 0.1,
     shadowRadius: wp(2),
     elevation: 4,
-  
   },
-  
   requestCard: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -241,13 +238,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#ADC1D8",
     borderRadius: wp(4),
     padding: wp(4),
-
-marginBottom: hp(3),
-
+    marginBottom: hp(3),
   },
   cardContent: {
     flex: 1,
-
   },
   requestName: {
     fontSize: wp(4),

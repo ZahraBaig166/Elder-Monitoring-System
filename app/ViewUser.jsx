@@ -23,38 +23,43 @@ const ViewUser = () => {
   const { apiBaseUrl, loading, error } = useConfig();
 
   // Fetch caregivers and patients from the backend
-  useEffect(() => {
-    if (loading || !apiBaseUrl) return;
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch(`${apiBaseUrl}/admin/users`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+
+    useEffect(() => {
+      if (loading || !apiBaseUrl) return;
+      const fetchUsers = async () => {
+        try {
+          const response = await fetch(`${apiBaseUrl}/admin/users`);
+          console.log("Response status:", response.status);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log("Fetched data:", data);
+          
+          // Map fetched data to include consistent 'type' values
+          const allUsers = [
+            ...(data.caregivers || []).map((user) => ({ ...user, type: "Caregiver" })),
+            ...(data.family || []).map((user) => ({ ...user, type: "Family" })),
+          ];
+          setUsers(allUsers);
+          setFilteredUsers(allUsers);
+        } catch (error) {
+          console.error("Error fetching users:", error);
         }
-        const data = await response.json();
-        const allUsers = [
-          ...(data.caregivers || []).map((user) => ({ ...user, type: "Caregiver" })),
-          ...(data.patients || []).map((user) => ({ ...user, type: "Patient" })),
-        ];
-        setUsers(allUsers);
-        setFilteredUsers(allUsers);
-      } catch (error) {
-        console.error("Error fetching users:", error);
+      };
+    
+      fetchUsers();
+    }, [loading, apiBaseUrl]);
+    
+    const handleFilterChange = (filter) => {
+      setActiveFilter(filter);
+      if (filter === "All") {
+        setFilteredUsers(users);
+      } else {
+        setFilteredUsers(users.filter((user) => user.type === filter));
       }
     };
-
-    fetchUsers();
-  }, [loading, apiBaseUrl]);
-
-  // Filter users based on active filter
-  const handleFilterChange = (filter) => {
-    setActiveFilter(filter);
-    if (filter === "All") {
-      setFilteredUsers(users);
-    } else {
-      setFilteredUsers(users.filter((user) => user.type === filter));
-    }
-  };
+    
 
   if (loading) {
     return (
@@ -88,7 +93,7 @@ const ViewUser = () => {
 
         {/* Filter Buttons */}
         <View style={styles.filterContainer}>
-          {["All", "Caregiver", "Patient"].map((filter) => (
+          {["All", "Caregiver", "Family"].map((filter) => (
             <TouchableOpacity
               key={filter}
               style={[

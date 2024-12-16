@@ -11,7 +11,6 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import Icon from "react-native-vector-icons/FontAwesome";
 import useConfig from "../hooks/useConfig";
-import { UserProvider } from '../context/userContext';  // Adjust the path if needed
 
 const RequestDetails = () => {
   const router = useRouter();
@@ -71,16 +70,17 @@ const RequestDetails = () => {
       }
   
       // Show success alert after approval
-      alert("Request has been approved successfully!");
+      alert("Request has been approved successfully! An email has been sent to the user.");
       
       // Redirect to ViewRequest page after approval
-      router.push("/ViewRequest");
+      router.replace("/ViewRequest");
   
     } catch (err) {
       console.error("Error approving request:", err);
       alert("An unexpected error occurred.");
     }
   };
+  
   
 
   const handleDecline = async () => {
@@ -98,7 +98,7 @@ const RequestDetails = () => {
       alert("Request has been declined successfully!");
       
       // Redirect to ViewRequest page after decline
-      router.push("/ViewRequest");
+      router.replace("/ViewRequest");
   
     } catch (err) {
       console.error("Error declining request:", err);
@@ -127,7 +127,7 @@ const RequestDetails = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push("/ViewRequest")}>
+        <TouchableOpacity onPress={() => router.replace("/ViewRequest")}>
           <Icon name="arrow-left" size={wp("5%")} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Request Details</Text>
@@ -140,28 +140,38 @@ const RequestDetails = () => {
     paddingBottom: hp("5%"), // Adds space at the bottom of the page
   }}
 >
-  {[
-    { label: "Name", value: requestDetails.name },
-    { label: "Email", value: requestDetails.email },
-    { label: "Phone", value: requestDetails.phone_number || "N/A" },
-    { label: "Address", value: requestDetails.address },
-    { label: "Patient Name", value: requestDetails.patient_name },
-    { label: "Patient Age", value: requestDetails.patient_age },
-    {
-      label: "Medical Conditions",
-      value: requestDetails.patient_medical_conditions || "N/A",
-    },
-    { label: "Patient Status", value: requestDetails.patient_status },
-    {
-      label: "Emergency Contact",
-      value: requestDetails.patient_emergency_contact,
-    },
-  ].map((item, index) => (
-    <View key={index} style={styles.card}>
-      <Text style={styles.label}>{item.label}</Text>
-      <Text style={styles.value}>{item.value}</Text>
-    </View>
-  ))}
+{(requestType === "Family"
+  ? [
+      { label: "Name", value: requestDetails.name },
+      { label: "Email", value: requestDetails.email },
+      { label: "Phone", value: requestDetails.phone_number || "N/A" },
+      { label: "Address", value: requestDetails.address },
+      { label: "Patient Name", value: requestDetails.patient_name },
+      { label: "Patient Age", value: requestDetails.patient_age },
+      {
+        label: "Medical Conditions",
+        value: requestDetails.patient_medical_conditions || "N/A",
+      },
+      { label: "Patient Status", value: requestDetails.patient_status },
+      {
+        label: "Emergency Contact",
+        value: requestDetails.patient_emergency_contact,
+      },
+    ]
+  : [
+      { label: "Name", value: requestDetails.name },
+      { label: "Email", value: requestDetails.email },
+      { label: "Age", value: requestDetails.age },
+      { label: "Address", value: requestDetails.address },
+      // { label: "Education", value: requestDetails.education },
+    ]
+).map((item, index) => (
+  <View key={index} style={styles.card}>
+    <Text style={styles.label}>{item.label}</Text>
+    <Text style={styles.value}>{item.value}</Text>
+  </View>
+))}
+
 
   {requestType === "family" && (
     <View style={styles.card}>

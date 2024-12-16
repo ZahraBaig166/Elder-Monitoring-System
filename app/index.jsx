@@ -6,15 +6,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router"; 
 import ScreenWrapper from "../components/ScreenWrapper";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-import { UserProvider } from '../context/userContext';  // Adjust the path if needed
 
 const StartScreen = () => {
   const router = useRouter();
 
   return (
-    <UserProvider>
     <View style={styles.outercontainer}>
-      <ScreenWrapper bg="#80A3CC" style={styles.screenWrapper}>
         <LinearGradient colors={["#80A3CC", "#91BEE3"]} style={styles.container}>
           {/* Title */}
           <Text style={styles.title}>
@@ -67,9 +64,7 @@ const StartScreen = () => {
             </TouchableOpacity>
           </View>
         </LinearGradient>
-      </ScreenWrapper>
     </View>
-    </UserProvider>
   );
 };
 
