@@ -15,12 +15,13 @@ import {
 import useConfig from "../hooks/useConfig";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { UserProvider } from '../context/userContext';  // Adjust the path if needed
-
+import { useRouter } from "expo-router";
 const ViewUser = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All");
   const { apiBaseUrl, loading, error } = useConfig();
+  const router = useRouter();
 
   // Fetch caregivers and patients from the backend
 
@@ -51,6 +52,14 @@ const ViewUser = () => {
       fetchUsers();
     }, [loading, apiBaseUrl]);
     
+
+    const handleViewDetails = (userId, userType) => {
+      router.push({
+        pathname: "/UserDetails",
+        params: { userId, userType },
+      });
+    };
+
     const handleFilterChange = (filter) => {
       setActiveFilter(filter);
       if (filter === "All") {
@@ -140,9 +149,15 @@ const ViewUser = () => {
                   <Text style={styles.userType}>Type: {user.type}</Text>
                 </View>
               </View>
-              <TouchableOpacity style={styles.detailsButton}>
-                <Text style={styles.detailsButtonText}>View Details</Text>
-              </TouchableOpacity>
+              <TouchableOpacity
+              style={styles.detailsButton}
+              onPress={() => router.push({
+                pathname: "/UserDetails", // Route to the details page
+                params: { userType: user.type, userId: user.user_id }, // Pass parameters
+              })}
+            >
+              <Text style={styles.detailsButtonText}>View Details</Text>
+            </TouchableOpacity>
             </View>
           ))}
         </ScrollView>

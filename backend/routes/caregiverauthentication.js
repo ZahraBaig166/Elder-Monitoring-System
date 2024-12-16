@@ -43,33 +43,44 @@ alert("Caregiver registration request has been submitted for approval");
 });
 
 
+
 const { Caregiver } = require('../models'); // Import both models
 const crypto = require('crypto'); // For generating a random password
 
-router.post('/login/caregiver', async (req, res) => {
+router.post("/login/caregiver", async (req, res) => {
   const { email, password } = req.body;
- 
-  const caregiver = await Caregiver.findOne({ where: { email } });
-  if (!caregiver) {
-    return res.status(400).send('Caregiver not found');
+
+  try {
+    // Find caregiver by email
+    const caregiver = await Caregiver.findOne({ where: { email } });
+    if (!caregiver) {
+      return res.status(400).send("Caregiver not found");
+    }
+
+    // Compare entered password with hashed password in DB
+    const isPasswordValid = await bcrypt.compare(password, caregiver.password);
+    if (!isPasswordValid) {
+      return res.status(400).send("Invalid credentials");
+    }
+
+    // Generate JWT Token
+    const token = jwt.sign({ id: caregiver.user_id }, "secret", {
+      expiresIn: "1h",
+    });
+
+    // Send success response
+    res.status(200).send({
+      message: "Caregiver logged in successfully",
+      token,
+      userId: caregiver.user_id,
+      type: "caregiver",
+    });
+  } catch (error) {
+    console.error("Error in caregiver login:", error);
+    res.status(500).send("Internal server error");
   }
-
-  // Assuming you use bcrypt to validate the password
-  if (password !== caregiver.password) {
-    return res.status(400).send('Invalid credentials');
-
-  }
-
-  // Generate a JWT token with user_id
-  const token = jwt.sign({ id: caregiver.user_id }, 'secret', { expiresIn: '1h' });
-  // Send both the token and the userId in the response
-  res.status(200).send({
-    message: 'Caregiver logged in successfully',
-    token,
-    userId: caregiver.user_id,
-    type: 'caregiver'
-  });
 });
+
 
 router.post('/add-query', async (req, res) => {
   const { userId, subject, recepient, phone, message, type } = req.body;

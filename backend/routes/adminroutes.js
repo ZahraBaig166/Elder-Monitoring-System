@@ -8,6 +8,7 @@ const { send } = require('process');
 const router = express.Router();
 require('dotenv').config();
 router.use(express.json());
+
 router.post('/admin/queries', async (req, res) => {
   try {
     console.log("hello, I'm in queries");
@@ -281,7 +282,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
       const pendingCaregiver = await PendingCaregiver.findByPk(requestId);
       if (pendingCaregiver) {
         const randomPassword = crypto.randomBytes(3).toString('hex');
-        // const hashedPassword = await bcrypt.hash(randomPassword, 10);
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
         const newCaregiver = await Caregiver.create({
           name: pendingCaregiver.name,
@@ -318,7 +319,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
       const pendingFamily = await PendingFamily.findByPk(requestId);
       if (pendingFamily) {
         const randomPassword = crypto.randomBytes(3).toString('hex');
-        // const hashedPassword = await bcrypt.hash(randomPassword, 10);
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
         const newPatient = await Patient.create({
           name: pendingFamily.patient_name,
@@ -368,6 +369,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
     return res.status(500).json({ message: 'Error approving request', error });
   }
 });
+
   
   // Decline a request
   router.post('/admin/decline/:requestType/:requestId', async (req, res) => {
@@ -400,6 +402,50 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
       return res.status(500).json({ message: 'Error declining request', error });
     }
   });
+  router.get("/admin/users/:userType/:userId", async (req, res) => {
+    const { userType, userId } = req.params;
   
+    console.log("Received userType:", userType);
+    console.log("Received userId:", userId);
+  
+    // Check for missing parameters
+    if (!userType || !userId) {
+      return res.status(400).json({ message: "User type or ID is missing." });
+    }
+  
+    try {
+      let user = null;
+  
+      // Fetch data based on user type using findByPk
+      if (userType === "Caregiver") {
+        console.log("Fetching Caregiver details...");
 
+        user = await Caregiver.findByPk(userId, {
+          attributes: ["user_id", "name", "email", "age", "address", "education", "date_created"],
+        });
+        console.log("user",user);
+
+      } else if (userType === "Family") {
+        console.log("Fetching Family details...");
+        user = await Family.findByPk(userId, {
+          attributes: ["user_id", "name", "email", "relationship", "address", "patient_id"],
+        });
+      } else {
+        return res.status(400).json({ message: "Invalid user type. Use 'Caregiver' or 'Family'." });
+      }
+  
+      // Check if user exists
+      if (!user) {
+        console.log("User not found.");
+        return res.status(404).json({ message: "User not found." });
+      }
+  
+      // Return user details
+      console.log("User found:", user);
+      return res.status(200).json(user);
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      return res.status(500).json({ message: "Internal server error." });
+    }
+  });
 module.exports = router;

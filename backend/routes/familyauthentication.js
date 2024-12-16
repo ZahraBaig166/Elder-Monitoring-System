@@ -60,37 +60,45 @@ router.post('/submit/family', async (req, res) => {
 });
 
 
-// const bcrypt = require('bcrypt');
+ const bcrypt = require('bcrypt');
 // const jwt = require('jsonwebtoken');
 
 // Login route for Admin or Caregiver
-router.post('/login/family', async (req, res) => {
+;
+
+// Family Login Route
+router.post("/login/family", async (req, res) => {
   const { email, password } = req.body;
 
-    // Check if the email belongs to a Caregiver or Admin
-    let user = await Family.findOne({ where: { email } });
-
-    if (!user) {
-          return res.status(400).send('Family not found');
-    }
-      
-    // Check if password is correct
-    // const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (password!=user.password) {
-      return res.status(400).send('Invalid credentials');
+  try {
+    // Find family user by email
+    const family = await Family.findOne({ where: { email } });
+    if (!family) {
+      return res.status(400).send("Family not found");
     }
 
-    // // Generate a JWT token
-    // Generate a JWT token with user_id
-  const token = jwt.sign({ id: user.user_id }, 'secret', { expiresIn: '1h' });
-  // Send both the token and the userId in the response
-  res.status(200).send({
-    message: 'Family logged in successfully',
-    token,
-    userId: user.user_id,
-    type: 'family'
+    // Compare entered password with hashed password in DB
+    const isPasswordValid = await bcrypt.compare(password, family.password);
+    if (!isPasswordValid) {
+      return res.status(400).send("Invalid credentials");
+    }
+
+    // Generate JWT Token
+    const token = jwt.sign({ id: family.user_id }, "secret", {
+      expiresIn: "1h",
+    });
+
+    // Send success response
+    res.status(200).send({
+      message: "Family logged in successfully",
+      token,
+      userId: family.user_id,
+      type: "family",
+    });
+  } catch (error) {
+    console.error("Error in family login:", error);
+    res.status(500).send("Internal server error");
   }
-);
 });
+
 module.exports = router;

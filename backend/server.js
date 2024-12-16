@@ -42,6 +42,8 @@ const caregiverRouter = require('./routes/caregiverauthentication');
 app.use("/",caregiverRouter);
 const patientRoutes = require('./routes/patients');
 app.use("/", patientRoutes);
+const forgotpwRouter = require('./routes/forgotpwauthentication');
+app.use("/",forgotpwRouter);
 
 app.get('/checktables', async (req, res) => {
   try {
