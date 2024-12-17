@@ -33,9 +33,9 @@ router.post('/submit/caregiver', async (req, res) => {
       educations,
     });
     console.log("newPendingCaregiver",newPendingCaregiver);
-alert("Caregiver registration request has been submitted for approval");
+res.status(201).json({ message: 'Caregiver registration request has been submitted for approval' });
     // Send response back to frontend
-    res.status(201).json({ message: 'Caregiver registration request has been submitted for approval' });
+    // res.status(201).json({ message: 'Caregiver registration request has been submitted for approval' });
   } catch (error) {
     console.error('Error during caregiver registration:', error);
     res.status(500).send('Error registering caregiver');
@@ -117,5 +117,23 @@ router.post('/add-query', async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+router.get("/caregiverProfile/:id", async (req, res) => {
+  const { id } = req.params;
 
+  try {
+    // Use findByPk to fetch caregiver details by primary key (user_id)
+    const caregiver = await Caregiver.findByPk(id, {
+      attributes: ["name", "email", "password"],
+    });
+
+    if (!caregiver) {
+      return res.status(404).json({ message: "Caregiver not found" });
+    }
+
+    return res.status(200).json(caregiver);
+  } catch (error) {
+    console.error("Error fetching caregiver details:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
 module.exports = router;

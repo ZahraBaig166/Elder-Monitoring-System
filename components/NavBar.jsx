@@ -16,7 +16,7 @@ const NavBar = ({ onChartButtonClick }) => {
       <TouchableOpacity style={styles.navIcon} onPress={onChartButtonClick} >
         <Icon name="pie-chart" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navCenter}>
+      <TouchableOpacity style={styles.navCenter} onPress={() => router.push("/AddQuery")}>
         <View style={styles.plusButton}>
           <Icon name="comment" size={24} color="#576574" />
         </View>

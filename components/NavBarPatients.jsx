@@ -3,9 +3,11 @@ import { View, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-nat
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Link } from 'expo-router';
 import useAuth from "../hooks/useAuth";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 const NavBarPatients = () => {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   // If the authentication is still loading, show a loading spinner
   if (authLoading) {
@@ -23,13 +25,22 @@ const NavBarPatients = () => {
 
   return (
     <View style={styles.navContainer}>
-      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Dashboard">
-        <Icon name="th-large" size={20} color="#576574" />
-      </TouchableOpacity>
-
+      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Dashboard" onPress={() => router.replace("/DoctorDashboard")}>
+          <Icon name="th-large" size={20} color="#576574" />
+        </TouchableOpacity>
+      <Link
+        href={{
+          pathname: "/Queries",
+          params: { userId: user?.userId, type: user?.type }
+        }}
+        asChild
+      >
+        
       <TouchableOpacity style={styles.navIcon} accessibilityLabel="Analytics">
-        <Icon name="pie-chart" size={20} color="#576574" />
+        <Icon name="eye" size={30} color="#576574" />
       </TouchableOpacity>
+      </Link>
+
 
       {userId && (
         <Link
@@ -51,7 +62,7 @@ const NavBarPatients = () => {
         <Icon name="bell" size={20} color="#576574" />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Profile">
+      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Profile" onPress={() => router.push("/CaregiverProfile")}>
         <Icon name="user" size={20} color="#576574" />
       </TouchableOpacity>
     </View>

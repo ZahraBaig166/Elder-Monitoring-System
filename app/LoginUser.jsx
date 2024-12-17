@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useConfig from "../backend/../hooks/useConfig";
+import { Alert } from "react-native";
 
 const LoginUser = () => {
   const [email, setEmail] = useState("");
@@ -24,38 +25,36 @@ const LoginUser = () => {
   // Function to handle caregiver login
   const handleLoginCaregiver = async () => {
     if (!email || !password) {
-      alert("Please fill in both email and password");
+      Alert.alert("Error", "Please fill in both email and password");
       return;
     }
-
-    const response = await fetch(`${apiBaseUrl}/login/caregiver`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      const { token, userId, type } = data;
-
-      // Save token and userId in AsyncStorage
-      try {
+  
+    try {
+      const response = await fetch(`${apiBaseUrl}/login/caregiver`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        const { token, userId, type } = data;
         await AsyncStorage.setItem("authToken", String(token));
         await AsyncStorage.setItem("userId", String(userId));
         await AsyncStorage.setItem("type", String(type));
         console.log("Saved successfully");
-      } catch (error) {
-        console.error("AsyncStorage Error:", error);
+        Alert.alert("Success", "Login successful");
+        router.replace("DoctorDashboard");
+      } else {
+        Alert.alert("Login Failed", data.message || "Invalid credentials");
       }
-
-      // Redirect to Doctor Dashboard
-      router.replace('DoctorDashboard');
-    } else {
-      Alert.alert("Login Failed", data.message || "Invalid credentials");
+    } catch (error) {
+      console.error("Error during login:", error);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
     }
   };
-
+  
   // Function to handle family login
   const handleLoginFamily = async () => {
     if (!email || !password) {

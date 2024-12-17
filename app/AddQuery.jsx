@@ -35,6 +35,7 @@ const AddQueryComponent = () => {
     setLoading(true);
 
     try {
+      
       const response = await fetch(`${apiBaseUrl}/add-query`, {
         method: "POST",
         headers: {
@@ -49,14 +50,24 @@ const AddQueryComponent = () => {
           type,
         }),
       });
+      // console.log(type);
       const data = await response.json();
 
       if (data.success) {
         alert("Query submitted successfully");
-        router.replace("/DoctorDashboard"); // Navigate to a success page
+        
+        // Redirect based on 'type'
+        if (type === "family") {
+          router.replace("/FamilyDashboard"); // Replace with the correct family dashboard route
+        } else if (type === "caregiver") {
+          router.replace("/CaregiverDashboard"); // Replace with the correct caregiver dashboard route
+        } else {
+          router.replace("/DoctorDashboard"); // Default case
+        }
       } else {
         alert("Failed to submit query");
       }
+      
     } catch (error) {
       console.error("Error submitting query:", error);
       alert("An error occurred. Please try again later.");
@@ -182,7 +193,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    height: 100,
+    height: 200,
   },
   plusIcon: {
     marginBottom: 10,

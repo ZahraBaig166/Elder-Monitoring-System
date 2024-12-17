@@ -1,4 +1,5 @@
-import React, { useState, useEffect,useContext } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -10,12 +11,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import NavBar from '../components/NavBar';
+import NavBar from '../components/NavBarPatients';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
 
 const ViewPatients = () => {
-  const [patients, setPatients] = useState([]);
+  // const [patients, setPatients] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { apiBaseUrl, loading, error } = useConfig();
@@ -61,7 +62,7 @@ const ViewPatients = () => {
       <View style={styles.main}>
         {/* Top Section */}
         <View style={styles.topSection}>
-          {/* Header */}
+            
           <View style={styles.header}>
             <TouchableOpacity style={styles.backButton}>
               <Icon name="arrow-left" size={20} color="#000" />

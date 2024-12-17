@@ -9,6 +9,7 @@ const router = express.Router();
 require('dotenv').config();
 router.use(express.json());
 
+
 router.post('/admin/queries', async (req, res) => {
   try {
     console.log("hello, I'm in queries");
@@ -287,7 +288,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
         const newCaregiver = await Caregiver.create({
           name: pendingCaregiver.name,
           email: pendingCaregiver.email,
-          password: randomPassword,
+          password: hashedPassword, // Save hashed password
           age: pendingCaregiver.age,
           address: pendingCaregiver.address,
           education: pendingCaregiver.education,
@@ -332,7 +333,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
         const newFamily = await Family.create({
           name: pendingFamily.name,
           email: pendingFamily.email,
-          password: randomPassword, // Save the random password as plain text
+          password: hashedPassword, // Save hashed password
           relationship: pendingFamily.relationship_to_patient,
           phone_number: pendingFamily.phone_number,
           address: pendingFamily.address,
@@ -448,4 +449,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
       return res.status(500).json({ message: "Internal server error." });
     }
   });
-module.exports = router;
+
+
+  
+  module.exports = router;

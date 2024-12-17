@@ -180,14 +180,14 @@ const DoctorDashboard = () => {
           <Text style={styles.subText}>Have a Nice day</Text>
 
           {/* Query Button */}
-          <Link href={{
+          {/* <Link href={{
             pathname: "/Queries",
             params: { userId: user?.userId, type: user?.type }
           }} asChild>
             <TouchableOpacity style={styles.queryButton}>
               <Text style={styles.queryButtonText}>Query</Text>
             </TouchableOpacity>
-          </Link>
+          </Link> */}
           
           <View style={styles.searchContainer}>
             <Text style={styles.searchText}>Search....</Text>
