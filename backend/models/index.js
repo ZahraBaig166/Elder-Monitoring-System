@@ -47,6 +47,7 @@ const Device = require('./device')(sequelize, Sequelize.DataTypes);
 const PendingCaregiver = require('./pending_caregiver')(sequelize, Sequelize.DataTypes);
 const PendingFamily = require('./pending_family')(sequelize, Sequelize.DataTypes);
 const LocationHistory = require('./location_history')(sequelize, Sequelize.DataTypes);
+const Note = require('./note')(sequelize, Sequelize.DataTypes); // Import Note model
 
 db.Caregiver = Caregiver;
 db.Patient = Patient;
@@ -60,6 +61,7 @@ db.PendingCaregiver = PendingCaregiver;
 db.PendingFamily = PendingFamily;
 db.LocationHistory = LocationHistory;
 db.Query=Query;
+db.Note=Note;
 
 
 

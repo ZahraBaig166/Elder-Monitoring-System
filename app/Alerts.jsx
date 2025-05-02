@@ -1,17 +1,29 @@
-import React from 'react';
-import {useEffect} from "react";
-
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import NavBar from '../components/NavBar'; 
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
 
-
 const Alerts = () => {
-  const { apiBaseUrl, loading, error } = useConfig();
+  const { apiBaseUrl } = useConfig();
+  const [alerts, setAlerts] = useState([]);
 
-  
+  // Fetch alerts on component mount
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl}/alerts`);
+        const data = await response.json();
+        setAlerts(data); // Update state with fetched alerts
+      } catch (error) {
+        console.error("Error fetching alerts:", error);
+      }
+    };
+
+    fetchAlerts();
+  }, [apiBaseUrl]);
+
   return (
     <View style={styles.container}>
       <View style={styles.main}>
@@ -26,65 +38,29 @@ const Alerts = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Filter Buttons */}
-        <View style={styles.filterContainer}>
-          <TouchableOpacity style={styles.filterButton}>
-            <Text style={styles.filterText}>ALL</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.filterButton, styles.activeFilter]}>
-            <Text style={[styles.filterText, styles.activeFilterText]}>FAMILY</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.filterButton, styles.activeFilter]}>
-            <Text style={[styles.filterText, styles.activeFilterText]}>CAREGIVER</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search...."
-            placeholderTextColor="#ADC1D8"
-          />
-          <Icon name="search" size={wp(4)} style={styles.searchIcon} />
-        </View>
-
-        {/* All Queries Section */}
-        <View style={styles.queriesContainer}>
-          <View style={styles.queriesHeader}>
-            <Text style={styles.allQueriesText}>ALL ALERTS</Text>
-            <TouchableOpacity>
-              <Icon name="filter" size={wp(5)} color="#000" style={styles.filterIcon} />
-            </TouchableOpacity>
-          </View>
-          <ScrollView>
-            {Array.from({ length: 7 }).map((_, index) => (
-              <View key={index} style={styles.queryCard}>
-                {/* User Info Section */}
-                <View style={styles.queryInfo}>
-                  <Image
-                    source={{
-                      uri: 'https://i.pinimg.com/736x/8b/16/7a/8b167af653c2399dd93b952a48740620.jpg',
-                    }}
-                    style={styles.userImage}
-                  />
-                  <View style={styles.queryDetails}>
-                    <Text style={styles.userName}>Name</Text>
-                    <Text style={styles.querySubject}>SUBJECT - Device Connectivity</Text>
-                    <Text style={styles.queryDescription}>
-                      The wearable device isn’t syncing data with the system. Can you help troubleshoot connectivity issues?
-                    </Text>
-                  </View>
+        {/* List of Alerts */}
+        <ScrollView>
+          {alerts.map((alert, index) => (
+            <View key={index} style={styles.queryCard}>
+              {/* User Info Section */}
+              <View style={styles.queryInfo}>
+                <Image
+                  source={{
+                    uri: 'https://i.pinimg.com/736x/8b/16/7a/8b167af653c2399dd93b952a48740620.jpg',
+                  }}
+                  style={styles.userImage}
+                />
+                <View style={styles.queryDetails}>
+                  <Text style={styles.userName}>Patient ID: {alert.patient_id}</Text>
+                  <Text style={styles.querySubject}>Type: {alert.type}</Text>
+                  <Text style={styles.queryDescription}>
+                    Acknowledged: {alert.is_acknowledged ? "Yes" : "No"}
+                  </Text>
                 </View>
-
-                {/* Respond Button */}
-                <TouchableOpacity style={styles.respondButton}>
-                  <Text style={styles.respondButtonText}>Respond</Text>
-                </TouchableOpacity>
               </View>
-            ))}
-          </ScrollView>
-        </View>
+            </View>
+          ))}
+        </ScrollView>
       </View>
       <NavBar />
     </View>

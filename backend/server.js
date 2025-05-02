@@ -44,6 +44,9 @@ const patientRoutes = require('./routes/patients');
 app.use("/", patientRoutes);
 const forgotpwRouter = require('./routes/forgotpwauthentication');
 app.use("/",forgotpwRouter);
+const alertroute=require('./routes/alertroutes')
+app.use("/",alertroute);
+
 
 app.get('/checktables', async (req, res) => {
   try {
