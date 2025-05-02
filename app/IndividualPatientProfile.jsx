@@ -8,11 +8,12 @@ import useConfig from "../backend/../hooks/useConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { checkFall } from "../services/fallApi";
 import useAuth from "../hooks/useAuth";
+import { useLocalSearchParams } from "expo-router"; // NEW
 
 
-
-const DashboardHeartRateAndStats = () => {
-  const [patientId, setPatientId] = useState("");
+const IndividualPatientProfile = () => {
+    const { patientId: routePatientId } = useLocalSearchParams();
+    const { patientId } = useLocalSearchParams();
   const [patientName, setPatientName] = useState("");
   const [healthMetrics, setHealthMetrics] = useState([]);
   const [currentHeartRate, setCurrentHeartRate] = useState("Loading...");
@@ -20,41 +21,20 @@ const DashboardHeartRateAndStats = () => {
   const [hrvIndex, setHrvIndex] = useState(0);
   const [stressData, setStressData] = useState({ stress: "Calculating...", color: "#000" });
   const [fallStatus, setFallStatus] = useState("Unknown");
-
+  const [notes, setNotes] = useState([]); 
+const [isLoading, setIsLoading] = useState(true);
   const router = useRouter(); 
   const { apiBaseUrl, loading, error } = useConfig();  
    const { user, loading: authLoading } = useAuth();
-  
-  const handlemed = () => {
-    router.push("/MedicationReminder"); 
-  };
+
 
   useEffect(() => {
     const fetchPatientDataAndMetrics = async () => {
+      if (!patientId) return;
+  
       try {
-        // Step 1: Fetch family patient(s)
-        console.log("Fetching family data...",user.userId);
-        const userId = user.userId; // get this from local storage, Redux, context, etc.
-        const familyResponse = await fetch(`${apiBaseUrl}/family/${userId}`);
-        console.log("Family Response:", familyResponse.status );
-        console.log("Family Response Headers:", familyResponse.headers.get("content-type"));
-        const data = await familyResponse.json();
-console.log("Family Data:", data);
-        // console.log("familyResponse:", familyResponse);
-        // const familyData = await familyResponse.json();
-        // console.log("familyData received from backend:", familyData);
-  
-        if (!familyResponse.ok || !Array.isArray(data) || data.length === 0) {
-          console.error("No patients found in Family table");
-          return;
-        }
-  
-        // Get the first patient_id (or handle multiple)
-        const id = data[0].patient_id;
-        setPatientId(id);
-  
-        // Step 2: Fetch Patient Details
-        const patientResponse = await fetch(`${apiBaseUrl}/patient/${id}`);
+        // Step 1: Fetch Patient Details
+        const patientResponse = await fetch(`${apiBaseUrl}/patientclicked/${patientId}`);
         const patientData = await patientResponse.json();
   
         if (patientResponse.ok) {
@@ -63,8 +43,8 @@ console.log("Family Data:", data);
           console.error("Failed to fetch patient name:", patientData.message);
         }
   
-        // Step 3: Fetch Health Metrics
-        const metricsResponse = await fetch(`${apiBaseUrl}/health-metrics/${id}`);
+        // Step 2: Fetch Health Metrics
+        const metricsResponse = await fetch(`${apiBaseUrl}/health-metrics/${patientId}`);
         const metricsData = await metricsResponse.json();
   
         if (metricsResponse.ok) {
@@ -77,14 +57,47 @@ console.log("Family Data:", data);
         }
   
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching patient data:", error);
       }
     };
   
-    if (!loading) {
+    if (!loading && patientId) {
       fetchPatientDataAndMetrics();
     }
-  }, [apiBaseUrl, loading]);
+  }, [apiBaseUrl, loading, patientId]);
+  
+  useEffect(() => {
+    const fetchNotes = async () => {
+      console.log("Fetching notes for patientId:", patientId);
+      try {
+        const response = await fetch(`${apiBaseUrl}/notes/${patientId}`);
+        console.log("Response status:", response.status);  // Log response status
+  
+        // Check if the response is OK (status code 200)
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.statusText}`);
+        }
+  
+        // Log the body of the response before parsing it
+        const result = await response.json();
+        console.log("Notes response:", result);  // Log the result after parsing
+  
+        
+          setNotes(result.data);  // Update state with fetched notes
+       
+      } 
+      
+      catch (error) {
+        // console.error('Error fetching notes:', error);
+      }
+      finally {
+        setIsLoading(false);  
+      }
+    };
+  
+    fetchNotes();
+  }, [apiBaseUrl,patientId,loading]);
+  
   
 
   useEffect(() => {
@@ -251,13 +264,13 @@ const stressLevel = (heartRateValues) => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.queriesButton} onPress={() => router.push('/UserQueries')}> 
-        <Text style={styles.queriesButtonText}>Queries</Text> 
+      <TouchableOpacity style={styles.queriesButton} onPress={() => router.push('/AddNotes')}> 
+        <Text style={styles.queriesButtonText}>Add Notes</Text> 
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.notesButton} onPress={() => router.push('/ViewNotes')}> 
-        <Text style={styles.notesButtonText}>View Notes</Text> 
-      </TouchableOpacity>
+     {/* <TouchableOpacity style={styles.notesButton} onPress={() => router.push('/ViewNotes')}> 
+             <Text style={styles.notesButtonText}>View Notes</Text> 
+           </TouchableOpacity> */}
 
       <ScrollView style={styles.scrollView}>
         <Text style={styles.patientName}>Patient name: {patientName}</Text>
@@ -305,7 +318,7 @@ const stressLevel = (heartRateValues) => {
             {/* Pills */}
             <TouchableOpacity
               style={styles.statCard}
-              onPress={handlemed}  // Navigate to Medication page
+               // Navigate to Medication page
             >
               <Image
                 source={require("@/assets/images/pills.png")}
@@ -348,6 +361,43 @@ const stressLevel = (heartRateValues) => {
             </View>
           </View>
         </View>
+        <View style={{ marginTop: 15 , marginHorizontal: 15}}>
+        {isLoading ? (
+  <Text>Loading notes...</Text>
+) : (!notes || notes.length === 0 ? (
+  <Text>No notes available for this patient.</Text>
+) : (
+  notes.map((note, index) => (
+    <View
+      key={index}
+      style={{
+        backgroundColor: '#D9E3EF', // light blue
+        borderRadius: 15,
+        padding: 15,
+        marginVertical: 10,
+        paddingHorizontal: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
+      }}
+    >
+      <Text style={{ fontWeight: '700',fontSize:'20' , marginBottom: 5 }}>Notes</Text>
+      <Text style={{ color: '#1E3A8A', fontWeight: '600', fontSize: 16 }}>
+        Note: {note.note || "No note available"}
+      </Text>
+      <Text style={{ fontSize: 13, color: 'gray', marginTop: 5 }}>
+        {note.timestamp ? new Date(note.timestamp).toLocaleString() : "No timestamp available"}
+      </Text>
+    </View>
+  ))
+))}
+
+</View>
+
+
+
 
         {/* Sleep Pattern Graph */}
         <View style={styles.sleepPatternContainer}>
@@ -468,7 +518,6 @@ const stressLevel = (heartRateValues) => {
         </View>
       </ScrollView>
 
-      <NavBar />
     </View>
   );
 };
@@ -498,14 +547,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-
   notesButton: {
     backgroundColor: "#FFF",
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 8,
     position: "absolute",
-     right: 130, // Adjust to position the button to the top right
+     right: 140, // Adjust to position the button to the top right
     top: 50,   // Adjust to match header spacing
   },
   notesButtonText: {
@@ -773,6 +821,7 @@ flex: 1,
     padding: 20,
     margin: 20,
   },
+ 
 });
 
-export default DashboardHeartRateAndStats;
+export default IndividualPatientProfile;

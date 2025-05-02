@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE', 
       });
       FamilyMember.hasMany(models.Query, {
-        foreignKey: 'sender_id',
+        foreignKey: 'raised_by',
         as: 'queries',
       });
     }
@@ -48,7 +48,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false, // Enforce that the patient ID must be provided
         references: {
           model: 'patient', // Referencing the patients table
-          key: 'id',         // Assuming 'id' is the primary key of the patients table
+          key: 'patient_id',         // Assuming 'id' is the primary key of the patients table
         },
         onDelete: 'CASCADE', // Optionally, delete family member if the related patient is deleted
       },

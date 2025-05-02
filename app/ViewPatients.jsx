@@ -14,24 +14,32 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import NavBar from '../components/NavBarPatients';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
+import useAuth from "../hooks/useAuth";
+import { Link, router } from 'expo-router';
 
 const ViewPatients = () => {
-  // const [patients, setPatients] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { apiBaseUrl, loading, error } = useConfig();
-
+  const { user, loading: authLoading } = useAuth();
+  const navigation = useNavigation();
 
   useEffect(() => {
-    // Fetch patients only when apiBaseUrl is ready
     const fetchPatients = async () => {
       if (!apiBaseUrl) {
-        return; // Do nothing if apiBaseUrl is not ready
+        return;
       }
 
       setIsLoading(true);
       try {
-        const response = await fetch(`${apiBaseUrl}/patients`);
+        console.log('IN FETCH PATIENTS');
+        const response = await fetch(`${apiBaseUrl}/caregiver/${user.userId}/patients`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Error fetching patients: ${response.status} ${errorText}`);
+        }
+
         const data = await response.json();
         setPatients(data);
       } catch (error) {
@@ -42,9 +50,8 @@ const ViewPatients = () => {
     };
 
     fetchPatients();
-  }, [apiBaseUrl]); // Trigger fetch whenever apiBaseUrl is ready
+  }, [apiBaseUrl]);
 
-  // Filter patients based on search text
   const filteredPatients = patients.filter((patient) =>
     patient.name.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -62,7 +69,6 @@ const ViewPatients = () => {
       <View style={styles.main}>
         {/* Top Section */}
         <View style={styles.topSection}>
-            
           <View style={styles.header}>
             <TouchableOpacity style={styles.backButton}>
               <Icon name="arrow-left" size={20} color="#000" />
@@ -83,6 +89,7 @@ const ViewPatients = () => {
             <Icon name="search" size={18} style={styles.searchIcon} />
           </View>
         </View>
+
         {/* Patients List */}
         <View style={styles.patientsContainer}>
           <View style={styles.patientsHeader}>
@@ -94,12 +101,12 @@ const ViewPatients = () => {
           {filteredPatients.length > 0 ? (
             <ScrollView>
               {filteredPatients.map((patient) => (
-                <View key={patient.id} style={styles.patientCard}>
+                <View key={patient.patient_id} style={styles.patientCard}>
                   {/* Patient Info Section */}
                   <View style={styles.patientInfo}>
                     <Image
                       source={{
-                        uri: patient.image || 'https://via.placeholder.com/50', // Fallback image
+                        uri: patient.image || 'https://via.placeholder.com/50',
                       }}
                       style={styles.patientImage}
                     />
@@ -108,7 +115,15 @@ const ViewPatients = () => {
                       <Text style={styles.patientCondition}>
                         {patient.medical_conditions || 'No condition specified'}
                       </Text>
-                      <TouchableOpacity style={styles.detailsButton}>
+                      <TouchableOpacity
+                        style={styles.detailsButton}
+                        onPress={() => router.push({
+                          pathname: "/IndividualPatientProfile",
+                          params: { patientId: patient.patient_id }
+                        })}
+                        
+
+                      >
                         <Text style={styles.detailsButtonText}>Details</Text>
                       </TouchableOpacity>
                     </View>
@@ -132,6 +147,7 @@ const ViewPatients = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

@@ -4,10 +4,11 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Picker,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { Picker } from '@react-native-picker/picker';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import Icon from "react-native-vector-icons/FontAwesome";
 import useConfig from "../hooks/useConfig";
@@ -17,14 +18,17 @@ const RequestDetails = () => {
   const { requestId, requestType } = useLocalSearchParams(); // Extract query params
   const [requestDetails, setRequestDetails] = useState(null);
   const [caregivers, setCaregivers] = useState([]);
-  const [selectedCaregiver, setSelectedCaregiver] = useState(null);
+  const [selectedCaregiver, setSelectedCaregiver] = useState("");
   const { apiBaseUrl, loading, error } = useConfig();
+  const [isRequestLoading, setIsRequestLoading] = useState(false); // Added state for loading request details
+  const [isCaregiverLoading, setIsCaregiverLoading] = useState(false); // Added state for loading caregivers
 
   // Fetch request details
   useEffect(() => {
     if (loading || !apiBaseUrl || !requestId || !requestType) return;
 
     const fetchRequestDetails = async () => {
+      setIsRequestLoading(true); // Start loading state
       try {
         const response = await fetch(`${apiBaseUrl}/admin/requestDetails/${requestType}/${requestId}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -32,6 +36,8 @@ const RequestDetails = () => {
         setRequestDetails(data);
       } catch (err) {
         console.error("Error fetching request details:", err);
+      } finally {
+        setIsRequestLoading(false); // Stop loading state
       }
     };
 
@@ -40,8 +46,9 @@ const RequestDetails = () => {
 
   // Fetch caregivers (if family request)
   useEffect(() => {
-    if (requestType === "family" && apiBaseUrl && !loading) {
+    if (requestType === "Family" && apiBaseUrl && !loading) {
       const fetchCaregivers = async () => {
+        setIsCaregiverLoading(true); // Start caregiver loading state
         try {
           const response = await fetch(`${apiBaseUrl}/admin/caregivers`);
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -49,6 +56,8 @@ const RequestDetails = () => {
           setCaregivers(data);
         } catch (err) {
           console.error("Error fetching caregivers:", err);
+        } finally {
+          setIsCaregiverLoading(false); // Stop caregiver loading state
         }
       };
 
@@ -57,6 +66,42 @@ const RequestDetails = () => {
   }, [requestType, apiBaseUrl, loading]);
 
   const handleApprove = async () => {
+    // let caregiverIdToAssign = selectedCaregiver;
+  
+    // if (requestType === "Family") {
+    //   if (!caregiverIdToAssign) {
+    //     if (caregivers.length === 0) {
+    //       alert("No caregivers available to assign.");
+    //       return;
+    //     }
+  
+    //     // Assign a random caregiver
+    //     const randomIndex = Math.floor(Math.random() * caregivers.length);
+    //     caregiverIdToAssign = caregivers[randomIndex].id;
+    //   }
+  
+    //   try {
+    //     const response = await fetch(`${apiBaseUrl}/admin/assignCaregiver`, {
+    //       method: "POST",
+    //       headers: { "Content-Type": "application/json" },
+    //       body: JSON.stringify({ requestId, caregiverId: caregiverIdToAssign }),
+    //     });
+  
+    //     if (!response.ok) {
+    //       const errorData = await response.json();
+    //       alert(`Caregiver assignment failed: ${errorData.message}`);
+    //       return;
+    //     }
+  
+    //     alert("Caregiver assigned successfully!");
+    //   } catch (err) {
+    //     console.error("Error assigning caregiver:", err);
+    //     alert("An error occurred while assigning the caregiver.");
+    //     return;
+    //   }
+    // }
+  
+    // Continue approval
     try {
       const response = await fetch(`${apiBaseUrl}/admin/approve/${requestType}/${requestId}`, {
         method: "POST",
@@ -69,12 +114,8 @@ const RequestDetails = () => {
         return;
       }
   
-      // Show success alert after approval
-      alert("Request has been approved successfully! An email has been sent to the user.");
-      
-      // Redirect to ViewRequest page after approval
+      alert("Request has been approved successfully!");
       router.replace("/ViewRequest");
-  
     } catch (err) {
       console.error("Error approving request:", err);
       alert("An unexpected error occurred.");
@@ -105,7 +146,6 @@ const RequestDetails = () => {
       alert(err.message || "Failed to decline request. Please try again.");
     }
   };
-  
 
   if (loading || !apiBaseUrl) {
     return (
@@ -115,10 +155,19 @@ const RequestDetails = () => {
     );
   }
 
+  if (isRequestLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text>Loading request details...</Text>
+      </View>
+    );
+  }
+
   if (!requestDetails) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading request details...</Text>
+        <Text>No request details found.</Text>
       </View>
     );
   }
@@ -135,75 +184,83 @@ const RequestDetails = () => {
 
       {/* Request Details */}
       <ScrollView
-  contentContainerStyle={{
-    paddingHorizontal: wp("5%"),
-    paddingBottom: hp("5%"), // Adds space at the bottom of the page
-  }}
->
-{(requestType === "Family"
-  ? [
-      { label: "Name", value: requestDetails.name },
-      { label: "Email", value: requestDetails.email },
-      { label: "Phone", value: requestDetails.phone_number || "N/A" },
-      { label: "Address", value: requestDetails.address },
-      { label: "Patient Name", value: requestDetails.patient_name },
-      { label: "Patient Age", value: requestDetails.patient_age },
-      {
-        label: "Medical Conditions",
-        value: requestDetails.patient_medical_conditions || "N/A",
-      },
-      { label: "Patient Status", value: requestDetails.patient_status },
-      {
-        label: "Emergency Contact",
-        value: requestDetails.patient_emergency_contact,
-      },
-    ]
-  : [
-      { label: "Name", value: requestDetails.name },
-      { label: "Email", value: requestDetails.email },
-      { label: "Age", value: requestDetails.age },
-      { label: "Address", value: requestDetails.address },
-      // { label: "Education", value: requestDetails.education },
-    ]
-).map((item, index) => (
-  <View key={index} style={styles.card}>
-    <Text style={styles.label}>{item.label}</Text>
-    <Text style={styles.value}>{item.value}</Text>
-  </View>
-))}
+        contentContainerStyle={{
+          paddingHorizontal: wp("5%"),
+          paddingBottom: hp("5%"), // Adds space at the bottom of the page
+        }}
+      >
+        {(requestType === "Family"
+          ? [
+              { label: "Name", value: requestDetails.name },
+              { label: "Email", value: requestDetails.email },
+              { label: "Phone", value: requestDetails.phone_number || "N/A" },
+              { label: "Address", value: requestDetails.address },
+              { label: "Patient Name", value: requestDetails.patient_name },
+              { label: "Patient Age", value: requestDetails.patient_age },
+              {
+                label: "Medical Conditions",
+                value: requestDetails.patient_medical_conditions || "N/A",
+              },
+              { label: "Patient Status", value: requestDetails.patient_status },
+              {
+                label: "Emergency Contact",
+                value: requestDetails.patient_emergency_contact,
+              },
+            ]
+          : [
+              { label: "Name", value: requestDetails.name },
+              { label: "Email", value: requestDetails.email },
+              { label: "Age", value: requestDetails.age },
+              { label: "Address", value: requestDetails.address },
+              // { label: "Education", value: requestDetails.education },
+            ]
+        ).map((item, index) => (
+          <View key={index} style={styles.card}>
+            <Text style={styles.label}>{item.label}</Text>
+            <Text style={styles.value}>{item.value}</Text>
+          </View>
+        ))}
 
-
-  {requestType === "family" && (
-    <View style={styles.card}>
-      <Text style={styles.label}>Assign Caregiver:</Text>
-      {caregivers.length > 0 ? (
-        <Picker
-          selectedValue={selectedCaregiver}
-          onValueChange={(itemValue) => setSelectedCaregiver(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="Select a Caregiver" value={null} />
-          {caregivers.map((caregiver) => (
-            <Picker.Item key={caregiver.id} label={caregiver.name} value={caregiver.id} />
-          ))}
-        </Picker>
-      ) : (
-        <Text>No caregivers available</Text>
+{requestType === "Family" && (
+  <View style={styles.card}>
+    <Text style={styles.label}>Assign Caregiver:</Text>
+    {isCaregiverLoading ? (
+      <ActivityIndicator size="large" color="#000" />
+    ) : caregivers.length > 0 ? (
+     
+      <Picker
+      selectedValue={selectedCaregiver}
+      onValueChange={(itemValue) => setSelectedCaregiver(itemValue)}
+      style={{ height: 50 }} // Explicit height
+    >
+      <Picker.Item label="Select a Caregiver" value="" />
+      {caregivers.map((caregiver) =>
+        caregiver.id ? (
+          <Picker.Item
+            key={caregiver.id}
+            label={caregiver.name}
+            value={caregiver.id.toString()}
+          />
+        ) : null
       )}
-    </View>
-  )}
-
-  {/* Approve and Decline Buttons */}
-  <View style={styles.buttonContainer}>
-    <TouchableOpacity style={styles.approveButton} onPress={handleApprove}>
-      <Text style={styles.buttonText}>Approve</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.declineButton} onPress={handleDecline}>
-      <Text style={styles.buttonText}>Decline</Text>
-    </TouchableOpacity>
+    </Picker>
+    ) : (
+      <Text>No caregivers available</Text>
+    )}
   </View>
-</ScrollView>
+)}
 
+
+        {/* Approve and Decline Buttons */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.approveButton} onPress={handleApprove}>
+            <Text style={styles.buttonText}>Approve</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.declineButton} onPress={handleDecline}>
+            <Text style={styles.buttonText}>Decline</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -250,12 +307,17 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   picker: {
-    height: hp("6%"),
-    width: "100%",
-    backgroundColor: "#F6F6F6",
-    borderRadius: wp("2%"),
-    marginTop: hp("1%"),
+    height: 50,
+    backgroundColor: '#fff',
+    color: '#000',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginTop: 5,
+    paddingHorizontal: 10,
+    zIndex: 10, // Important if inside ScrollView or overlapping views
   },
+  
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions ,Image} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions, Image } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import NavBar from '../components/NavBarPatients';
 import useConfig from "../hooks/useConfig";
 import useAuth from "../hooks/useAuth";
@@ -12,6 +12,7 @@ const DoctorDashboard = () => {
   const [counts, setCounts] = useState({ total: 0, critical: 0, moderate: 0, stable: 0 });
   const [loading, setLoading] = useState(true);
   const [criticalPatients, setCriticalPatients] = useState([]);
+  const [medicationSchedule, setMedicationSchedule] = useState([]);
   const [isMedScheduleExpanded, setIsMedScheduleExpanded] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -23,7 +24,7 @@ const DoctorDashboard = () => {
     const fetchPatientCounts = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${apiBaseUrl}/patients/counts`);
+        const response = await fetch(`${apiBaseUrl}/caregiver/${user.userId}/patients/counts`);
         if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
         const data = await response.json();
         setCounts(data);
@@ -37,129 +38,143 @@ const DoctorDashboard = () => {
   }, [apiBaseUrl]);
 
   useEffect(() => {
-    if (!apiBaseUrl) return;
-    const fetchCriticalPatients = async () => {
+    if (!apiBaseUrl || !user?.userId) return;
+    const fetchCriticalPatientsForCaregiver = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/patients/critical`);
+        const response = await fetch(`${apiBaseUrl}/caregiver/${user.userId}/patients`);
         if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
         const data = await response.json();
-        setCriticalPatients(Array.isArray(data) ? data : []);
+        const criticalOnly = data.filter(p => p.status === 'critical');
+        setCriticalPatients(criticalOnly);
       } catch (error) {
-        console.error('Error fetching critical patients:', error);
+        console.error('Error fetching patients:', error);
         setCriticalPatients([]);
       }
     };
-    fetchCriticalPatients();
-  }, [apiBaseUrl]);
+    fetchCriticalPatientsForCaregiver();
+  }, [apiBaseUrl, user?.userId]);
 
-  const PatientInfoCard = ({ counts }) => {
-    return (
-      <View style={styles.cardContainer}>
-        <Text style={styles.totalPatientsText}>
-          Total Patients: <Text style={styles.totalNumber}>{counts.total || 0}</Text>
-        </Text>
-        <View style={styles.statusContainer}>
-          <View style={styles.statusBox}>
-            <FontAwesome name="exclamation-circle" size={46} color="#ff5053" style={styles.statusIcon} />
-            <Text style={styles.criticalText}>Critical</Text>
-            <Text style={styles.criticalNumber}>{counts.critical || 0}</Text>
-          </View>
-          <View style={styles.statusBox}>
-            <FontAwesome name="bed" size={46} color="#da840d" style={styles.statusIcon} />
-            <Text style={styles.moderateText}>Moderate</Text>
-            <Text style={styles.moderateNumber}>{counts.moderate || 0}</Text>
-          </View>
-          <View style={styles.statusBox}>
-            <FontAwesome name="user" size={46} color="#48742c" style={styles.statusIcon} />
-            <Text style={styles.stableText}>Stable</Text>
-            <Text style={styles.stableNumber}>{counts.stable || 0}</Text>
-          </View>
-        </View>
-      </View>
-    );
-  };
+  useEffect(() => {
+    if (!apiBaseUrl || !user?.userId) return;
+    
+    const fetchMedicationSchedule = async () => {
+   
+      try {
+        const response = await fetch(`${apiBaseUrl}/caregiver/${user.userId}/medications/counts`);
 
-  const CriticalPatientList = () => {
-    const handleToggle = () => {
-      setIsExpanded((prevState) => !prevState);
-    };
-
-    return (
-      <View style={styles.criticalListContainer}>
-        <TouchableOpacity onPress={handleToggle} style={styles.headerContainer}>
-          <Text style={styles.title}>Critical Patient List</Text>
-          <FontAwesome
-            name={isExpanded ? 'chevron-up' : 'chevron-down'}
-            size={22}
-            color="#000"
-            style={styles.filterIcon}
-          />
-        </TouchableOpacity>
-
-        {isExpanded && (
-          criticalPatients.length > 0 ? (
-            criticalPatients.map((patient) => (
-              <View key={patient.patient_id} style={styles.card}>
-                <FontAwesome name="user" size={24} color="#000" style={styles.avatar} />
-                <View style={styles.infoContainer}>
-                  <Text style={styles.name}>{patient.name}</Text>
-                  <Text style={styles.condition}>{patient.medical_conditions}</Text>
-                </View>
-              </View>
-            ))
-          ) : (
-            <Text>No critical patients found.</Text>
-          )
-        )}
-      </View>
-    );
-  };
-
-  const MedicationScheduleList = () => {
-    const handleMedToggle = () => {
-      setIsMedScheduleExpanded(prevState => !prevState);
+        if (!response.ok) throw new Error(`Failed to fetch medications: ${response.statusText}`);
+        const data = await response.json();
+        console.log("Medication Schedule Data:", data); // Debugging line
+        
+        // Ensure medicationSchedules is an array before sorting
+        if (Array.isArray(data.medicationSchedules)) {
+          const sortedMedications = data.medicationSchedules.sort((a, b) => a.time.localeCompare(b.time));
+          setMedicationSchedule(sortedMedications);
+        } else {
+          console.error('Error: Medication schedules are not an array', data.medicationSchedules);
+          setMedicationSchedule([]);
+        }
+      } catch (error) {
+        console.error('Error fetching medication schedule:', error);
+        setMedicationSchedule([]);
+      }
     };
     
-    return (
-      <View style={styles.criticalListContainer}>
-        <TouchableOpacity onPress={handleMedToggle} style={styles.headerContainer}>
-          <Text style={styles.title}>Medication Schedule</Text>
-          <FontAwesome
-            name={isMedScheduleExpanded ? "chevron-up" : "chevron-down"}
-            size={22}
-            color="#000"
-            style={styles.filterIcon}
-          />
-        </TouchableOpacity>
+    fetchMedicationSchedule();
+  }, [apiBaseUrl, user?.userId]);
+  
+  const PatientInfoCard = ({ counts }) => (
+    <View style={styles.cardContainer}>
+      <Text style={styles.totalPatientsText}>
+        Total Patients: <Text style={styles.totalNumber}>{counts.total || 0}</Text>
+      </Text>
+      <View style={styles.statusContainer}>
+        <View style={styles.statusBox}>
+          <FontAwesome name="exclamation-circle" size={46} color="#ff5053" style={styles.statusIcon} />
+          <Text style={styles.criticalText}>Critical</Text>
+          <Text style={styles.criticalNumber}>{counts.critical || 0}</Text>
+        </View>
+        <View style={styles.statusBox}>
+          <FontAwesome name="bed" size={46} color="#da840d" style={styles.statusIcon} />
+          <Text style={styles.moderateText}>Moderate</Text>
+          <Text style={styles.moderateNumber}>{counts.moderate || 0}</Text>
+        </View>
+        <View style={styles.statusBox}>
+          <FontAwesome name="user" size={46} color="#48742c" style={styles.statusIcon} />
+          <Text style={styles.stableText}>Stable</Text>
+          <Text style={styles.stableNumber}>{counts.stable || 0}</Text>
+        </View>
+      </View>
+    </View>
+  );
 
-        {isMedScheduleExpanded && (
-          <View style={styles.medicationList}>
-            {[1, 2, 3].map((item, index) => (
-              <View key={index} style={styles.card}>
-                <FontAwesome name="medkit" size={24} color="#000" style={styles.avatar} />
-                <View style={styles.infoContainer}>
-                  <Text style={styles.name}>Patient Name</Text>
-                  <Text style={styles.medicationname}>Medication Name</Text>
-                  <Text style={styles.condition}>Time: 8:00 AM</Text>
-                </View>
+  const CriticalPatientList = () => (
+    <View style={styles.criticalListContainer}>
+      <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} style={styles.headerContainer}>
+        <Text style={styles.title}>Critical Patient List</Text>
+        <FontAwesome
+          name={isExpanded ? 'chevron-up' : 'chevron-down'}
+          size={22}
+          color="#000"
+          style={styles.filterIcon}
+        />
+      </TouchableOpacity>
+      {isExpanded && (
+        criticalPatients.length > 0 ? (
+          criticalPatients.map((patient) => (
+            <View key={patient.patient_id} style={styles.card}>
+              <FontAwesome name="user" size={24} color="#000" style={styles.avatar} />
+              <View style={styles.infoContainer}>
+                <Text style={styles.name}>{patient.name}</Text>
+                <Text style={styles.condition}>{patient.medical_conditions}</Text>
               </View>
-            ))}
-          </View>
-        )}
-      </View>
-    );
-  };
+            </View>
+          ))
+        ) : (
+          <Text>No critical patients found.</Text>
+        )
+      )}
+    </View>
+  );
 
-  const ChartWithHeading = ({ title, source }) => {
-    return (
-      <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>{title}</Text>
-        <Image source={source} style={styles.chartImage} />
-      </View>
-    );
-  };
+  const MedicationScheduleList = () => (
+    <View style={styles.criticalListContainer}>
+      <TouchableOpacity onPress={() => setIsMedScheduleExpanded(!isMedScheduleExpanded)} style={styles.headerContainer}>
+        <Text style={styles.title}>Medication Schedule</Text>
+        <FontAwesome
+          name={isMedScheduleExpanded ? "chevron-up" : "chevron-down"}
+          size={22}
+          color="#000"
+          style={styles.filterIcon}
+        />
+      </TouchableOpacity>
+      {isMedScheduleExpanded && (
+        medicationSchedule.length > 0 ? (
+          medicationSchedule.map((med, index) => (
+            <View key={index} style={styles.card}>
+              <FontAwesome name="medkit" size={24} color="#000" style={styles.avatar} />
+              <View style={styles.infoContainer}>
+                    <Text style={styles.name}>{med.patient_name}</Text>
+      <Text style={styles.medicationname}>{med.medication_name}</Text>
+      <Text style={styles.condition}>Time: {med.time}</Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text>No medications scheduled.</Text>
+        )
+      )}
+    </View>
+  );
 
-  if (configLoading || loading) {
+  const ChartWithHeading = ({ title, source }) => (
+    <View style={styles.chartContainer}>
+      <Text style={styles.chartTitle}>{title}</Text>
+      <Image source={source} style={styles.chartImage} />
+    </View>
+  );
+
+  if (configLoading || loading || authLoading) {
     return (
       <View style={styles.centeredContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -172,58 +187,31 @@ const DoctorDashboard = () => {
     <View style={styles.dashboardContainer}>
       <ScrollView style={styles.dashboadContainer}>
         <View style={styles.header}>
-          <Image
-            source={{ uri: 'https://placeholder.pics/svg/50x50' }}
-            style={styles.profileImage}
-          />
-          <Text style={styles.welcomeText}>Welcome Name</Text>
+          <Image source={{ uri: 'https://placeholder.pics/svg/50x50' }} style={styles.profileImage} />
+          <Text style={styles.welcomeText}>Welcome {user?.name || "Doctor"}</Text>
           <Text style={styles.subText}>Have a Nice day</Text>
-
-          {/* Query Button */}
-          {/* <Link href={{
-            pathname: "/Queries",
-            params: { userId: user?.userId, type: user?.type }
-          }} asChild>
-            <TouchableOpacity style={styles.queryButton}>
-              <Text style={styles.queryButtonText}>Query</Text>
-            </TouchableOpacity>
-          </Link> */}
-          
           <View style={styles.searchContainer}>
             <Text style={styles.searchText}>Search....</Text>
-            <Image
-              source={{ uri: 'https://placeholder.pics/svg/20x20' }}
-              style={styles.searchIcon}
-            />
+            <Image source={{ uri: 'https://placeholder.pics/svg/20x20' }} style={styles.searchIcon} />
           </View>
         </View>
-
+      
         <PatientInfoCard counts={counts} />
-        <TouchableOpacity
-          style={styles.viewAllButton}
-          onPress={() => router.push('/ViewPatients')}
-        >
+        <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push('/ViewPatients')}>
           <Text style={styles.viewAllButtonText}>View All Patients</Text>
         </TouchableOpacity>
 
         <CriticalPatientList />
+        <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push('/AddMedication')}>
+          <Text style={styles.viewAllButtonText}>Add Medication</Text>
+        </TouchableOpacity>
+
         <MedicationScheduleList />
-        <ChartWithHeading
-          title="Patient Status Transition Trends"
-          source={require('../assets/images/G1.png')}
-        />
-        <ChartWithHeading
-          title="Heart Rate Trends"
-          source={require('../assets/images/G2.png')}
-        />
-        <ChartWithHeading
-          title="Blood Pressure Analysis"
-          source={require('../assets/images/G3.png')}
-        />
-        <ChartWithHeading
-          title="Activity Levels Over Time"
-          source={require('../assets/images/G4.png')}
-        />
+
+        <ChartWithHeading title="Patient Status Transition Trends" source={require('../assets/images/G1.png')} />
+        <ChartWithHeading title="Heart Rate Trends" source={require('../assets/images/G2.png')} />
+        <ChartWithHeading title="Blood Pressure Analysis" source={require('../assets/images/G3.png')} />
+        <ChartWithHeading title="Activity Levels Over Time" source={require('../assets/images/G4.png')} />
       </ScrollView>
       <NavBar />
     </View>

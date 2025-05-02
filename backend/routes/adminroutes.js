@@ -126,8 +126,8 @@ router.get('/admin/users', async (req, res) => {
     // Fetch data from the database
     const caregivers = await Caregiver.findAll(); 
     const family = await Family.findAll(); 
-    console.log("this is caregiver",caregivers);
-    console.log("this is family",family);
+    // console.log("this is caregiver",caregivers);
+    // console.log("this is family",family);
     // Combine the data into a single response object
     return res.status(200).json({ caregivers,family});
 
@@ -144,10 +144,10 @@ router.get('/admin/users', async (req, res) => {
 router.post('/admin/login', (req, res) => {
   const { email, password } = req.body;
   
-  console.log("Received username:", email);
-  console.log("Received password:", password);
-  console.log("actual email", process.env.ADMIN_USERNAME);
-  console.log("actual password", process.env.ADMIN_PASSWORD);
+  // console.log("Received username:", email);
+  // console.log("Received password:", password);
+  // console.log("actual email", process.env.ADMIN_USERNAME);
+  // console.log("actual password", process.env.ADMIN_PASSWORD);
 
 
   if (email !== process.env.ADMIN_USERNAME) {
@@ -173,8 +173,8 @@ router.post('/admin/login', (req, res) => {
         // Fetch data from models
         pendingCaregivers = await PendingCaregiver.findAll();
         pendingFamilies = await PendingFamily.findAll();
-        console.log('Caregivers fetched:', pendingCaregivers);
-        console.log('Families fetched:', pendingFamilies);
+        // console.log('Caregivers fetched:', pendingCaregivers);
+        // console.log('Families fetched:', pendingFamilies);
       } catch (fetchError) {
         console.error('Error fetching families or caregivers:', fetchError); // Log detailed error
         return res.status(500).json({ message: 'Error fetching pending requests', error: fetchError });
@@ -223,7 +223,7 @@ router.post('/admin/login', (req, res) => {
     try {
       if (requestType === 'Family') {
         const family = await PendingFamily.findByPk(requestId);
-        console.log("family request:", family);
+        // console.log("family request:", family);
         if (family) {
           res.json(family);  // Send family details as JSON response
         } else {
@@ -231,7 +231,7 @@ router.post('/admin/login', (req, res) => {
         }
       } else if (requestType === 'Caregiver') {
         const caregiver = await PendingCaregiver.findByPk(requestId);
-        console.log("caregiver request:", caregiver);
+        // console.log("caregiver request:", caregiver);
         if (caregiver) {
           res.json(caregiver);  // Send caregiver details as JSON response
         } else {
@@ -252,7 +252,7 @@ router.get('/admin/caregivers', async (req, res) => {
     const caregivers = await Caregiver.findAll(); 
     
 
-    console.log("Backend fetched caregivers:", caregivers);
+    // console.log("Backend fetched caregivers:", caregivers);
     if (!caregivers || caregivers.length === 0) {
       return res.status(404).send('No caregivers found.');
     }
@@ -322,6 +322,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
         const randomPassword = crypto.randomBytes(3).toString('hex');
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
+        // Create a new patient
         const newPatient = await Patient.create({
           name: pendingFamily.patient_name,
           age: pendingFamily.patient_age,
@@ -330,6 +331,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
           status: pendingFamily.patient_status,
         });
 
+        // Create a new family
         const newFamily = await Family.create({
           name: pendingFamily.name,
           email: pendingFamily.email,
@@ -339,6 +341,28 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
           address: pendingFamily.address,
           patient_id: newPatient.patient_id,
         });
+
+        // Assign a random caregiver to the patient
+        const caregivers = await Caregiver.findAll();
+        if (caregivers.length === 0) {
+          return res.status(500).json({ message: 'No caregivers available for assignment' });
+        }
+        const randomCaregiver = caregivers[Math.floor(Math.random() * caregivers.length)];
+
+        // Log caregiver and patient IDs for verification
+        console.log("caregiver random id", randomCaregiver.user_id);
+        console.log("patient id", newPatient.patient_id);
+
+        // Ensure caregiverId is not null
+        if (!randomCaregiver.user_id || !newPatient.patient_id) {
+          return res.status(500).json({ message: 'Caregiver assignment failed: caregiver_id or patient_id is missing' });
+        }
+
+        // Update the patient with the assigned caregiver
+        await Patient.update(
+          { assigned_caregiver_id: randomCaregiver.user_id },  // Save caregiver_id in the patient record
+          { where: { patient_id: newPatient.patient_id } }
+        );
 
         await PendingFamily.destroy({ where: { id: requestId } });
 
@@ -358,7 +382,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
           }
         });
 
-        return res.status(200).json({ message: 'Family approved successfully' });
+        return res.status(200).json({ message: 'Family approved and caregiver assigned successfully' });
       } else {
         return res.status(404).json({ message: 'Family request not found' });
       }
@@ -371,7 +395,6 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
   }
 });
 
-  
   // Decline a request
   router.post('/admin/decline/:requestType/:requestId', async (req, res) => {
     const { requestType, requestId } = req.params;
@@ -406,8 +429,8 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
   router.get("/admin/users/:userType/:userId", async (req, res) => {
     const { userType, userId } = req.params;
   
-    console.log("Received userType:", userType);
-    console.log("Received userId:", userId);
+    // console.log("Received userType:", userType);
+    // console.log("Received userId:", userId);
   
     // Check for missing parameters
     if (!userType || !userId) {
@@ -449,6 +472,61 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
       return res.status(500).json({ message: "Internal server error." });
     }
   });
+
+
+  router.post('/admin/assigncaregiver', async (req, res) => {
+    const { caregiverId, familyId } = req.body;
+  
+    if (!caregiverId || !familyId) {
+      return res.status(400).json({ message: 'Caregiver ID and Family ID are required.' });
+    }
+  
+    try {
+      const caregiver = await Caregiver.findByPk(caregiverId);
+      const family = await Family.findByPk(familyId);
+  
+      if (!caregiver || !family) {
+        return res.status(404).json({ message: 'Caregiver or Family not found.' });
+      }
+  
+      // Proceed with caregiver assignment logic here...
+      res.status(200).json({ message: 'Caregiver assigned successfully.' });
+  
+    } catch (error) {
+      res.status(500).json({ message: 'Error assigning caregiver.', error });
+    }
+  });
+  
+  
+  // router.post("/assignCaregiver", async (req, res) => {
+   
+  //   const { requestId } = req.body;
+  //   try {
+  //     // Get random caregiver
+  //     const caregivers = await Caregiver.findAll();
+  //     if (!caregivers || caregivers.length === 0) {
+  //       return res.status(404).json({ message: "No caregivers available" });
+  //     }
+  
+  //     const randomIndex = Math.floor(Math.random() * caregivers.length);
+  //     const selectedCaregiver = caregivers[randomIndex];
+  
+  //     // Assign caregiver to patient
+  //     const patient = await Patient.findByPk(requestId);
+  //     if (!patient) {
+  //       return res.status(404).json({ message: "Patient not found" });
+  //     }
+  
+  //     patient.assigned_caregiver_id = selectedCaregiver.user_id;
+  //     await patient.save();
+  
+  //     return res.status(200).json({ message: "Caregiver assigned", caregiverId: selectedCaregiver.user_id });
+  //   } catch (err) {
+  //     console.error(err);
+  //     return res.status(500).json({ message: "Internal server error" });
+  //   }
+  // });
+  
 
 
   

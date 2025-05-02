@@ -24,19 +24,34 @@ const LoginUser = () => {
 
   // Function to handle caregiver login
   const handleLoginCaregiver = async () => {
+    console.log("Login button pressed");
+  
     if (!email || !password) {
       Alert.alert("Error", "Please fill in both email and password");
       return;
     }
   
     try {
+      console.log("Email:", email);
+      console.log("Password:", password);
       const response = await fetch(`${apiBaseUrl}/login/caregiver`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+  // console.log("Response status:", response.body);
+      
+      let data;
+      const contentType = response.headers.get("content-type");
   
-      const data = await response.json();
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text(); // fallback if it's not JSON
+        throw new Error(text); // will be caught in catch block
+      }
+  
+      console.log("Response data:", data);
   
       if (response.ok) {
         const { token, userId, type } = data;
@@ -51,44 +66,48 @@ const LoginUser = () => {
       }
     } catch (error) {
       console.error("Error during login:", error);
-      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+      Alert.alert("Error", error.message || "An unexpected error occurred. Please try again.");
     }
   };
   
   // Function to handle family login
   const handleLoginFamily = async () => {
+    console.log("Login button pressed for family");
+  
     if (!email || !password) {
-      alert("Please fill in both email and password");
+      Alert.alert("Missing Fields", "Please fill in both email and password");
       return;
     }
-
-    const response = await fetch(`${apiBaseUrl}/login/family`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      const { token, userId, type } = data;
-
-      // Save token and userId in AsyncStorage
-      try {
+  
+    try {
+      const response = await fetch(`${apiBaseUrl}/login/family/${email}/${password}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+  
+      console.log("Response status:", response.status);
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        const { token, userId, type } = data;
+  
         await AsyncStorage.setItem("authToken", token);
         await AsyncStorage.setItem("userId", String(userId));
+        console.log("User ID:", String(userId));
         await AsyncStorage.setItem("type", type);
         console.log("Saved successfully");
-      } catch (error) {
-        console.error("AsyncStorage Error:", error);
+  
+        router.replace('/FamilyDashboard');
+      } else {
+        Alert.alert("Login Failed", data.message || "Invalid credentials");
       }
-
-      // Redirect to Family Dashboard
-      router.replace('/FamilyDashboard');
-    } else {
-      Alert.alert("Login Failed", data.message || "Invalid credentials");
+    } catch (error) {
+      console.error("Login Error:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     }
   };
+  
 
   return (
     <ImageBackground

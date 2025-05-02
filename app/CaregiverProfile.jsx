@@ -50,14 +50,14 @@ const CaregiverProfile = () => {
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch caregiver data");
+          // throw new Error("Failed to fetch caregiver data");
         }
 
         const data = await response.json();
         setCaregiverData(data);
         console.log("Caregiver Data:", data);
       } catch (error) {
-        console.error("Error fetching caregiver details:", error);
+        // console.error("Error fetching caregiver details:", error);
       } finally {
         setLoading(false);
       }
