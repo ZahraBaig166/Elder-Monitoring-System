@@ -2,37 +2,105 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class HealthMetrics extends Model {
+  class HealthMetric extends Model {
     static associate(models) {
-      HealthMetrics.belongsTo(models.Patient, { foreignKey: 'patient_id', as: 'patient' });
+      HealthMetric.belongsTo(models.Patient, {
+        foreignKey: 'patient_id', // Foreign key in health_metrics
+        as: 'patient', // Alias for the relationship
+      });
     }
   }
-  
-  HealthMetrics.init(
-    {
-      metric_id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
+
+  HealthMetric.init(
+    { id:{
+       type: DataTypes.BIGINT,
+       primaryKey: true,
+       autoIncrement: true,
+       allowNull:false,
       },
-      patient_id: DataTypes.BIGINT,
-      heart_rate: DataTypes.INTEGER,
-      activity_level: DataTypes.STRING,
-      sleep_duration: DataTypes.INTEGER,
+      patient_id: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+      },
       time: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+        allowNull: false,
       },
-      
-        // Disable createdAt and updatedAt
-      
+      value: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      intensity: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      calories: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      steps: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      distance: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      sleep_stage: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      accel_x_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      accel_y_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      accel_z_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      gyro_x_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      gyro_y_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      gyro_z_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      orientation_s_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      orientation_i_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      orientation_j_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      orientation_k_list: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      fall: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+      },
     },
     {
       sequelize,
       modelName: 'HealthMetric',
       tableName: 'health_metrics',
-      timestamps: false,
+      timestamps: false,  
     }
   );
-  return HealthMetrics;
+  return HealthMetric;
 };
