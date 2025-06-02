@@ -12,30 +12,16 @@ router.use(express.json());
 
 router.post('/admin/queries', async (req, res) => {
   try {
-    console.log("hello, I'm in queries");
-
     const { userId, type } = req.body;
-    console.log(type);
 
-    // Fetch all unresolved queries from the database
     const queries = await Query.findAll({
       where: {
-        is_resolved: false, // Only unresolved queries
+        is_resolved: false,
+        recepient: 'admin',
+        response: null, // ✅ Admin hasn’t responded yet
       }
     });
 
-    // If a type is provided in the body, filter queries based on recipient type
-    if (type) {
-      // Compare the `type` to the `recipient` field (adjust according to your schema)
-      const filteredQueries = queries.filter(query => query.recepient === type);
-
-      console.log("Filtered unresolved queries based on type:", filteredQueries);
-
-      return res.json({ success: true, data: filteredQueries });
-    }
-
-    // If no type is provided, return all unresolved queries
-    console.log("Fetched unresolved queries without type filtering:", queries);
     return res.json({ success: true, data: queries });
 
   } catch (error) {
@@ -47,20 +33,24 @@ router.post('/admin/queries', async (req, res) => {
 
 
 router.post('/admin/allqueries', async (req, res) => {
-  try {
- 
+  // console.log("Making caregiver request with sender_id:",userId);
+  console.log("IN QIUERIES OF CAREGIVER");
 
+  try {
     const { userId,sender_type } = req.body;
-    console.log(sender_type);
+  
+    console.log("THE SENDER ID IN CAREGIVER QUERIES ",sender_type);
 
     // Fetch all unresolved queries from the database
-    const queries = await Query.findAll({
-      where: {
-        sender_id: userId,
-        sender_type: sender_type,
-      }
-    });
-    console.log(queries);
+      const queries = await Query.findAll({
+        where: {
+          sender_id: userId,
+          sender_type: sender_type,
+         // caregiver hasn't received a response
+        }
+      });
+      
+    console.log("CAREGIVER QUEIRES DATA FETCHING ",queries);
     return res.json({ success: true, data: queries });
 
   } catch (error) {
@@ -79,6 +69,7 @@ router.post('/admin/allfamily', async (req, res) => {
     const queries = await Query.findAll({
       where: {
         sender_id: sender_id,
+        recepient: 'caregiver',
         sender_type: sender_type,
       }
     });
@@ -528,6 +519,36 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
   // });
   
 
-
+  router.post('/add-query', async (req, res) => {
+    const { userId, subject,recepient,  phone, message, type } = req.body;
+    console.log(userId);
+    console.log(subject);
+    console.log("hello im,",recepient);
+    console.log(phone);
+    console.log(message);
+    console.log(type);
+    try {
+      const { userId, subject,recepient , phone, message, type } = req.body;
+  if (!userId || !subject || !phone || !message || !type || !recepient) {
+    return res.status(400).json({ success: false, message: 'All fields are required' });
+  }
+  
+  const newQuery = await Query.create({
+    sender_id: userId,
+    sender_type: type,
+    recepient, 
+    subject,
+    phone_number: phone,
+    message,
+    dateCreated: new Date(),
+  });
+  
+  
+      return res.status(200).json({ success: true, message: 'Query submitted successfully' });
+    } catch (error) {
+      console.error('Error adding query:', error);
+      return res.status(500).json({ success: false, message: 'Server error' });
+    }
+  });
   
   module.exports = router;

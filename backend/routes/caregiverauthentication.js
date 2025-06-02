@@ -119,42 +119,6 @@ router.post("/login/caregiver", async (req, res) => {
   }
 });
 
-
-router.post('/add-query', async (req, res) => {
-  const { userId, subject, recepient, phone, message, type } = req.body;
-  console.log(userId);
-  console.log(subject);
-  console.log("hello im,",recepient);
-  console.log(phone);
-  console.log(message);
-  console.log(type);
-  try {
-    if (!userId || !subject || !phone || !message || !type ||!recepient) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
-    }
-
-    // Check if senderType is either 'caregiver' or 'family'
-    if (!['caregiver', 'family'].includes(type)) {
-      return res.status(400).json({ success: false, message: 'Invalid sender type' });
-    }
-
-    // Save query to the database
-    const newQuery = await Query.create({
-      sender_id: userId,
-      sender_type: type,
-      recepient:recepient,
-      subject,
-      phone_number: phone,
-      message,
-      dateCreated: new Date(),
-    });
-
-    return res.status(200).json({ success: true, message: 'Query submitted successfully' });
-  } catch (error) {
-    console.error('Error adding query:', error);
-    return res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
 router.get("/caregiverProfile/:id", async (req, res) => {
   const { id } = req.params;
 

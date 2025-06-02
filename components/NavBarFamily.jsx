@@ -4,29 +4,29 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 
-const NavBar = ({ onChartButtonClick }) => {
+const NavBarFamily = ({ onChartButtonClick }) => {
   const router = useRouter();
 
   return (
     <View style={styles.navContainer}>
       <TouchableOpacity style={styles.navIcon }
-      onPress={() => router.push("/Dashboard")}>
+      onPress={() => router.push("/FamilyDashboard")}>
         <Icon name="th-large" size={20} color="#576574" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.navIcon} onPress={onChartButtonClick} >
         <Icon name="pie-chart" size={20} color="#576574" />
       </TouchableOpacity>
-      {/* <TouchableOpacity style={styles.navCenter} onPress={() => router.push("/AddQuery")}>
+      <TouchableOpacity style={styles.navCenter} onPress={() => router.push("/AddQuery")}>
         <View style={styles.plusButton}>
           <Icon name="comment" size={24} color="#576574" />
         </View>
-      </TouchableOpacity> */}
+      </TouchableOpacity>
       <TouchableOpacity style={styles.navIcon} onPress={() => router.push("/Alerts")}>
         <Icon name="bell" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navIcon} onPress={() => router.push("/AdminProfile")}>
+      {/* <TouchableOpacity style={styles.navIcon} onPress={() => router.push("/AdminProfile")}>
         <Icon name="user" size={20} color="#576574" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );}
 
@@ -78,4 +78,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NavBar;
+export default NavBarFamily;

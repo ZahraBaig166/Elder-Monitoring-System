@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity } from "react-native";
 import { LineChart, BarChart } from "react-native-chart-kit";
-import NavBar from '../components/NavBar';
 import { useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { checkFall } from "../services/fallApi";
 import useAuth from "../hooks/useAuth";
+import NavBarFamily from '../components/NavBarFamily';
 
 
 
@@ -468,7 +468,7 @@ const stressLevel = (heartRateValues) => {
         </View>
       </ScrollView>
 
-      <NavBar />
+      <NavBarFamily />
     </View>
   );
 };

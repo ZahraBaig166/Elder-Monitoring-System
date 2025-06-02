@@ -14,17 +14,21 @@ import React, { useState, useRef } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import useConfig from "../hooks/useConfig";
 import RNPickerSelect from "react-native-picker-select";
+import useAuth from "../hooks/useAuth";
 
 const AddQueryComponent = () => {
   const [subject, setSubject] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [userchoice, setUserchoice] = useState(""); // Default value for family type selection
+  const [userchoice, setUserchoice] = useState("");
   const phoneInput = useRef(null);
   const router = useRouter();
   const { apiBaseUrl } = useConfig();
-  const { userId, type } = useLocalSearchParams();
+  const { user, loading: authLoading } = useAuth();
+
+  const type = user?.type; // ✅ define type properly
+  const userId = user?.userId;
 
   const handleSubmit = async () => {
     if (!subject || !phone || !message) {
@@ -35,39 +39,37 @@ const AddQueryComponent = () => {
     setLoading(true);
 
     try {
-      
+      console.log("userId", userId);  
       const response = await fetch(`${apiBaseUrl}/add-query`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId, // Include userId from query params
+          userId,
           subject,
-          recepient: type === "family" ? userchoice : "admin", // Set recipient based on the condition
+          recepient: type === "family" ? userchoice : "admin",
           phone,
           message,
           type,
         }),
       });
-      // console.log(type);
+
       const data = await response.json();
 
       if (data.success) {
         alert("Query submitted successfully");
-        
-        // Redirect based on 'type'
         if (type === "family") {
-          router.replace("/FamilyDashboard"); // Replace with the correct family dashboard route
+          router.replace("/FamilyDashboard");
         } else if (type === "caregiver") {
-          router.replace("/CaregiverDashboard"); // Replace with the correct caregiver dashboard route
+          router.replace("/DoctorDashboard");
         } else {
-          router.replace("/DoctorDashboard"); // Default case
+          router.replace("/DoctorDashboard");
         }
       } else {
         alert("Failed to submit query");
       }
-      
+
     } catch (error) {
       console.error("Error submitting query:", error);
       alert("An error occurred. Please try again later.");
@@ -75,6 +77,7 @@ const AddQueryComponent = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <KeyboardAvoidingView

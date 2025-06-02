@@ -1,6 +1,6 @@
 export const checkFall = async (metrics) => {
     try {
-      const response = await fetch("http://192.168.0.103:8001/predict", {
+      const response = await fetch("http://10.135.50.168:8001/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(metrics),

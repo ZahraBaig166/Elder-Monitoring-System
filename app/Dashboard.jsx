@@ -10,7 +10,7 @@ import { router, useRouter } from 'expo-router';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
 import { useFocusEffect } from 'expo-router';
-import { BackHandler } from 'react-native';
+// import { BackHandler } from 'react-native';
 
 
 const { width } = Dimensions.get('window');
@@ -18,18 +18,18 @@ const { width } = Dimensions.get('window');
 const Dashboard = () => {
 
   const { apiBaseUrl, loading, error } = useConfig();
-  useFocusEffect(
-    React.useCallback(() => {
-      const onBackPress = () => {
-        router.replace('/'); // Replace with Login screen
-        return true; // Prevent default back behavior
-      };
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     const onBackPress = () => {
+  //       router.replace('/'); // Replace with Login screen
+  //       return true; // Prevent default back behavior
+  //     };
 
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  //     BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [])
-  );
+  //     return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+  //   }, [])
+  // );
 
   const [showCharts, setShowCharts] = useState(false); // State to toggle charts view
 
@@ -78,18 +78,18 @@ const dashboardStyles = StyleSheet.create({
 const Header = () => {
 
   const navigation = useNavigation(); // Access navigation
-  useFocusEffect(
-    React.useCallback(() => {
-      const onBackPress = () => {
-        router.replace('/'); // Replace with Login screen
-        return true; // Prevent default back behavior
-      };
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     const onBackPress = () => {
+  //       router.replace('/'); // Replace with Login screen
+  //       return true; // Prevent default back behavior
+  //     };
 
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  //     BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [])
-  );
+  //     return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+  //   }, [])
+  // );
 
   const handleBackPress = () => {
     router.replace('/'); // Navigate to Login and clear stack
