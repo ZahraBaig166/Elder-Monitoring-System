@@ -1,5 +1,5 @@
 const express = require('express');
-const { PendingFamily, Family, Patient, Caregiver,HealthMetric, MedicationSchedule, sequelize } = require('../models');
+const { PendingFamily, Family, Patient, Caregiver,HealthMetric,UserActivity, MedicationSchedule, sequelize } = require('../models');
 
 const app = express();
 const { Op } = require("sequelize");
@@ -98,29 +98,38 @@ router.post('/submit/family', async (req, res) => {
 router.post("/login/family/:email/:password", async (req, res) => {
   console.log("in family login route");
   const { email, password } = req.params;
-  console.log(email, password);
 
-  const family = await Family.findOne({ where: { email } });
-  // console.log("FAMILY FETCHING", family);
+  try {
+    const family = await Family.findOne({ where: { email } });
 
-  if (!family) {
-    return res.status(400).send({ message: "Family not found" });
+    if (!family) {
+      return res.status(400).send({ message: "Family not found" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, family.password);
+    if (!isPasswordValid) {
+      return res.status(400).send({ message: "Invalid credentials" });
+    }
+
+    const token = "some-generated-token"; // Replace with JWT if needed
+    // Log activity
+    const activityLog= await UserActivity.create({
+      user_type: "family",
+      family_id: family.user_id,
+      activity_time: new Date(),
+    });
+console.log("caregiver USER ACTIVITY", activityLog);
+    res.status(200).send({
+      message: "Family logged in successfully",
+      token,
+      userId: family.user_id,
+      type: "family",
+    });
+  } catch (error) {
+    console.error("Error in family login:", error);
+    res.status(500).send("Internal server error");
   }
-
-  const isPasswordValid = await bcrypt.compare(password, family.password);
-  if (!isPasswordValid) {
-    return res.status(400).send({ message: "Invalid credentials" });
-  }
-
-  const token = "some-generated-token"; // Replace with real token
-  res.status(200).send({
-    message: "Family logged in successfully",
-    token,
-    userId: family.user_id,
-    type: "family",
-  });
 });
-
 
 router.get("/health-metrics/:patientId", async (req, res) => {
   const { patientId } = req.params;

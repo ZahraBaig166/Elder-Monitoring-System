@@ -9,11 +9,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { checkFall } from "../services/fallApi";
 import useAuth from "../hooks/useAuth";
 import { useLocalSearchParams } from "expo-router"; // NEW
+import Svg, { Path } from 'react-native-svg';
 
 
 const IndividualPatientProfile = () => {
-    const { patientId: routePatientId } = useLocalSearchParams();
-    const { patientId } = useLocalSearchParams();
+    // const { patientId: routePatientId } = useLocalSearchParams();
+  const { patientId,setPatientId } = useLocalSearchParams();
+  // const [patientId, setPatientId] = useState("");
+      // const [patientName, setPatientName] = useState("");
   const [patientName, setPatientName] = useState("");
   const [healthMetrics, setHealthMetrics] = useState([]);
   const [currentHeartRate, setCurrentHeartRate] = useState("Loading...");
@@ -36,7 +39,7 @@ const [isLoading, setIsLoading] = useState(true);
         // Step 1: Fetch Patient Details
         const patientResponse = await fetch(`${apiBaseUrl}/patientclicked/${patientId}`);
         const patientData = await patientResponse.json();
-  
+  console.log("Patient Data:", patientData); // Log the fetched patient data
         if (patientResponse.ok) {
           setPatientName(patientData.name);
         } else {
@@ -46,7 +49,7 @@ const [isLoading, setIsLoading] = useState(true);
         // Step 2: Fetch Health Metrics
         const metricsResponse = await fetch(`${apiBaseUrl}/health-metrics/${patientId}`);
         const metricsData = await metricsResponse.json();
-  
+  console.log("Metrics Data:", metricsData); // Log the fetched metrics data
         if (metricsResponse.ok) {
           setHealthMetrics(metricsData);
           if (metricsData.length > 0) {
@@ -276,26 +279,23 @@ const stressLevel = (heartRateValues) => {
         <Text style={styles.patientName}>Patient name: {patientName}</Text>
 
         {/* Heart Rate Section */}
-        <View style={styles.heartRateContainer}>
-          <View style={styles.heartRateSection}>
-            {/* Image 1 */}
-            <Image
-              source={require("@/assets/images/hearticon.png")}
-              style={styles.heartIcon}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.heartRateText}>{currentHeartRate} bpm</Text>
-              <Text style={styles.heartRateLabel}>Heart Rate</Text>
-            </View>
-          </View>
-
-          {/* Image 2 */}
-          <Image
-            source={require("@/assets/images/Heartrate.png")}
-            style={styles.heartRateGraph}
-          />
-        </View>
-
+<View style={styles.heartRateContainer}>
+  <Text style={styles.heartRateLabel}>Heart Rate</Text>
+  <View style={styles.heartRateInfo}>
+    <Text style={styles.heartRateValue}>{currentHeartRate}</Text>
+    <Text style={styles.bpmLabel}>bpm</Text>
+  </View>
+  <View style={styles.heartRateLine}>
+    <Svg width="80" height="40" viewBox="0 0 100 50">
+      <Path
+        d="M0,30 L10,10 L20,30 L30,20 L40,30 L50,10 L60,30 L70,20 L80,30"
+        fill="transparent"
+        stroke="#0077CC"
+        strokeWidth="2"
+      />
+    </Svg>
+  </View>
+</View>
         {/* Stats Section */}
         <View style={styles.statsContainer}>
           <View style={styles.row}>
@@ -362,7 +362,8 @@ const stressLevel = (heartRateValues) => {
           </View>
         </View>
         <View style={{ marginTop: 15 , marginHorizontal: 15}}>
-        {isLoading ? (
+      
+       {isLoading ? (
   <Text>Loading notes...</Text>
 ) : (!notes || notes.length === 0 ? (
   <Text>No notes available for this patient.</Text>
@@ -371,11 +372,14 @@ const stressLevel = (heartRateValues) => {
     <View
       key={index}
       style={{
-        backgroundColor: '#D9E3EF', // light blue
-        borderRadius: 15,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#2D7C8F', // Teal blue background
+        borderRadius: 20,
         padding: 15,
+        paddingBottom: 20,
+        marginBottom: 70,
         marginVertical: 10,
-        paddingHorizontal: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
@@ -383,139 +387,46 @@ const stressLevel = (heartRateValues) => {
         elevation: 5,
       }}
     >
-      <Text style={{ fontWeight: '700',fontSize:'20' , marginBottom: 5 }}>Notes</Text>
-      <Text style={{ color: '#1E3A8A', fontWeight: '600', fontSize: 16 }}>
-        Note: {note.note || "No note available"}
-      </Text>
-      <Text style={{ fontSize: 13, color: 'gray', marginTop: 5 }}>
-        {note.timestamp ? new Date(note.timestamp).toLocaleString() : "No timestamp available"}
-      </Text>
+      {/* Left Date Box */}
+      <View
+        style={{
+          backgroundColor: '#4BA6B1', // Slightly lighter blue
+          borderRadius: 15,
+          padding: 10,
+          width: 60,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginRight: 15,
+        }}
+      >
+        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 18 }}>
+          {new Date(note.timestamp).getDate()}
+        </Text>
+        <Text style={{ color: 'white', fontWeight: '600', fontSize: 14 }}>
+          {new Date(note.timestamp).toLocaleDateString('en-US', { weekday: 'short' })}
+        </Text>
+      </View>
+
+      {/* Right Content */}
+      <View style={{ flex: 1 }}>
+        <Text style={{ color: 'white', fontWeight: '600', fontSize: 13, marginBottom: 2 }}>
+          {new Date(note.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Text>
+        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>
+          Note
+        </Text>
+        <Text style={{ color: 'white', fontSize: 14 }}>
+          {note.note || "No note available"}
+        </Text>
+      </View>
     </View>
   ))
 ))}
 
+
 </View>
 
-
-
-
-        {/* Sleep Pattern Graph */}
-        <View style={styles.sleepPatternContainer}>
-          <Text style={styles.sleepPatternTitle}>Sleep Pattern</Text>
-          <LineChart
-            data={{
-              labels: ["9", "11", "12", "1", "2", "3", "4", "5", "6", "7", "8"],
-              datasets: [
-                {
-                  data: [1, 2, 1.5, 3, 2.5, 4, 2, 3, 4.5, 3, 2],
-                  color: (opacity = 1) => `rgba(50, 115, 220, ${opacity})`,
-                  strokeWidth: 3,
-                },
-              ],
-            }}
-            width={Dimensions.get("window").width - 40}
-            height={220}
-            yAxisSuffix=""
-            yAxisInterval={1}
-            chartConfig={{
-              backgroundGradientFrom: "#ADC1D8",
-              backgroundGradientTo: "#ADC1D8",
-              decimalPlaces: 1,
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              style: {
-                borderRadius: 16,
-              },
-              propsForDots: {
-                r: "4",
-                strokeWidth: "2",
-                stroke: "#ffffff",
-              },
-            }}
-            bezier
-            style={{
-              marginVertical: 8,
-              borderRadius: 15,
-            }}
-          />
-        </View>
-
-        <View style={styles.activityLevelContainer}>
-          <View style={styles.activityLevelHeader}>
-            <Text style={styles.activityLevelTitle}>Activity Level</Text>
-            <TouchableOpacity style={styles.dropdown}>
-              <Text style={styles.dropdownText}>This Week</Text>
-            </TouchableOpacity>
-          </View>
-
-          <BarChart
-            data={{
-              labels: ["16", "17", "18", "19", "20", "21", "22"],
-              datasets: [{ data: [3000, 6000, 4500, 7200, 5289, 6400, 5800] }],
-            }}
-            width={Dimensions.get("window").width - 40}
-            height={220}
-            fromZero
-            chartConfig={{
-              backgroundGradientFrom: "#ADC1D8",
-              backgroundGradientTo: "#ADC1D8",
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            }}
-            style={styles.chartStyle}
-          />
-          {/* Additional Stats Below the Bar Chart */}
-          <View style={styles.statsRow}>
-            <TouchableOpacity style={styles.statsTab}>
-              <Text style={styles.statsTabText}>Steps</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={[styles.statsTab, styles.inactiveTab]}>
-              <Text style={[styles.statsTabText, styles.inactiveTabText]}>Time</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.statsTab, styles.inactiveTab]}>
-              <Text style={[styles.statsTabText, styles.inactiveTabText]}>Calorie</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.statsTab, styles.inactiveTab]}>
-              <Text style={[styles.statsTabText, styles.inactiveTabText]}>Distance</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.totalStats}>
-            <Text style={styles.totalSteps}>256,480</Text>
-            <Text style={styles.totalLabel}>Total steps all the time</Text>
-          </View>
-
-          <View style={styles.detailedStats}>
-            <View style={styles.statDetail}>
-              <Image
-                source={{
-                  uri:"https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png"}} 
-                style={styles.iconImage}
-              />
-              <Text style={styles.statDetailValue}>85h 24m</Text>
-              <Text style={styles.statDetailLabel}>Time</Text>
-            </View>
-            <View style={styles.statDetail}>
-              <Image
-                source={{
-                  uri:"https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png"}} 
-                style={styles.iconImage}
-              />
-              <Text style={styles.statDetailValue}>20,492</Text>
-              <Text style={styles.statDetailLabel}>Kcal</Text>
-            </View>
-            <View style={styles.statDetail}>
-              <Image
-                source={{
-                  uri:"https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png"}} 
-                style={styles.iconImage}
-              />
-              <Text style={styles.statDetailValue}>294.35</Text>
-              <Text style={styles.statDetailLabel}>km</Text>
-            </View>
-          </View>
-        </View>
+     
       </ScrollView>
 
     </View>
@@ -822,6 +733,51 @@ flex: 1,
     margin: 20,
   },
  
+  heartRateContainer: {
+    backgroundColor: '#66CCFF',
+    borderRadius: 15,
+    paddingTop: 50,
+    paddingBottom: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '90%',
+    marginBottom: 15,
+    marginLeft: '5%',
+    marginTop: 20,
+  },
+  heartRateLabel: {
+    fontSize: 25,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    marginRight: 10,
+    marginLeft: 20,
+  },
+  heartRateInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 20,
+   
+  },
+  heartRateValue: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginRight: 5,
+  },
+  bpmLabel: {
+    fontSize: 16,
+    color: '#ffffff',
+  },
+  heartRateLine: {
+    width: 80, // Adjust to fit your design
+    height: 50, // Adjust to fit your design
+    marginLeft: 15,
+  },
+  heartbeatImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain', // Keeps the aspect ratio intact
+  },
 });
 
 export default IndividualPatientProfile;

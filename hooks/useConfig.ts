@@ -12,7 +12,7 @@ const useConfig = () => {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const response = await fetch(`http://10.135.84.220:4000/config`);
+        const response = await fetch(`http://10.135.53.182:4000/config`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

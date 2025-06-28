@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions, Image } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { Svg, Line, Path, Text as SvgText , Circle, FeSpecularLighting , Rect } from 'react-native-svg';
+import { BarChart } from 'react-native-chart-kit';
 import { Link, router } from 'expo-router';
 import NavBar from '../components/NavBarPatients';
 import useConfig from "../hooks/useConfig";
@@ -206,17 +208,256 @@ const DoctorDashboard = () => {
           <Text style={styles.viewAllButtonText}>Add Medication</Text>
         </TouchableOpacity>
 
-        <MedicationScheduleList />
+              <MedicationScheduleList /><View style={styles.chartContainer}>
+        <Text style={styles.chartTitle}>Patient Status Transition Trends</Text>
+            <PatientTrendChart />
+          </View>
 
-        <ChartWithHeading title="Patient Status Transition Trends" source={require('../assets/images/G1.png')} />
-        <ChartWithHeading title="Heart Rate Trends" source={require('../assets/images/G2.png')} />
-        <ChartWithHeading title="Blood Pressure Analysis" source={require('../assets/images/G3.png')} />
-        <ChartWithHeading title="Activity Levels Over Time" source={require('../assets/images/G4.png')} />
+          <View style={styles.chartContainer}>
+            <View style={styles.alertsContainer}>
+  <Text style={styles.sleepPatternTitle}>Patient Alerts This Week</Text>
+  <BarChart
+    data={{
+      labels: ["Ali", "Sara", "Ahmed", "Noor", "Hassan"],
+      datasets: [
+        {
+          data: [4, 7, 2, 5, 3], // Number of alerts per patient
+        },
+      ],
+    }}
+    width={Dimensions.get("window").width - 55}
+    height={220}
+    fromZero
+    chartConfig={{
+      backgroundGradientFrom: "#ADC1D8",
+      backgroundGradientTo: "#ADC1D8",
+      color: (opacity = 1) => `rgba(50, 115, 220, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+      decimalPlaces: 0,
+      propsForLabels: {
+        fontSize: 12,
+      },
+    }}
+    style={{
+      marginVertical: 8,
+      borderRadius: 15,
+    }}
+  />
+</View>
+    
+            {/* <FallIncidentBarChart /> */}
+          </View>
+
+        {/* <ChartWithHeading title="Heart Rate Trends" source={require('../assets/images/G2.png')} /> */}
+        <ChartWithHeading title=" Patient Location" source={require('../assets/images/G3.png')} />
+        {/* <ChartWithHeading title="Activity Levels Over Time" source={require('../assets/images/G4.png')} /> */}
       </ScrollView>
       <NavBar />
     </View>
   );
+  
 };
+const PatientTrendChart = () => {
+  // Example data: each array is number of patients per status for each week
+  const criticalData = [10, 6, 5, 2];   // 🔴 Decreasing
+  const moderateData = [5, 6, 7, 5];    // 🟠 Varies
+  const stableData = [2, 3, 5, 10];     // 🟢 Increasing
+
+  const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+
+  const chartWidth = 340;
+  const chartHeight = 200;
+  const paddingLeft = 40;
+  const paddingRight = 20;
+  const paddingBottom = 30;
+  const paddingTop = 20;
+
+  const maxY = Math.max(...criticalData, ...moderateData, ...stableData);
+  const yScale = (chartHeight - paddingTop - paddingBottom) / maxY;
+  const xGap = (chartWidth - paddingLeft - paddingRight) / (labels.length - 1);
+
+  const getX = (i) => paddingLeft + i * xGap;
+  const getY = (value) => chartHeight - paddingBottom - value * yScale;
+
+  const buildPath = (data) => {
+    return data.map((val, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(val)}`).join(' ');
+  };
+
+  return (
+    <Svg width={chartWidth} height={chartHeight + 20}>
+      {/* Y-axis Labels */}
+      {[0, maxY / 2, maxY].map((val) => (
+        <SvgText
+          key={val}
+          x={paddingLeft - 10}
+          y={getY(val)}
+          fontSize="13"
+          fill="#333"
+          textAnchor="end"
+          alignmentBaseline="middle"
+        >
+          {Math.round(val)}
+        </SvgText>
+      ))}
+
+      {/* Horizontal lines */}
+      {[0, maxY / 2, maxY].map((val) => (
+        <Line
+          key={val}
+          x1={paddingLeft}
+          y1={getY(val)}
+          x2={chartWidth - paddingRight}
+          y2={getY(val)}
+          stroke="#eee"
+        />
+      ))}
+
+      {/* Lines */}
+      <Path d={buildPath(criticalData)} stroke="red" strokeWidth={3} fill="none" />
+      <Path d={buildPath(moderateData)} stroke="orange" strokeWidth={2} fill="none" />
+      <Path d={buildPath(stableData)} stroke="green" strokeWidth={2} fill="none" />
+
+      {/* Points */}
+      {[criticalData, moderateData, stableData].map((dataset, idx) => {
+        const color = ['red', 'orange', 'green'][idx];
+        return dataset.map((val, i) => (
+          <Circle
+            key={`${idx}-${i}`}
+            cx={getX(i)}
+            cy={getY(val)}
+            r={3}
+            fill={color}
+          />
+        ));
+      })}
+
+      {/* X-axis Labels */}
+      {labels.map((label, i) => (
+        <SvgText
+          key={label}
+          x={getX(i)}
+          y={chartHeight + 10}
+          fontSize="12"
+          fill="#333"
+          textAnchor="middle"
+        >
+          {label}
+        </SvgText>
+      ))}
+
+      {/* Legend */}
+      <SvgText x={paddingLeft} y={15} paddingBottom='20' fontSize="10" fill="red">● Critical</SvgText>
+      <SvgText x={paddingLeft + 80} y={15} paddingBottom='20' fontSize="10" fill="orange">● Moderate</SvgText>
+      <SvgText x={paddingLeft + 190} y={15} paddingBottom='20' fontSize="10" fill="green">● Stable</SvgText>
+    </Svg>
+  );
+};
+
+// const FallIncidentBarChart = ({ data }) => {
+//   // Example data: number of incidents per week (4 weeks)
+//   // data = [3, 0, 1, 4];
+//   data = data || [3, 0, 1, 4];
+
+//   const chartWidth = 350;
+//   const chartHeight = 200;
+//   const margin = 40;
+//   const barWidth = 40;
+//   const gap = (chartWidth - margin * 2 - barWidth * data.length) / (data.length - 1);
+
+//   const maxValue = Math.max(...data, 1);
+
+//   // Scale bar height
+//   const getBarHeight = val => (val / maxValue) * (chartHeight - margin * 2);
+
+//   return (
+//     <View>
+//       <Svg width={chartWidth} height={chartHeight}>
+//         {/* Y-axis */}
+//         <Line
+//           x1={margin}
+//           y1={margin}
+//           x2={margin}
+//           y2={chartHeight - margin}
+//           stroke="#333"
+//         />
+//         {/* X-axis */}
+//         <Line
+//           x1={margin}
+//           y1={chartHeight - margin}
+//           x2={chartWidth - margin}
+//           y2={chartHeight - margin}
+//           stroke="#333"
+//         />
+
+//         {/* Bars */}
+//         {data.map((val, i) => {
+//           const barHeight = getBarHeight(val);
+//           const x = margin + i * (barWidth + gap);
+//           const y = chartHeight - margin - barHeight;
+//           return (
+//             <Rect
+//               key={i}
+//               x={x}
+//               y={y}
+//               width={barWidth}
+//               height={barHeight}
+//               fill="#f45b69"
+//               rx={5}
+//               ry={5}
+//             />
+//           );
+//         })}
+
+//         {/* X-axis labels (Week 1, Week 2...) */}
+//         {data.map((_, i) => {
+//           const x = margin + i * (barWidth + gap) + barWidth / 2;
+//           return (
+//             <SvgText
+//               key={i}
+//               x={x}
+//               y={chartHeight - margin + 15}
+//               fontSize="12"
+//               fill="#333"
+//               textAnchor="middle"
+//             >
+//               {`Week ${i + 1}`}
+//             </SvgText>
+//           );
+//         })}
+
+//         {/* Y-axis labels */}
+//         {[0, maxValue / 2, maxValue].map((val, i) => {
+//           const y = chartHeight - margin - (val / maxValue) * (chartHeight - margin * 2);
+//           return (
+//             <SvgText
+//               key={i}
+//               x={margin - 10}
+//               y={y + 4}
+//               fontSize="10"
+//               fill="#333"
+//               textAnchor="end"
+//             >
+//               {Math.round(val)}
+//             </SvgText>
+//           );
+//         })}
+
+//         {/* Chart title */}
+//         <SvgText
+//           x={chartWidth / 2}
+//           y={margin / 2}
+//           fontSize="16"
+//           fill="#333"
+//           fontWeight="bold"
+//           textAnchor="middle"
+//         >
+//           Fall/Incident History (Weekly)
+//         </SvgText>
+//       </Svg>
+//     </View>
+//   );
+// };
+
 
 const styles = StyleSheet.create({
   dashboardContainer: {
@@ -603,6 +844,23 @@ const styles = StyleSheet.create({
       fontSize: 16,
       fontWeight: '600',
     },
+
+    chartContainer: {
+  backgroundColor: '#fff',
+  borderRadius: 10,
+  padding: 15,
+  margin: 10,
+  elevation: 2,
+},
+chartTitle: {
+  fontSize: 14,
+  fontWeight: 'bold',
+  marginBottom: 10,
+},
+alertsContainer: {
+  marginTop: 20,
+  paddingHorizontal: 10,
+},
     
 });
 

@@ -98,9 +98,9 @@ const ViewPatients = () => {
               <Icon name="filter" size={20} color="#000" style={styles.filterIcon} />
             </TouchableOpacity>
           </View>
-          {filteredPatients.length > 0 ? (
-            <ScrollView>
-              {filteredPatients.map((patient) => (
+          <ScrollView>
+            {filteredPatients.length > 0 ? (
+              filteredPatients.map((patient) => (
                 <View key={patient.patient_id} style={styles.patientCard}>
                   {/* Patient Info Section */}
                   <View style={styles.patientInfo}>
@@ -121,8 +121,6 @@ const ViewPatients = () => {
                           pathname: "/IndividualPatientProfile",
                           params: { patientId: patient.patient_id }
                         })}
-                        
-
                       >
                         <Text style={styles.detailsButtonText}>Details</Text>
                       </TouchableOpacity>
@@ -136,11 +134,11 @@ const ViewPatients = () => {
                     <Icon name="envelope" size={16} color="#000" style={styles.icon} />
                   </View>
                 </View>
-              ))}
-            </ScrollView>
-          ) : (
-            <Text style={styles.noPatientsText}>No patients found.</Text>
-          )}
+              ))
+            ) : (
+              <Text style={styles.noPatientsText}>No patients found.</Text>
+            )}
+          </ScrollView>
         </View>
       </View>
       <NavBar />
@@ -230,6 +228,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 4,
+    marginBottom: 80,
   },
   patientsHeader: {
     flexDirection: 'row',

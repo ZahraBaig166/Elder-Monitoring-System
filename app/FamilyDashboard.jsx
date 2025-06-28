@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { checkFall } from "../services/fallApi";
 import useAuth from "../hooks/useAuth";
 import NavBarFamily from '../components/NavBarFamily';
+import Svg, { Line, Rect, Text as SvgText } from 'react-native-svg';
 
 
 
@@ -348,127 +349,186 @@ const stressLevel = (heartRateValues) => {
             </View>
           </View>
         </View>
+        <FallIncidentBarChart></FallIncidentBarChart>
 
-        {/* Sleep Pattern Graph */}
-        <View style={styles.sleepPatternContainer}>
-          <Text style={styles.sleepPatternTitle}>Sleep Pattern</Text>
-          <LineChart
-            data={{
-              labels: ["9", "11", "12", "1", "2", "3", "4", "5", "6", "7", "8"],
-              datasets: [
-                {
-                  data: [1, 2, 1.5, 3, 2.5, 4, 2, 3, 4.5, 3, 2],
-                  color: (opacity = 1) => `rgba(50, 115, 220, ${opacity})`,
-                  strokeWidth: 3,
-                },
-              ],
-            }}
-            width={Dimensions.get("window").width - 40}
-            height={220}
-            yAxisSuffix=""
-            yAxisInterval={1}
-            chartConfig={{
-              backgroundGradientFrom: "#ADC1D8",
-              backgroundGradientTo: "#ADC1D8",
-              decimalPlaces: 1,
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              style: {
-                borderRadius: 16,
-              },
-              propsForDots: {
-                r: "4",
-                strokeWidth: "2",
-                stroke: "#ffffff",
-              },
-            }}
-            bezier
-            style={{
-              marginVertical: 8,
-              borderRadius: 15,
-            }}
-          />
-        </View>
+        {/* Activity Level Section */}
+        <ActivityLevelSection styles={styles} />
 
-        <View style={styles.activityLevelContainer}>
-          <View style={styles.activityLevelHeader}>
-            <Text style={styles.activityLevelTitle}>Activity Level</Text>
-            <TouchableOpacity style={styles.dropdown}>
-              <Text style={styles.dropdownText}>This Week</Text>
-            </TouchableOpacity>
-          </View>
-
-          <BarChart
-            data={{
-              labels: ["16", "17", "18", "19", "20", "21", "22"],
-              datasets: [{ data: [3000, 6000, 4500, 7200, 5289, 6400, 5800] }],
-            }}
-            width={Dimensions.get("window").width - 40}
-            height={220}
-            fromZero
-            chartConfig={{
-              backgroundGradientFrom: "#ADC1D8",
-              backgroundGradientTo: "#ADC1D8",
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            }}
-            style={styles.chartStyle}
-          />
-          {/* Additional Stats Below the Bar Chart */}
-          <View style={styles.statsRow}>
-            <TouchableOpacity style={styles.statsTab}>
-              <Text style={styles.statsTabText}>Steps</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={[styles.statsTab, styles.inactiveTab]}>
-              <Text style={[styles.statsTabText, styles.inactiveTabText]}>Time</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.statsTab, styles.inactiveTab]}>
-              <Text style={[styles.statsTabText, styles.inactiveTabText]}>Calorie</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.statsTab, styles.inactiveTab]}>
-              <Text style={[styles.statsTabText, styles.inactiveTabText]}>Distance</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.totalStats}>
-            <Text style={styles.totalSteps}>256,480</Text>
-            <Text style={styles.totalLabel}>Total steps all the time</Text>
-          </View>
-
-          <View style={styles.detailedStats}>
-            <View style={styles.statDetail}>
-              <Image
-                source={{
-                  uri:"https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png"}} 
-                style={styles.iconImage}
-              />
-              <Text style={styles.statDetailValue}>85h 24m</Text>
-              <Text style={styles.statDetailLabel}>Time</Text>
-            </View>
-            <View style={styles.statDetail}>
-              <Image
-                source={{
-                  uri:"https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png"}} 
-                style={styles.iconImage}
-              />
-              <Text style={styles.statDetailValue}>20,492</Text>
-              <Text style={styles.statDetailLabel}>Kcal</Text>
-            </View>
-            <View style={styles.statDetail}>
-              <Image
-                source={{
-                  uri:"https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png"}} 
-                style={styles.iconImage}
-              />
-              <Text style={styles.statDetailValue}>294.35</Text>
-              <Text style={styles.statDetailLabel}>km</Text>
-            </View>
-          </View>
-        </View>
+        <NavBarFamily />
       </ScrollView>
+    </View>
+  );
+}
 
-      <NavBarFamily />
+// Move FallIncidentBarChart outside the main component
+const FallIncidentBarChart = ({ data }) => {
+  data = data || [3, 0, 1, 4];
+  const chartWidth = 400;
+  const chartHeight = 200;
+  const margin = 40;
+  const barWidth = 40;
+  const gap = (chartWidth - margin * 2 - barWidth * data.length) / (data.length - 1);
+  const maxValue = Math.max(...data, 1);
+  const getBarHeight = val => (val / maxValue) * (chartHeight - margin * 2);
+  return (
+    <View>
+      <Svg width={chartWidth} height={chartHeight}>
+        <Line x1={margin} y1={margin} x2={margin} y2={chartHeight - margin} stroke="#333" />
+        <Line x1={margin} y1={chartHeight - margin} x2={chartWidth - margin} y2={chartHeight - margin} stroke="#333" />
+        {data.map((val, i) => {
+          const barHeight = getBarHeight(val);
+          const x = margin + i * (barWidth + gap);
+          const y = chartHeight - margin - barHeight;
+          return (
+            <Rect key={i} x={x} y={y} width={barWidth} height={barHeight} fill="#f45b69" rx={5} ry={5} />
+          );
+        })}
+        {data.map((_, i) => {
+          const x = margin + i * (barWidth + gap) + barWidth / 2;
+          return (
+            <SvgText key={i} x={x} y={chartHeight - margin + 15} fontSize="12" fill="#333" textAnchor="middle">
+              {`Week ${i + 1}`}
+            </SvgText>
+          );
+        })}
+        {[0, maxValue / 2, maxValue].map((val, i) => {
+          const y = chartHeight - margin - (val / maxValue) * (chartHeight - margin * 2);
+          return (
+            <SvgText key={i} x={margin - 10} y={y + 4} fontSize="10" fill="#333" textAnchor="end">
+              {Math.round(val)}
+            </SvgText>
+          );
+        })}
+        <SvgText x={chartWidth / 2} y={margin / 2} fontSize="16" fill="#333" fontWeight="bold" textAnchor="middle">
+          Fall/Incident History (Weekly)
+        </SvgText>
+      </Svg>
+    </View>
+  );
+};
+
+// Move ActivityLevelSection outside of the main component
+const ActivityLevelSection = ({ styles }) => {
+  const [activeTab, setActiveTab] = useState("steps");
+
+  const chartData = {
+    steps: [5400, 6700, 5800, 7500, 8200, 9000, 7600],
+    time: [35, 40, 38, 50, 55, 60, 45], // minutes
+    calorie: [220, 280, 250, 300, 310, 400, 370],
+    distance: [3.8, 4.6, 4.1, 5.2, 5.4, 6.0, 5.3], // in km
+  };
+
+  const yAxisSuffix =
+    activeTab === "steps"
+      ? ""
+      : activeTab === "time"
+      ? "m"
+      : activeTab === "calorie"
+      ? "kcal"
+      : "km";
+
+  const totalStats = {
+    steps: "256,480",
+    time: "85h 24m",
+    calorie: "20,492",
+    distance: "294.35",
+  };
+
+  const totalLabel = {
+    steps: "Total steps all the time",
+    time: "Total active time",
+    calorie: "Total calories burned",
+    distance: "Total distance covered",
+  };
+
+  return (
+    <View style={styles.activityLevelContainer}>
+      <View style={styles.activityLevelHeader}>
+        <Text style={styles.activityLevelTitle}>Activity Level</Text>
+        <TouchableOpacity style={styles.dropdown}>
+          <Text style={styles.dropdownText}>This Week</Text>
+        </TouchableOpacity>
+      </View>
+
+      <BarChart
+        data={{
+          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          datasets: [{ data: chartData[activeTab] }],
+        }}
+        width={Dimensions.get("window").width - 40}
+        height={220}
+        fromZero
+        yAxisSuffix={yAxisSuffix}
+        chartConfig={{
+          backgroundGradientFrom: "#e0f7fa",
+          backgroundGradientTo: "#e0f7fa",
+          color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`,
+          labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          barPercentage: 0.6,
+        }}
+        style={styles.chartStyle}
+      />
+
+      {/* Tabs for changing stats */}
+      <View style={styles.statsRow}>
+        {["steps", "time", "calorie", "distance"].map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[
+              styles.statsTab,
+              activeTab !== tab && styles.inactiveTab,
+            ]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text
+              style={[
+                styles.statsTabText,
+                activeTab !== tab && styles.inactiveTabText,
+              ]}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <View style={styles.totalStats}>
+        <Text style={styles.totalSteps}>{totalStats[activeTab]}</Text>
+        <Text style={styles.totalLabel}>{totalLabel[activeTab]}</Text>
+      </View>
+
+      <View style={styles.detailedStats}>
+        <View style={styles.statDetail}>
+          <Image
+            source={{
+              uri: "https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png",
+            }}
+            style={styles.iconImage}
+          />
+          <Text style={styles.statDetailValue}>{totalStats["time"]}</Text>
+          <Text style={styles.statDetailLabel}>Time</Text>
+        </View>
+        <View style={styles.statDetail}>
+          <Image
+            source={{
+              uri: "https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png",
+            }}
+            style={styles.iconImage}
+          />
+          <Text style={styles.statDetailValue}>{totalStats["calorie"]}</Text>
+          <Text style={styles.statDetailLabel}>Kcal</Text>
+        </View>
+        <View style={styles.statDetail}>
+          <Image
+            source={{
+              uri: "https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png",
+            }}
+            style={styles.iconImage}
+          />
+          <Text style={styles.statDetailValue}>{totalStats["distance"]}</Text>
+          <Text style={styles.statDetailLabel}>km</Text>
+        </View>
+      </View>
     </View>
   );
 };
@@ -483,7 +543,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-
+alertsContainer: {
+  marginTop: 20,
+  paddingHorizontal: 10,
+},
   queriesButton: {
     backgroundColor: "#FFF",
     paddingVertical: 8,
@@ -773,6 +836,7 @@ flex: 1,
     padding: 20,
     margin: 20,
   },
+  
 });
 
 export default DashboardHeartRateAndStats;

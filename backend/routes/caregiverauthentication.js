@@ -1,11 +1,14 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const { PendingCaregiver,Query} = require('../models'); // Import PendingCaregiver model
+const { PendingCaregiver,Query,UserActivity, Sequelize} = require('../models'); // Import PendingCaregiver model
 const app= express();
 const router = express.Router();
 router.use(express.json());
 const jwt = require('jsonwebtoken');
 const {Patient } = require('../models'); 
+ const { Family } = require('../models'); // Import Family model
+// const {Caregiver} = require('../models'); // Import Caregiver model
+const { Op } = require("sequelize");
 
 
 router.get('/caregiver/:id/patients/counts', async (req, res) => {
@@ -85,28 +88,31 @@ const crypto = require('crypto'); // For generating a random password
 router.post("/login/caregiver", async (req, res) => {
   console.log("in caregiver login route");
   const { email, password } = req.body;
-  console.log("caregiver login request body",req.body);
 
   try {
-    // Find caregiver by email
     const caregiver = await Caregiver.findOne({ where: { email } });
-    console.log("caregiver",caregiver);
+
     if (!caregiver) {
       return res.status(400).send("Caregiver not found");
     }
 
-    // Compare entered password with hashed password in DB
     const isPasswordValid = await bcrypt.compare(password, caregiver.password);
     if (!isPasswordValid) {
       return res.status(400).send("Invalid credentials");
     }
 
-    // Generate JWT Token
     const token = jwt.sign({ id: caregiver.user_id }, "secret", {
       expiresIn: "1h",
     });
 
-    // Send success response
+    // Log activity
+    const activityLog  = await UserActivity.create({
+      user_type: "caregiver",
+      caregiver_id: caregiver.user_id,
+      activity_time: new Date(),
+    });
+    console.log("caregiver USER ACTIVITY", activityLog );
+
     res.status(200).send({
       message: "Caregiver logged in successfully",
       token,
@@ -228,6 +234,7 @@ router.get('/patient/:patient_id/notes', async (req, res) => {
     }
 });
 const { MedicationSchedule } = require('../models'); 
+const { Console } = require('console');
 
 router.post('/medications', async (req, res) => {
   console.log("in add medication route");
@@ -357,6 +364,135 @@ router.get('/notes/:patientId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching notes by patientId:', error);
     return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+
+
+router.get('/chart', async (req, res) => {
+  // console.log("in caregiver chart route");
+  try {
+    // Group caregivers by month-year of creation, count how many per month
+    const caregiverData = await Caregiver.findAll({
+      attributes: [
+        [Sequelize.fn('TO_CHAR', Sequelize.col('date_created'), 'YYYY-MM'), 'month'],
+        [Sequelize.fn('COUNT', Sequelize.col('user_id')), 'count']
+      ],
+      group: ['month'],
+      order: [[Sequelize.col('month'), 'ASC']],
+      raw: true,
+    });
+    // console.log("caregiverData", caregiverData);
+
+    // Same for family
+    const familyData = await Family.findAll({
+      attributes: [
+        [Sequelize.fn('TO_CHAR', Sequelize.col('date_created'), 'YYYY-MM'), 'month'],
+        [Sequelize.fn('COUNT', Sequelize.col('user_id')), 'count']
+      ],
+      group: ['month'],
+      order: [[Sequelize.col('month'), 'ASC']],
+      raw: true,
+    });
+    // console.log("familyData", familyData);
+
+   // Combine all months from caregiverData and familyData, remove duplicates, sort ascending
+const allMonthsSet = new Set([
+  ...caregiverData.map(d => d.month),
+  ...familyData.map(d => d.month),
+]);
+
+const allMonths = Array.from(allMonthsSet).sort();
+
+// Map counts for caregivers and family based on allMonths
+const caregiverCounts = allMonths.map(month => {
+  const record = caregiverData.find(d => d.month === month);
+  return record ? parseInt(record.count, 10) : 0;
+});
+const familyCounts = allMonths.map(month => {
+  const record = familyData.find(d => d.month === month);
+  return record ? parseInt(record.count, 10) : 0;
+});
+// console.log('count', caregiverCounts);  
+// console.log('familyCounts', familyCounts);
+
+res.status(200).json({
+  success: true,
+  months: allMonths,
+  caregiverCounts,
+  familyCounts,
+});
+
+  } catch (error) {
+    console.error('Error fetching chart data:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Helper function to generate last 7 months as 'YYYY-MM' strings
+function getLast7Months() {
+  const result = [];
+  const date = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+    const monthStr = d.toISOString().slice(0, 7); // 'YYYY-MM'
+    result.push(monthStr);
+  }
+  return result;
+}
+
+router.get('/user-activity/weekly', async (req, res) => {
+  try {
+    console.log("IN ACTIVITY ROUTE WEEKLY")
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    // Fetch all activities in current month
+ const activities = await UserActivity.findAll({
+  where: {
+    activity_time: {
+      [Op.gte]: startOfMonth,
+      [Op.lt]: startOfNextMonth,
+    }
+  },
+  attributes: ['activity_time', 'user_type'],
+  raw: true,
+});
+    console.log("activities", activities);
+    // Helper: get week of month from date
+    const getWeekOfMonth = (date) => {
+      const day = date.getDate();
+      return Math.floor((day - 1) / 7) + 1;
+    };
+
+    // Aggregate counts per week and user_type
+    const resultsMap = {};
+
+    activities.forEach(({ activity_time, user_type }) => {
+      const date = new Date(activity_time);
+      const week = getWeekOfMonth(date);
+      const key = `${week}_${user_type}`;
+
+      if (!resultsMap[key]) {
+        resultsMap[key] = { week_of_month: week, user_type, activity_count: 0 };
+      }
+      resultsMap[key].activity_count++;
+    });
+
+    // Convert map to array and sort
+    const results = Object.values(resultsMap).sort((a, b) => {
+      if (a.week_of_month !== b.week_of_month) {
+        return a.week_of_month - b.week_of_month;
+      }
+      return a.user_type.localeCompare(b.user_type);
+    });
+
+    res.json(results);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { PendingFamily, Family, Patient, PendingCaregiver, Caregiver, Query,sequelize } = require('../models');
 const {patient} = require('../models/patient');
+
 const jwt = require('jsonwebtoken');
 const { send } = require('process');
 const router = express.Router();
@@ -550,5 +551,12 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
       return res.status(500).json({ success: false, message: 'Server error' });
     }
   });
+
+
+
+
+
+
+  
   
   module.exports = router;
