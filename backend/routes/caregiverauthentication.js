@@ -5,11 +5,11 @@ const app= express();
 const router = express.Router();
 router.use(express.json());
 const jwt = require('jsonwebtoken');
-const {Patient } = require('../models'); 
+const {Patient , Alerts } = require('../models'); 
  const { Family } = require('../models'); // Import Family model
 // const {Caregiver} = require('../models'); // Import Caregiver model
 const { Op } = require("sequelize");
-
+const models = require('../models'); // Import all models
 
 router.get('/caregiver/:id/patients/counts', async (req, res) => {
   console.log("in caregiver patients counts route");
@@ -459,7 +459,7 @@ router.get('/user-activity/weekly', async (req, res) => {
   attributes: ['activity_time', 'user_type'],
   raw: true,
 });
-    console.log("activities", activities);
+    // console.log("activities", activities);
     // Helper: get week of month from date
     const getWeekOfMonth = (date) => {
       const day = date.getDate();
@@ -493,6 +493,51 @@ router.get('/user-activity/weekly', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// routes/analytics.js
+
+router.get('/caregiver-performance', async (req, res) => { 
+  try {
+    console.log("IN CAREGIVER PERFORMANCE ROUTE");
+
+    const caregivers = await models.Caregiver.findAll({
+      include: [
+        {
+          model: models.Patient,
+          as: 'patient',
+          include: [
+            {
+              model: models.Alerts,
+              as: 'alerts',
+              required: false // Remove any filtering here to get ALL alerts
+            }
+          ]
+        }
+      ]
+    });
+
+    const results = caregivers.map(cg => {
+      const allPatients = cg.patient || [];
+      const allAlerts = allPatients.flatMap(p => p.alerts || []);
+      const totalAlerts = allAlerts.length;
+      const acknowledged = allAlerts.filter(alert => alert.is_acknowledged).length;
+      const unacknowledged = totalAlerts - acknowledged;
+
+      return {
+        name: cg.name,
+        totalAlerts,
+        acknowledged,
+        unacknowledged,
+        acknowledgedPercent: totalAlerts > 0 ? ((acknowledged / totalAlerts) * 100).toFixed(1) : "0.0"
+      };
+    });
+
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 

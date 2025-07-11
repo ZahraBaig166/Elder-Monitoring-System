@@ -3,7 +3,7 @@ import {useEffect,useState} from "react";
 
 
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
-import Svg, { Path, Circle, Line, Rect, Text as SvgText} from 'react-native-svg';
+import Svg, { Path, Circle, Line, Rect, Text as SvgText ,Defs, LinearGradient, Stop} from 'react-native-svg';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import NavBar from '../components/NavBar';
@@ -65,11 +65,11 @@ const Dashboard = () => {
 
         
         <ActivityBarChart/>
+        <Chart />
         <LineChart />
         {/* <BarChart /> */}
         {/* <StackedBarChart /> */}
        
-        <Chart />
       </>
     )}
   </ScrollView>
@@ -442,7 +442,7 @@ const lineChartStyles = StyleSheet.create({
   },
   chart: {
   alignSelf: 'center',
-  marginLeft: 40, // aligns X axis with Y axis
+  marginLeft: 40,
   marginRight: 10,
 },
 yAxisLabels: {
@@ -454,311 +454,215 @@ yAxisLabels: {
 });
 
 
-// const Chart = () => {
-//  const [chartData, setChartData] = React.useState([]);
-
-
-//  const { apiBaseUrl } = useConfig();
-
-//   React.useEffect(() => {
-//     fetchWeeklyActivity();
-//   }, [apiBaseUrl]); 
-
-//     const fetchWeeklyActivity = async () => {
-//   try {
-//     const response = await fetch(`${apiBaseUrl}/user-activity/weekly`);
-    
-//     // Check if response is OK before parsing
-   
-
-//     const data = await response.json(); // Correct way to parse
-//     console.log('Raw activity data:', data);
-
-//     const weeks = [...new Set(data.map(d => d.week_of_month))].sort();
-
-//     const preparedData = weeks.map(week => {
-//       const caregiver = data.find(d => d.week_of_month === week && d.user_type === 'caregiver')?.activity_count || 0;
-//       const family = data.find(d => d.week_of_month === week && d.user_type === 'family')?.activity_count || 0;
-//       return { week, caregiver, family };
-//     });
-
-//     setChartData(preparedData);
-//   } catch (error) {
-//     console.error('Failed to fetch activity data:', error);
-//   }
-// };
-
-
-  
-//   // Scale bar height relative to max activity value
-//   const scaleHeight = (value) => (value / MAX_ACTIVITY) * 150; // 150 is max height in px
-
-//   return (
-//     <ScrollView contentContainerStyle={ChartStyles.scrollContainer} horizontal={true} showsHorizontalScrollIndicator={false}>
-//       <View style={ChartStyles.container}>
-//         <Text style={ChartStyles.title}>User Activity and Engagement</Text>
-
-//         {/* Y-axis Labels */}
-//         <View style={ChartStyles.yAxisLabels}>
-//           {['40', '30', '20', '10', '0'].map((label, index) => (
-//             <Text key={index} style={ChartStyles.yAxisText}>{label}</Text>
-//           ))}
-//         </View>
-
-//         {/* Chart Bars */}
-//         <Svg height={200} width={Math.max(width, chartData.length * (BAR_WIDTH * 2 + GROUP_GAP))} style={{ marginLeft: 40 }}>
-//           {chartData.map(({ week, caregiver, family }, index) => {
-//             const groupX = index * (BAR_WIDTH * 2 + GROUP_GAP);
-
-//             return (
-//               <React.Fragment key={week}>
-//                 {/* Caregiver bar (green) */}
-//                 <Rect
-//                   x={groupX}
-//                   y={150 - scaleHeight(caregiver)}
-//                   width={BAR_WIDTH}
-//                   height={scaleHeight(caregiver)}
-//                   fill="green"
-//                   rx={3}
-//                   ry={3}
-//                 />
-//                 {/* Family bar (blue) */}
-//                 <Rect
-//                   x={groupX + BAR_WIDTH + BAR_GAP}
-//                   y={150 - scaleHeight(family)}
-//                   width={BAR_WIDTH}
-//                   height={scaleHeight(family)}
-//                   fill="blue"
-//                   rx={3}
-//                   ry={3}
-//                 />
-//                 {/* Week label */}
-//                 <Text
-//                   x={groupX + BAR_WIDTH}
-//                   y={170}
-//                   fill="#000"
-//                   fontSize="12"
-//                   fontWeight="bold"
-//                   textAnchor="middle"
-//                 >
-//                   {`Week ${week}`}
-//                 </Text>
-//               </React.Fragment>
-//            );
-//           })}
-//         </Svg>
-
-//         {/* Legend */}
-//         <View style={ChartStyles.legendContainer}>
-//           <View style={ChartStyles.legendItem}>
-//             <View style={[ChartStyles.colorBox, { backgroundColor: 'green' }]} />
-//             <Text style={ChartStyles.legendText}>Caregiver</Text>
-//           </View>
-//           <View style={ChartStyles.legendItem}>
-//             <View style={[ChartStyles.colorBox, { backgroundColor: 'blue' }]} />
-//             <Text style={ChartStyles.legendText}>Family</Text>
-//           </View>
-//         </View>
-//       </View>
-//     </ScrollView>
-//   );
-// };
-
-// const ChartStyles = StyleSheet.create({
-//   container: {
-//     backgroundColor: '#fff',
-//     borderRadius: 15,
-//     padding: 20,
-//     margin: 20,
-//     minWidth: width,
-//   },
-//   title: {
-//     fontSize: 16,
-//     fontWeight: '600',
-//     color: '#000',
-//     marginBottom: 10,
-//   },
-//   yAxisLabels: {
-//     position: 'absolute',
-//     left: 0,
-//     top: 40,
-//     height: 150,
-//     justifyContent: 'space-between',
-//   },
-//   yAxisText: {
-//     fontSize: 12,
-//     color: '#000',
-//     textAlign: 'right',
-//   },
-//   legendContainer: {
-//     flexDirection: 'row',
-//     marginTop: 20,
-//     justifyContent: 'center',
-//   },
-//   legendItem: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginHorizontal: 15,
-//   },
-//   legendText: {
-//     fontSize: 14,
-//     marginLeft: 5,
-//     color: '#000',
-//   },
-//   colorBox: {
-//     width: 20,
-//     height: 20,
-//     borderRadius: 4,
-//   },
-//   scrollContainer: {
-//     paddingBottom: 100,
-//   },
-// });
-
-
-
-const BAR_WIDTH = 20;
-const BAR_GAP = 5;
-const GROUP_GAP = 25;
-const MAX_ACTIVITY = 30; // for scaling
-
 const Chart = () => {
-  // Static sample data
-  const chartData = [
-    { week: 1, caregiver: 12, family: 18 },
-    { week: 2, caregiver: 25, family: 10 },
-    { week: 3, caregiver: 18, family: 30 },
-    { week: 4, caregiver: 22, family: 16 },
-  ];
+  const [chartData, setChartData] = React.useState([]);
+  const [maxActivity, setMaxActivity] = React.useState(40);
 
-  // Scale bar height relative to max activity value
-   const scaleHeight = (value) => (value / MAX_ACTIVITY) * 150;
+  const BAR_WIDTH = 20;
+  const BAR_GAP = 5;
+  const GROUP_GAP = 25;
+  const MAX_ACTIVITY = 40;
 
-  return (
+  const { apiBaseUrl } = useConfig();
+
+  React.useEffect(() => {
+    fetchWeeklyActivity();
+  }, [apiBaseUrl]);
+
+  const fetchWeeklyActivity = async () => {
+  try {
+    const response = await fetch(`${apiBaseUrl}/user-activity/weekly`);
+    const data = await response.json();
+    console.log('Raw activity data:', data);
+
+    const weeks = [1, 2, 3, 4];
+
+    const preparedData = weeks.map((week) => {
+      const caregiver = data.find(
+        (d) => d.week_of_month === week && d.user_type === 'caregiver'
+      )?.activity_count || 0;
+
+      const family = data.find(
+        (d) => d.week_of_month === week && d.user_type === 'family'
+      )?.activity_count || 0;
+
+      return { week, caregiver, family };
+    });
+
+    setChartData(preparedData);
+
+    // Dynamically determine max activity count for scaling
+    const maxCount = Math.max(
+      ...preparedData.flatMap(({ caregiver, family }) => [caregiver, family])
+    );
+    setMaxActivity(Math.max(maxCount, 10)); // minimum 10 to avoid divide-by-zero
+  } catch (error) {
+    // console.error('Failed to fetch activity data:', error);
+  }
+};
+
+
+  // const scaleHeight = (value) => (value / MAX_ACTIVITY) * 150;
+  const scaleHeight = (value) => (value / maxActivity) * 150;
+
+
+return (
+  <ScrollView
+    contentContainerStyle={ChartStyles.scrollContainer}
+    horizontal
+    showsHorizontalScrollIndicator={false}
+  >
     <View style={ChartStyles.container}>
-      <Text style={ChartStyles.title}>User Activity (Weekly)</Text>
-
-      {/* Y-axis title */}
-      <Text style={ChartStyles.yAxisTitle}>Activity Count</Text>
+      <Text style={ChartStyles.title}>Weekly Active Users</Text>
 
       {/* Y-axis Labels */}
-      <View style={ChartStyles.yAxisLabels}>
-        {[50, 40, 30, 20, 10, 0].map((label) => (
-          <Text key={label} style={ChartStyles.yAxisText}>{label}</Text>
-        ))}
-      </View>
+     {/* Y-axis Labels */}
+<View style={ChartStyles.yAxisLabels}>
+  {Array.from({ length: 5 }, (_, i) => {
+    const labelVal = Math.round((maxActivity / 4) * (4 - i));
+    return (
+      <Text key={i} style={ChartStyles.yAxisText}>
+        {labelVal}
+      </Text>
+    );
+  })}
+</View>
 
-      {/* Chart Area */}
-      <View style={ChartStyles.chartArea}>
-        <Svg height={180} width={width - 60}>
+
+      {/* Chart Bars */}
+      <View>
+        <Svg
+          height={200}
+          width={chartData.length * (BAR_WIDTH * 2 + GROUP_GAP)}
+          style={{ marginLeft: 40 }}
+        >
+          {/* Define Gradients */}
+          <Defs>
+            <LinearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0%" stopColor="#4caf50" stopOpacity="1" />
+              <Stop offset="100%" stopColor="#087f23" stopOpacity="1" />
+            </LinearGradient>
+            <LinearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0%" stopColor="#2196f3" stopOpacity="1" />
+              <Stop offset="100%" stopColor="#0d47a1" stopOpacity="1" />
+            </LinearGradient>
+          </Defs>
+
           {chartData.map(({ week, caregiver, family }, index) => {
             const groupX = index * (BAR_WIDTH * 2 + GROUP_GAP);
 
             return (
               <React.Fragment key={week}>
-                {/* Caregiver bar */}
+                {/* Caregiver bar with gradient */}
                 <Rect
                   x={groupX}
-                  y={150 - scaleHeight(caregiver)}
+                  y={190 - scaleHeight(caregiver)}
                   width={BAR_WIDTH}
                   height={scaleHeight(caregiver)}
-                  fill="green"
-                  rx={4}
+                  fill="url(#greenGradient)"
+                  rx={6}
+                  ry={6}
+                  shadowOpacity={0.3}
                 />
-                {/* Family bar */}
+                {/* Family bar with gradient */}
                 <Rect
                   x={groupX + BAR_WIDTH + BAR_GAP}
-                  y={150 - scaleHeight(family)}
+                  y={190 - scaleHeight(family)}
                   width={BAR_WIDTH}
                   height={scaleHeight(family)}
-                  fill="blue"
-                  rx={4}
+                  fill="url(#blueGradient)"
+                  rx={6}
+                  ry={6}
+                  shadowOpacity={0.3}
                 />
-                {/* Week label */}
-                <SvgText
-                  x={groupX + BAR_WIDTH}
-                  y={170}
-                  fill="#000"
-                  fontSize="12"
-                  textAnchor="middle"
-                >
-                  {`W${week}`}
-                </SvgText>
               </React.Fragment>
             );
           })}
         </Svg>
+
+        {/* Week Labels */}
+      <View style={{ flexDirection: 'row', marginLeft: 40, marginTop: 10 }}>
+
+        {chartData.map(({ week }, index) => (
+            <View
+              key={`week-label-${week}`}
+              style={{
+                width: BAR_WIDTH * 2.2 + BAR_GAP,
+                alignItems: 'center',
+                marginRight: GROUP_GAP - BAR_GAP,
+              }}
+            >
+              <Text style={{ fontSize: 13, fontWeight: '600' }}>{`Week ${week}`}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       {/* Legend */}
       <View style={ChartStyles.legendContainer}>
         <View style={ChartStyles.legendItem}>
-          <View style={[ChartStyles.colorBox, { backgroundColor: 'green' }]} />
+          <View
+            style={[ChartStyles.colorBox, { backgroundColor: '#4caf50' }]}
+          />
           <Text style={ChartStyles.legendText}>Caregiver</Text>
         </View>
         <View style={ChartStyles.legendItem}>
-          <View style={[ChartStyles.colorBox, { backgroundColor: 'blue' }]} />
+          <View
+            style={[ChartStyles.colorBox, { backgroundColor: '#2196f3' }]}
+          />
           <Text style={ChartStyles.legendText}>Family</Text>
         </View>
       </View>
     </View>
-  );
+  </ScrollView>
+);
 };
 
+
 const ChartStyles = StyleSheet.create({
- container: {
-    backgroundColor: '#fff',
+  container: {
+    backgroundColor: '#ffffff',
     borderRadius: 15,
     padding: 20,
     margin: 20,
-    width: '90%',
-    alignSelf: 'center',
-    elevation: 4,
+    marginBottom: -60, // Ensure space for the navbar
+    minWidth: '90%',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  yAxisTitle: {
-    position: 'absolute',
-    top: 120,
-    left: -20,
-    transform: [{ rotate: '-90deg' }],
-    fontSize: 12,
-    color: '#444',
-    width: 120,
-    textAlign: 'center',
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 15,
   },
   yAxisLabels: {
     position: 'absolute',
-    top: 50,
     left: 0,
+    top: 40,
     height: 150,
     justifyContent: 'space-between',
   },
   yAxisText: {
     fontSize: 12,
-    color: '#000',
+    color: '#444',
     textAlign: 'right',
-    width: 30,
-  },
-  chartArea: {
-    marginLeft: 40,
-    height: 180,
-    overflow: 'hidden',
+    paddingRight: 5,
+    top: 60,
+    left: 10,
   },
   legendContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
     marginTop: 20,
+    justifyContent: 'center',
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: 15,
   },
   legendText: {
     fontSize: 14,
@@ -766,44 +670,78 @@ const ChartStyles = StyleSheet.create({
     color: '#000',
   },
   colorBox: {
-    width: 16,
-    height: 16,
+    width: 20,
+    height: 20,
     borderRadius: 4,
   },
+  scrollContainer: {
+    paddingBottom: 100,
+  },
 });
+
+
 const ActivityBarChart = () => {
-  const caregivers = [
-    { name: 'Caregiver 1', queries: 10, alerts: 5 },
-    { name: 'Caregiver 2', queries: 7, alerts: 8 },
-    { name: 'caregiver3', queries: 12, alerts: 4 },
-    { name: 'caregiver4', queries: 9, alerts: 6 },
-  ];
+  const [caregivers, setCaregivers] = useState([]);
+   const { apiBaseUrl } = useConfig();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl}/caregiver-performance`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        const data = await response.json();
+        setCaregivers(data);
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    };
+
+    fetchData();
+  }, [apiBaseUrl]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Caregiver Performance</Text>
       {caregivers.map((c, index) => {
-        const total = c.queries + c.alerts;
-        const queryPercent = ((c.queries / total) * 100).toFixed(1);
-        const alertPercent = ((c.alerts / total) * 100).toFixed(1);
+        const alertPercent = parseFloat(c.acknowledgedPercent) || 0;
+        const unackPercent = (100 - alertPercent).toFixed(1);
 
         return (
           <View key={index} style={styles.card}>
             <Text style={styles.name}>{c.name}</Text>
-            <Text style={styles.total}>Total: {total} responses</Text>
+            <Text style={styles.total}>Total Alerts: {c.totalAlerts}</Text>
 
             <View style={styles.progressBar}>
-              <View style={[styles.progressSegment, { width: `${queryPercent}%`, backgroundColor: '#4ECDC4' }]}>
-                <Text style={styles.segmentLabel}>{queryPercent}%</Text>
-              </View>
-              <View style={[styles.progressSegment, { width: `${alertPercent}%`, backgroundColor: '#FF6B6B' }]}>
+              <View
+                style={[
+                  styles.progressSegment,
+                  {
+                    width: `${alertPercent}%`,
+                    backgroundColor: '#4ECDC4',
+                  },
+                ]}
+              >
                 <Text style={styles.segmentLabel}>{alertPercent}%</Text>
+              </View>
+              <View
+                style={[
+                  styles.progressSegment,
+                  {
+                    width: `${unackPercent}%`,
+                    backgroundColor: '#FF6B6B',
+                  },
+                ]}
+              >
+                <Text style={styles.segmentLabel}>{unackPercent}%</Text>
               </View>
             </View>
 
             <View style={styles.labelRow}>
-              <Text style={styles.label}>Queries: {c.queries}</Text>
-              <Text style={styles.label}>Alerts: {c.alerts}</Text>
+             <Text style={styles.label}>✔️ Acknowledged: {c.acknowledged}</Text>
+            <Text style={styles.label}>❌ Unacknowledged: {c.unacknowledged}</Text>
+
             </View>
           </View>
         );
@@ -811,7 +749,6 @@ const ActivityBarChart = () => {
     </ScrollView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

@@ -24,9 +24,9 @@ const NavBar = ({ onChartButtonClick }) => {
       <TouchableOpacity style={styles.navIcon} onPress={() => router.push("/Alerts")}>
         <Icon name="bell" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navIcon} onPress={() => router.push("/AdminProfile")}>
+      {/* <TouchableOpacity style={styles.navIcon} onPress={() => router.push("/AdminProfile")}>
         <Icon name="user" size={20} color="#576574" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );}
 

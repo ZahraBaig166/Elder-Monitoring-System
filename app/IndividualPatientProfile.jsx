@@ -10,6 +10,7 @@ import { checkFall } from "../services/fallApi";
 import useAuth from "../hooks/useAuth";
 import { useLocalSearchParams } from "expo-router"; // NEW
 import Svg, { Path } from 'react-native-svg';
+// import { checkAnomaly } from "../services/anomalyApi"; // Assuming you have a similar function for anomaly detection
 
 
 const IndividualPatientProfile = () => {
@@ -102,6 +103,25 @@ const [isLoading, setIsLoading] = useState(true);
   }, [apiBaseUrl,patientId,loading]);
   
   
+const [anomalyStatus, setAnomalyStatus] = useState("Checking...");
+
+useEffect(() => {
+  if (healthMetrics.length === 0) return;
+
+  const checkAnomaly = async () => {
+    try {
+      const response = await fetch(`http://10.135.53.182:8001/anomaly/anomaly-detection/${patientId}`);
+      const result = await response.json();
+      console.log("Anomaly Detection Result:", result);
+      setAnomalyStatus(result.anomaly ? "🚨 Anomaly Detected" : "✅ Normal");
+    } catch (error) {
+      console.error("Error during anomaly detection:", error);
+      setAnomalyStatus("⚠ Error detecting anomaly");
+    }
+  };
+
+  checkAnomaly();
+}, [healthMetrics]); 
 
   useEffect(() => {
     if (healthMetrics.length > 0) {
@@ -277,7 +297,14 @@ const stressLevel = (heartRateValues) => {
 
       <ScrollView style={styles.scrollView}>
         <Text style={styles.patientName}>Patient name: {patientName}</Text>
-
+      <Text style={{ 
+        fontSize: 16, 
+        fontWeight: 'bold', 
+        color: anomalyStatus.includes("Anomaly") ? "red" : "green", 
+        margin: 10 
+      }}>
+        {anomalyStatus}
+      </Text>
         {/* Heart Rate Section */}
 <View style={styles.heartRateContainer}>
   <Text style={styles.heartRateLabel}>Heart Rate</Text>
@@ -296,6 +323,50 @@ const stressLevel = (heartRateValues) => {
     </Svg>
   </View>
 </View>
+<View style={styles.ChartStyles}>
+  <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Physical Activity (Steps)</Text>
+  <LineChart
+    data={{
+      labels: healthMetrics.map(m => new Date(m.time).toLocaleTimeString().slice(0, 5)),
+      datasets: [{ data: healthMetrics.map(m => m.steps) }],
+    }}
+    width={Dimensions.get("window").width - 40}
+    height={220}
+    yAxisLabel=""
+    yAxisSuffix=" steps"
+    chartConfig={{
+      backgroundGradientFrom: "#fb8c00",
+      backgroundGradientTo: "#ffa726",
+      decimalPlaces: 0,
+      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    }}
+    style={styles.chartStyle}
+  />
+</View>
+
+<View style={styles.ChartStyles}>
+  <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Mood (Emotion) Over Time</Text>
+  <BarChart
+    data={{
+      labels: healthMetrics.map(m => new Date(m.time).toLocaleTimeString().slice(0, 5)),
+      datasets: [{ data: healthMetrics.map(m => m.emotion) }],
+    }}
+    width={Dimensions.get("window").width - 40}
+    height={220}
+    yAxisLabel=""
+    yAxisSuffix=""
+    chartConfig={{
+      backgroundGradientFrom: "#43cea2",
+      backgroundGradientTo: "#185a9d",
+      decimalPlaces: 0,
+      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    }}
+    style={styles.chartStyle}
+  />
+</View>
+
         {/* Stats Section */}
         <View style={styles.statsContainer}>
           <View style={styles.row}>
@@ -421,7 +492,10 @@ const stressLevel = (heartRateValues) => {
       </View>
     </View>
   ))
+
+  
 ))}
+
 
 
 </View>

@@ -48,6 +48,9 @@ const alertroute=require('./routes/alertroutes')
 app.use("/",alertroute);
 
 
+// const anomalyroute=require('../Personalisation/anomaly_route');
+// app.use("/anomaly", anomalyroute);
+
 app.get('/checktables', async (req, res) => {
   try {
     const result = await db.sequelize.query(`
