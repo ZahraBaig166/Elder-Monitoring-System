@@ -21,20 +21,22 @@ wearable_df = pd.read_sql("SELECT * FROM health_metrics;", engine)
 video_df = pd.read_sql("SELECT * FROM patient_activities;", engine)
 
 # Preprocess: Merge wearable and video data on patient_id (mimic/repeat video data)
-video_df_expanded = wearable_df[['patient_id', 'time']].copy()
-video_df_expanded = video_df_expanded.merge(video_df.drop('timestamp', axis=1), on='patient_id', how='left')
-video_df_expanded['emotion'] = video_df_expanded['emotion'].ffill().bfill()
-video_df_expanded['activity'] = video_df_expanded['activity'].ffill().bfill()
-video_df_expanded['activity'] = video_df_expanded['activity'].fillna(method='ffill').fillna(method='bfill')
+latest_video = video_df.sort_values("timestamp").drop_duplicates("patient_id", keep="last")
 
-# Merge wearable + video data
-merged_df = pd.concat([wearable_df.reset_index(drop=True),
-                       video_df_expanded.drop(['patient_id'], axis=1)], axis=1)
+# 3. Merge wearable with the latest video data
+merged_df = wearable_df.merge(
+    latest_video.drop("timestamp", axis=1),
+    on="patient_id",
+    how="left"
+)
 
-# Encode categorical features
+# 4. Handle missing video info (if any)
+merged_df['emotion'] = merged_df['emotion'].fillna(method='ffill').fillna(method='bfill')
+merged_df['activity'] = merged_df['activity'].fillna(method='ffill').fillna(method='bfill')
+
+# 5. Encode categorical features
 merged_df['emotion'] = merged_df['emotion'].astype('category').cat.codes
 merged_df['activity'] = merged_df['activity'].astype('category').cat.codes
-
 # Define features for training
 features = [
     'value', 'steps', 'calories', 'distance', 'sleep_stage',

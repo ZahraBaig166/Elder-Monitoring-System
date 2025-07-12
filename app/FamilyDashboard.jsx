@@ -20,6 +20,7 @@ const DashboardHeartRateAndStats = () => {
   const [hrvIndex, setHrvIndex] = useState(0);
   const [stressData, setStressData] = useState({ stress: "Calculating...", color: "#000" });
   const [fallStatus, setFallStatus] = useState("Unknown");
+  const [routine, setRoutine] = useState(0);
 
   const router = useRouter(); 
   const { apiBaseUrl, loading, error } = useConfig();  
@@ -160,7 +161,17 @@ console.log("Family Data:", data);
             // setFallStatus("Error detecting fall");
           });
 
-          checkAnomaly(currentMetrics).then((result) => {
+          const newcurrentmetrics = {
+                patient_id: parseInt(currentMetrics.patient_id),
+                value: parseFloat(currentMetrics.value),
+                steps: parseInt(currentMetrics.steps),
+                calories: parseFloat(currentMetrics.calories),
+                distance: parseFloat(currentMetrics.distance),
+                sleep_stage: parseInt(currentMetrics.sleep_stage),
+              };
+
+          checkAnomaly(newcurrentmetrics).then((result) => {
+            
       console.log("ANOMALY DETECTION MODEL RUNNING ", result);
 });
         
@@ -172,7 +183,22 @@ console.log("Family Data:", data);
       return () => clearInterval(interval);
     }
   }, [healthMetrics]);
-  
+
+
+useEffect(() => {
+  const fetchRoutine = async () => {
+    try {
+      const response = await fetch(`http://192.168.1.12:8001/anomaly/patient-routine/${patientId}`);
+      const result = await response.json();
+      setRoutine(result.routine);
+    } catch (error) {
+      console.error("Error fetching routine:", error);
+    }
+  };
+
+  fetchRoutine();
+}, [apiBaseUrl, patientId]);
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -361,6 +387,20 @@ const stressLevel = (heartRateValues) => {
                 <Text style={styles.greenText}>▲5%</Text> mg/dL
               </Text>
             </View>
+            <View style={styles.RoutineSection}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Patient Routine (Last 24 Hours)</Text>
+              {routine.map((item, index) => (
+                <View key={index} style={styles.RoutineItem}>
+                  <Text style={{ fontSize: 14 }}>
+                    🕒 {new Date(item.time).toLocaleTimeString()} — 
+                    📌 Activity: {item.activity}, 
+                    😊 Mood: {item.emotion}, 
+                    🚶 Steps: {item.steps}, 
+                    😴 Sleep: {item.sleep_stage}
+                  </Text>
+                </View>
+            ))}
+</View>
           </View>
         </View>
         <FallIncidentBarChart></FallIncidentBarChart>
