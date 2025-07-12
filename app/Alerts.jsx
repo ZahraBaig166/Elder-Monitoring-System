@@ -62,7 +62,7 @@ const Alerts = () => {
           ))}
         </ScrollView>
       </View>
-      <NavBar />
+      {/* <NavBar /> */}
     </View>
   );
 };

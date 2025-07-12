@@ -26,8 +26,8 @@ const NavBarPatients = () => {
   return (
     <View style={styles.navContainer}>
       <TouchableOpacity style={styles.navIcon} accessibilityLabel="Dashboard" onPress={() => router.replace("/DoctorDashboard")}>
-          <Icon name="th-large" size={20} color="#576574" />
-        </TouchableOpacity>
+        <Icon name="th-large" size={20} color="#576574" />
+      </TouchableOpacity>
       <Link
         href={{
           pathname: "/Queries",
@@ -35,12 +35,10 @@ const NavBarPatients = () => {
         }}
         asChild
       >
-        
-      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Analytics">
-        <Icon name="eye" size={30} color="#576574" />
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.navIcon} accessibilityLabel="Analytics">
+          <Icon name="eye" size={30} color="#576574" />
+        </TouchableOpacity>
       </Link>
-
 
       {userId && (
         <Link
@@ -58,7 +56,7 @@ const NavBarPatients = () => {
         </Link>
       )}
 
-      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Notifications">
+      <TouchableOpacity style={styles.navIcon} accessibilityLabel="Notifications" onPress={() => router.replace("/Alerts")}>
         <Icon name="bell" size={20} color="#576574" />
       </TouchableOpacity>
 

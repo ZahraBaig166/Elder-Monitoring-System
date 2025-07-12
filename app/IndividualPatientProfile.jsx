@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity } from "react-native";
 import { LineChart, BarChart } from "react-native-chart-kit";
 import NavBar from '../components/NavBar';
@@ -9,8 +9,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { checkFall } from "../services/fallApi";
 import useAuth from "../hooks/useAuth";
 import { useLocalSearchParams } from "expo-router"; // NEW
-import Svg, { Path } from 'react-native-svg';
-// import { checkAnomaly } from "../services/anomalyApi"; // Assuming you have a similar function for anomaly detection
+import Svg, { Line, Circle, Text as SvgText, Path } from "react-native-svg";
+
+import { checkAnomaly } from "../services/anomaly"; // Assuming you have a similar function for anomaly detection
 
 
 const IndividualPatientProfile = () => {
@@ -102,28 +103,29 @@ const [isLoading, setIsLoading] = useState(true);
     fetchNotes();
   }, [apiBaseUrl,patientId,loading]);
   
-  
-const [anomalyStatus, setAnomalyStatus] = useState("Checking...");
+ 
+// const [anomalyStatus, setAnomalyStatus] = useState("Checking...");
 
-useEffect(() => {
-  if (healthMetrics.length === 0) return;
+// useEffect(() => {
+//   if (healthMetrics.length === 0) return;
 
-  const checkAnomaly = async () => {
-    try {
-      const response = await fetch(`http://10.135.53.182:8001/anomaly/anomaly-detection/${patientId}`);
-      const result = await response.json();
-      console.log("Anomaly Detection Result:", result);
-      setAnomalyStatus(result.anomaly ? "🚨 Anomaly Detected" : "✅ Normal");
-    } catch (error) {
-      console.error("Error during anomaly detection:", error);
-      setAnomalyStatus("⚠ Error detecting anomaly");
-    }
-  };
+//   const checkAnomaly = async () => {
+//     try {
+//       const response = await fetch(`http://10.135.53.182:8001/anomaly/anomaly-detection/${patientId}`);
+//       const result = await response.json();
+//       console.log("Anomaly Detection Result:", result);
+//       setAnomalyStatus(result.anomaly ? "🚨 Anomaly Detected" : "✅ Normal");
+//     } catch (error) {
+//       console.error("Error during anomaly detection:", error);
+//       setAnomalyStatus("⚠ Error detecting anomaly");
+//     }
+//   };
 
-  checkAnomaly();
-}, [healthMetrics]); 
+//   checkAnomaly();
+// }, [healthMetrics]); 
 
   useEffect(() => {
+    checkAnomaly(patientId);
     if (healthMetrics.length > 0) {
       const interval = setInterval(() => {
         setCurrentRowIndex((prevIndex) => {
@@ -278,6 +280,68 @@ const stressLevel = (heartRateValues) => {
   return { hrv: hrvIndex.toFixed(2), stress, color };
 };
 
+const moodData = [
+  { hour: 8, mood: "Happy" },
+  { hour: 10, mood: "Sad" },
+  { hour: 14, mood: "Calm" },
+  { hour: 16, mood: "Angry" },
+  { hour: 20, mood: "Happy" },
+];
+
+const moodColors = {
+  Happy: "#4CAF50",
+  Sad: "#2196F3",
+  Angry: "#F44336",
+  Calm: "#FF9800",
+};
+
+const getX = (hour) => `${5 + (hour / 24) * 90}%`;
+
+const MoodTimeline = () => {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.title}>Mood Analysis (24 Hours)</Text>
+      <Svg height="100" width="100%">
+        {/* Timeline Line */}
+        <Line x1="5%" y1="50" x2="95%" y2="50" stroke="#ccc" strokeWidth="2" />
+
+        {/* Mood Points */}
+        {moodData.map((item, index) => (
+          <Circle
+            key={index}
+            cx={getX(item.hour)}
+            cy="50"
+            r="8"
+            fill={moodColors[item.mood] || "#999"}
+          />
+        ))}
+
+        {/* Time Labels */}
+        {[8, 12, 16, 20, 24].map((hour, index) => (
+          <SvgText
+            key={index}
+            x={getX(hour)}
+            y="80"
+            fontSize="10"
+            textAnchor="middle"
+            fill="#555"
+          >
+            {hour === 24 ? "12 AM" : hour < 12 ? `${hour} AM` : `${hour % 12} PM`}
+          </SvgText>
+        ))}
+      </Svg>
+       <View style={styles.legendContainer}>
+        {Object.entries(moodColors).map(([mood, color]) => (
+          <View key={mood} style={styles.legendItem}>
+            <View style={[styles.colorDot, { backgroundColor: color }]} />
+            <Text style={styles.legendText}>{mood}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
   return (
     <View style={{ flex: 1 }}>
       {/* Header Section */}
@@ -323,7 +387,8 @@ const stressLevel = (heartRateValues) => {
     </Svg>
   </View>
 </View>
-<View style={styles.ChartStyles}>
+<MoodTimeline />
+{/* <View style={styles.ChartStyles}>
   <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Physical Activity (Steps)</Text>
   <LineChart
     data={{
@@ -343,9 +408,9 @@ const stressLevel = (heartRateValues) => {
     }}
     style={styles.chartStyle}
   />
-</View>
+</View> */}
 
-<View style={styles.ChartStyles}>
+{/* <View style={styles.ChartStyles}>
   <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Mood (Emotion) Over Time</Text>
   <BarChart
     data={{
@@ -365,7 +430,7 @@ const stressLevel = (heartRateValues) => {
     }}
     style={styles.chartStyle}
   />
-</View>
+</View> */}
 
         {/* Stats Section */}
         <View style={styles.statsContainer}>
@@ -495,6 +560,7 @@ const stressLevel = (heartRateValues) => {
 
   
 ))}
+
 
 
 
@@ -851,6 +917,38 @@ flex: 1,
     width: '100%',
     height: '100%',
     resizeMode: 'contain', // Keeps the aspect ratio intact
+  },
+   card: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 15,
+    margin: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#333",
+  },
+  legendContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 10,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  colorDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 5,
   },
 });
 

@@ -1,15 +1,15 @@
-// export const checkFall = async (metrics) => {
-//   try {
-//     const response = await fetch("http://10.135.53.182:8001/anomaly/anomaly-detect", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(metrics),
-//     });
+export const checkAnomaly = async (metrics) => {
+  try {
+    const response = await fetch(`http://192.168.1.12:8001/anomaly/anomaly-detection`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(metrics),
+    });
 
-//     const result = await response.json();
-//     return result; // { prediction: "Fall Detected", raw_output: 1 }
-//   } catch (error) {
-//     console.error("Error calling Fall Detection API:", error);
-//     return { prediction: "Error", raw_output: null };
-//   }
-// };
+    const result = await response.json();
+    return result; 
+  } catch (error) {
+    console.error("Error calling Anomaly Detection Model:", error);
+    return { anomaly: "Error", raw_output: null };
+  }
+};

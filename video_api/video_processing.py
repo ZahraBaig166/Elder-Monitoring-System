@@ -238,7 +238,7 @@ def run_video_monitoring(video_path='video_api\data\Lab_Recording.mp4'):
                 # Get the patient ID
                 patient_id = PATIENT_ID_MAP.get(identity)
                 if patient_id is None:
-                    print(f"[WARNING] Unknown patient name: {identity}, skipping activity logging.")
+                    print(f"WARNING")
                 else:
                     data = {
                         "patient_id": patient_id,  # <-- Add this
@@ -252,9 +252,9 @@ def run_video_monitoring(video_path='video_api\data\Lab_Recording.mp4'):
                     }
 
                 try:
-                    resp = requests.post("http://10.135.53.182:8001/video/log_activity", json=data)
+                    resp = requests.post("http://192.168.1.12:8001/video/log_activity", json=data)
                     resp.raise_for_status()  # Raise exception for HTTP error codes
-                    print("Activity logged:", resp.json())
+                    # print("Activity logged:", resp.json())
                 except requests.exceptions.HTTPError as http_err:
                     print("HTTP error:", resp.status_code, resp.text)
                 except Exception as e:

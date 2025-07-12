@@ -8,9 +8,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { checkFall } from "../services/fallApi";
 import useAuth from "../hooks/useAuth";
 import NavBarFamily from '../components/NavBarFamily';
-import Svg, { Line, Rect, Text as SvgText } from 'react-native-svg';
-
-
+import Svg, { Line, Rect, Text as SvgText , Circle } from 'react-native-svg';
+import { checkAnomaly } from "../services/anomaly"; 
 
 const DashboardHeartRateAndStats = () => {
   const [patientId, setPatientId] = useState("");
@@ -89,6 +88,14 @@ console.log("Family Data:", data);
   
 
   useEffect(() => {
+    //  checkAnomaly(patientId)
+    //   .then((res) => {
+    //     console.log(res.anomaly)
+    //     console.log(res.details)
+    //   })
+  
+    // console.log("ANOMALY DETECTION MODEL RUNNING ",result.anomaly, result.details);
+        
     if (healthMetrics.length > 0) {
       const interval = setInterval(() => {
         setCurrentRowIndex((prevIndex) => {
@@ -141,6 +148,7 @@ console.log("Family Data:", data);
           console.log(currentMetrics.id)  
           console.log(fallDetectionPayload)
           console.log(res)
+          console.log(res.prediction)
             // Show alert if fall is detected
             if (res.prediction === "Fall Detected") {
                  createAlert(patientId,"Fall Detected")
@@ -148,9 +156,13 @@ console.log("Family Data:", data);
             }
           })
           .catch((err) => {
-            console.error("Error checking fall detection:", err);
-            setFallStatus("Error detecting fall");
+            // console.error("Error checking fall detection:", err);
+            // setFallStatus("Error detecting fall");
           });
+
+          checkAnomaly(currentMetrics).then((result) => {
+      console.log("ANOMALY DETECTION MODEL RUNNING ", result);
+});
         
   
           return nextIndex;
@@ -284,6 +296,8 @@ const stressLevel = (heartRateValues) => {
           />
         </View>
 
+        
+
         {/* Stats Section */}
         <View style={styles.statsContainer}>
           <View style={styles.row}>
@@ -350,6 +364,7 @@ const stressLevel = (heartRateValues) => {
           </View>
         </View>
         <FallIncidentBarChart></FallIncidentBarChart>
+        <MoodTimeline />
 
         {/* Activity Level Section */}
         <ActivityLevelSection styles={styles} />
@@ -359,6 +374,71 @@ const stressLevel = (heartRateValues) => {
     </View>
   );
 }
+
+
+const moodData = [
+  { hour: 8, mood: "Happy" },
+  { hour: 10, mood: "Sad" },
+  { hour: 14, mood: "Calm" },
+  { hour: 16, mood: "Angry" },
+  { hour: 20, mood: "Happy" },
+];
+
+const moodColors = {
+  Happy: "#4CAF50",
+  Sad: "#2196F3",
+  Angry: "#F44336",
+  Calm: "#FF9800",
+};
+
+const getX = (hour) => `${5 + (hour / 24) * 90}%`;
+
+const MoodTimeline = () => {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.title}>Mood Analysis (24 Hours)</Text>
+      <Svg height="100" width="100%">
+        {/* Timeline Line */}
+        <Line x1="5%" y1="50" x2="95%" y2="50" stroke="#ccc" strokeWidth="2" />
+
+        {/* Mood Points */}
+        {moodData.map((item, index) => (
+          <Circle
+            key={index}
+            cx={getX(item.hour)}
+            cy="50"
+            r="8"
+            fill={moodColors[item.mood] || "#999"}
+          />
+        ))}
+
+        {/* Time Labels */}
+        {[8, 12, 16, 20, 24].map((hour, index) => (
+          <SvgText
+            key={index}
+            x={getX(hour)}
+            y="80"
+            fontSize="10"
+            textAnchor="middle"
+            fill="#555"
+          >
+            {hour === 24 ? "12 AM" : hour < 12 ? `${hour} AM` : `${hour % 12} PM`}
+          </SvgText>
+        ))}
+      </Svg>
+       <View style={styles.legendContainer}>
+        {Object.entries(moodColors).map(([mood, color]) => (
+          <View key={mood} style={styles.legendItem}>
+            <View style={[styles.colorDot, { backgroundColor: color }]} />
+            <Text style={styles.legendText}>{mood}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+
 
 // Move FallIncidentBarChart outside the main component
 const FallIncidentBarChart = ({ data }) => {
@@ -835,6 +915,39 @@ flex: 1,
     borderRadius: 15,
     padding: 20,
     margin: 20,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 15,
+    margin: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#333",
+  },
+   legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 8,
+    marginVertical: 5,
+  },
+  colorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 6,
+  },
+  legendText: {
+    fontSize: 12,
+    color: "#444",
   },
   
 });

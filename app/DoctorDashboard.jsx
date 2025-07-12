@@ -249,7 +249,7 @@ const DoctorDashboard = () => {
           </View>
 
         {/* <ChartWithHeading title="Heart Rate Trends" source={require('../assets/images/G2.png')} /> */}
-        <ChartWithHeading title=" Patient Location" source={require('../assets/images/G3.png')} />
+        {/* <ChartWithHeading title=" Patient Location" source={require('../assets/images/G3.png')} /> */}
         {/* <ChartWithHeading title="Activity Levels Over Time" source={require('../assets/images/G4.png')} /> */}
       </ScrollView>
       <NavBar />
