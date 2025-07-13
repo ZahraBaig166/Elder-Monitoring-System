@@ -1,4 +1,4 @@
-def run_video_monitoring(video_path='video_api\data\Lab_Recording.mp4'):
+def run_video_monitoring(video_path='video_api\\data\\Lab_Recording.mp4'):
     import cv2
     import numpy as np
     import joblib
@@ -252,7 +252,7 @@ def run_video_monitoring(video_path='video_api\data\Lab_Recording.mp4'):
                     }
 
                 try:
-                    resp = requests.post("http://192.168.1.12:8001/video/log_activity", json=data)
+                    resp = requests.post("http://192.168.100.70:8001/video/log_activity", json=data)
                     resp.raise_for_status()  # Raise exception for HTTP error codes
                     # print("Activity logged:", resp.json())
                 except requests.exceptions.HTTPError as http_err:

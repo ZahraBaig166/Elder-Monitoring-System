@@ -188,7 +188,7 @@ console.log("Family Data:", data);
 useEffect(() => {
   const fetchRoutine = async () => {
     try {
-      const response = await fetch(`http://192.168.1.12:8001/anomaly/patient-routine/${patientId}`);
+      const response = await fetch(`http://192.168.100.70:8001/anomaly/patient-routine/${patientId}`);
       const result = await response.json();
       setRoutine(result.routine);
     } catch (error) {

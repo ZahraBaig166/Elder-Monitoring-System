@@ -1,0 +1,17 @@
+@UTF8
+@Begin
+@Languages:	eng
+@Participants:	PAR Participant, INV Investigator
+@ID:	eng|Pitt|PAR|55;|female|||Participant||
+@ID:	eng|Pitt|INV|||||Investigator||
+@Media:	recording, audio
+*PAR: Well little boy reaching out for the cookie jar and the stool he's standing on tells over and 0_8440
+%mor:	intj|Well adj|little noun|boy verb|reaching adp|out adp|for det|the noun|cookie noun|jar cconj|and det|the noun|stool pron|he aux|'s verb|standing adp|on noun|tells adp|over cconj|and
+%gra:	1|15|INTJ 2|3|AMOD 3|15|DOBJ 4|3|ACL 5|4|PRT 6|4|PREP 7|9|DET 8|9|COMPOUND 9|6|POBJ 10|9|CC 11|12|DET 12|3|CONJ 13|15|NSUBJ 14|15|AUX 15|0|ROOT 16|15|PREP 17|15|DOBJ 18|17|ADVMOD 19|15|CC
+*PAR: he's handing some cookies down to the little girl and the mother's drying dishes and 8440_14740
+%mor:	pron|he aux|'s verb|handing det|some noun|cookies adp|down adp|to det|the adj|little noun|girl cconj|and det|the noun|mother part|'s verb|drying noun|dishes cconj|and
+%gra:	1|3|NSUBJ 2|3|AUX 3|0|ROOT 4|5|DET 5|3|DOBJ 6|3|PRT 7|3|PREP 8|10|DET 9|10|AMOD 10|7|POBJ 11|10|CC 12|13|DET 13|16|POSS 14|13|CASE 15|16|AMOD 16|10|CONJ 17|3|CC
+*PAR: spills water on the floor and she's looking out the window that's it. 14740_19700
+%mor:	verb|spills noun|water adp|on det|the noun|floor cconj|and pron|she aux|'s verb|looking adp|out det|the noun|window pron|that aux|'s pron|it punct|.
+%gra:	1|0|ROOT 2|1|DOBJ 3|1|PREP 4|5|DET 5|3|POBJ 6|1|CC 7|9|NSUBJ 8|9|AUX 9|1|CONJ 10|9|PREP 11|12|DET 12|10|POBJ 13|14|NSUBJ 14|9|CCOMP 15|14|ATTR 16|9|PUNCT
+@End

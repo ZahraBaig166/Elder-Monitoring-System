@@ -1,7 +1,7 @@
 export const checkAnomaly = async (metrics) => {
      console.log("Calling Anomaly Detection Model with metrics:", metrics);
   try {
-    const response = await fetch(`http://192.168.1.12:8001/anomaly/anomaly-detection`, {
+    const response = await fetch(`http://192.168.100.70:8001/anomaly/anomaly-detection`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(metrics),
