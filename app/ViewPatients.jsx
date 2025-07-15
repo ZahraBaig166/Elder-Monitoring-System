@@ -27,7 +27,7 @@ const ViewPatients = () => {
   const { apiBaseUrl, loading, error } = useConfig();
   const { user, loading: authLoading } = useAuth();
   const navigation = useNavigation();
-  const fastApiURL = 'http://10.46.42.129:8001/api/upload';
+  const fastApiURL = 'http://172.20.10.7:8001/api/upload';
   const [recording, setRecording] = useState(null);
   const [activeRecordingId, setActiveRecordingId] = useState(null);
   const [loadingPatientId, setLoadingPatientId] = useState(null);

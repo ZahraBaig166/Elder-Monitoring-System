@@ -1,29 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import NavBar from '../components/NavBar'; 
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import useConfig from "../backend/../hooks/useConfig";
 
-const Alerts = () => {
-  const { apiBaseUrl } = useConfig();
-  const [alerts, setAlerts] = useState([]);
+const staticAlerts = [
+  {
+    patient_id: 'P1001',
+    type: 'High Blood Pressure',
+    is_acknowledged: false,
+  },
+  {
+    patient_id: 'P1002',
+    type: 'Low Oxygen Level',
+    is_acknowledged: true,
+  },
+  {
+    patient_id: 'P1003',
+    type: 'Heart Rate Drop',
+    is_acknowledged: false,
+  },
+];
 
-  // Fetch alerts on component mount
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const response = await fetch(`${apiBaseUrl}/alerts`);
-        const data = await response.json();
-        setAlerts(data); // Update state with fetched alerts
-      } catch (error) {
-        // console.error("Error fetching alerts:", error);
-      }
-    };
-
-    fetchAlerts();
-  }, [apiBaseUrl]);
-
+const StaticAlerts = () => {
   return (
     <View style={styles.container}>
       <View style={styles.main}>
@@ -32,17 +30,15 @@ const Alerts = () => {
           <TouchableOpacity style={styles.backButton}>
             <Icon name="arrow-left" size={wp(5)} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.headerText}>ALERTS</Text>
+          <Text style={styles.headerText}> ALERTS</Text>
           <TouchableOpacity style={styles.menuButton}>
             <Icon name="ellipsis-v" size={wp(5)} color="#000" />
           </TouchableOpacity>
         </View>
 
-        {/* List of Alerts */}
         <ScrollView>
-          {alerts.map((alert, index) => (
+          {staticAlerts.map((alert, index) => (
             <View key={index} style={styles.queryCard}>
-              {/* User Info Section */}
               <View style={styles.queryInfo}>
                 <Image
                   source={{
@@ -54,7 +50,7 @@ const Alerts = () => {
                   <Text style={styles.userName}>Patient ID: {alert.patient_id}</Text>
                   <Text style={styles.querySubject}>Type: {alert.type}</Text>
                   <Text style={styles.queryDescription}>
-                    Acknowledged: {alert.is_acknowledged ? "Yes" : "No"}
+                    Acknowledged: {alert.is_acknowledged ? 'Yes' : 'No'}
                   </Text>
                 </View>
               </View>
@@ -62,7 +58,6 @@ const Alerts = () => {
           ))}
         </ScrollView>
       </View>
-      {/* <NavBar /> */}
     </View>
   );
 };
@@ -92,82 +87,6 @@ const styles = StyleSheet.create({
     color: '#1D1617',
   },
   menuButton: {
-    padding: wp(2.5),
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: hp(2),
-  },
-  filterButton: {
-    borderWidth: wp(0.4),
-    borderColor: '#ADC1D8',
-    borderRadius: wp(5),
-    paddingVertical: hp(1),
-    paddingHorizontal: wp(4),
-    backgroundColor: '#FFFFFF',
-    width: wp(25),
-  },
-  activeFilter: {
-    backgroundColor: '#ADC1D8',
-    borderColor: '#ADC1D8',
-  },
-  filterText: {
-    fontSize: wp(3),
-    fontWeight: '700',
-    color: '#000',
-    textAlign: 'center',
-  },
-  activeFilterText: {
-    color: '#000',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F6F6F6',
-    borderRadius: wp(8),
-    paddingHorizontal: wp(4),
-    height: hp(6),
-    marginBottom: hp(3),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: hp(0.5) },
-    shadowOpacity: 0.1,
-    shadowRadius: wp(1),
-    elevation: 2,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: wp(3.5),
-    color: '#ADC1D8',
-    paddingVertical: hp(0.5),
-  },
-  searchIcon: {
-    marginLeft: wp(2),
-    color: '#ADC1D8',
-  },
-  queriesContainer: {
-    flex: 1,
-    backgroundColor: '#F9F9F9',
-    borderRadius: wp(5),
-    padding: wp(4),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: hp(0.5) },
-    shadowOpacity: 0.1,
-    shadowRadius: wp(2),
-    elevation: 4,
-  },
-  queriesHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: hp(2),
-  },
-  allQueriesText: {
-    fontSize: wp(5),
-    fontWeight: '700',
-    color: '#000',
-  },
-  filterIcon: {
     padding: wp(2.5),
   },
   queryCard: {
@@ -209,21 +128,6 @@ const styles = StyleSheet.create({
     fontSize: wp(3.5),
     color: '#333',
   },
-  respondButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: wp(3),
-    paddingVertical: hp(0.8),
-    paddingHorizontal: wp(4),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: hp(0.5) },
-    shadowOpacity: 0.4,
-    shadowRadius: wp(2),
-  },
-  respondButtonText: {
-    fontSize: wp(3.5),
-    fontWeight: '600',
-    color: '#000',
-  },
 });
 
-export default Alerts;
+export default StaticAlerts;

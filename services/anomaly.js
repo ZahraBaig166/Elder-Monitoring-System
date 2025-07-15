@@ -1,7 +1,7 @@
 export const checkAnomaly = async (metrics) => {
      console.log("Calling Anomaly Detection Model with metrics:", metrics);
   try {
-    const response = await fetch(`http://10.46.42.129:8001/anomaly/anomaly-detection`, {
+    const response = await fetch(`http://172.20.10.7:8001/anomaly/anomaly-detection`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(metrics),
@@ -15,7 +15,7 @@ export const checkAnomaly = async (metrics) => {
 
 export const getPatientRoutine = async (patientId) => {
   try {
-    const response = await fetch(`http://10.46.42.129:8001/anomaly/patient-routine/${patientId}`);
+    const response = await fetch(`http://172.20.10.7:8001/anomaly/patient-routine/${patientId}`);
     console.log(response.json);
     return await response.json();
   } catch (error) {
@@ -26,7 +26,7 @@ export const getPatientRoutine = async (patientId) => {
 
 export const getSleepPattern = async (patientId) => {
   try {
-    const response = await fetch(`http://10.46.42.129:8001/anomaly/patient-sleep-pattern/${patientId}`);
+    const response = await fetch(`http://172.20.10.7:8001/anomaly/patient-sleep-pattern/${patientId}`);
     return await response.json();
   } catch (error) {
     console.error("Error fetching sleep pattern:", error);

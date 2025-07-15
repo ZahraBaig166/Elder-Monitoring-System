@@ -252,7 +252,7 @@ def run_video_monitoring(video_path='video_api\\data\\Lab_Recording.mp4'):
                     }
 
                 try:
-                    resp = requests.post("http://10.46.42.129:8001/video/log_activity", json=data)
+                    resp = requests.post("http://172.20.10.7:8001/video/log_activity", json=data)
                     resp.raise_for_status()  # Raise exception for HTTP error codes
                     # print("Activity logged:", resp.json())
                 except requests.exceptions.HTTPError as http_err:
