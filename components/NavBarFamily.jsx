@@ -13,9 +13,9 @@ const NavBarFamily = ({ onChartButtonClick }) => {
       onPress={() => router.push("/FamilyDashboard")}>
         <Icon name="th-large" size={20} color="#576574" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navIcon} onPress={onChartButtonClick} >
+      {/* <TouchableOpacity style={styles.navIcon} onPress={onChartButtonClick} >
         <Icon name="pie-chart" size={20} color="#576574" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <TouchableOpacity style={styles.navCenter} onPress={() => router.push("/AddQuery")}>
         <View style={styles.plusButton}>
           <Icon name="comment" size={24} color="#576574" />

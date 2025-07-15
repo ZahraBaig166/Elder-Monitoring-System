@@ -1,6 +1,6 @@
 import React from 'react';
 import {useEffect,useState} from "react";
-
+import { FontAwesome } from '@expo/vector-icons';
 
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import Svg, { Path, Circle, Line, Rect, Text as SvgText ,Defs, LinearGradient, Stop} from 'react-native-svg';
@@ -11,7 +11,7 @@ import { router, useRouter } from 'expo-router';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import useConfig from "../backend/../hooks/useConfig";
 import { useFocusEffect } from 'expo-router';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { BackHandler } from 'react-native';
 
 
@@ -20,6 +20,7 @@ const { width } = Dimensions.get('window');
 const Dashboard = () => {
 
   const { apiBaseUrl, loading, error } = useConfig();
+   
   // useFocusEffect(
   //   React.useCallback(() => {
   //     const onBackPress = () => {
@@ -38,7 +39,7 @@ const Dashboard = () => {
   const handleChartButtonClick = () => {
     setShowCharts(true); // Set to show charts only
   };
- 
+
   
   return (
     <View style={dashboardStyles.container}>
@@ -74,7 +75,7 @@ const Dashboard = () => {
     )}
   </ScrollView>
 
-  <NavBar onChartButtonClick={handleChartButtonClick} />
+  {/* <NavBar onChartButtonClick={handleChartButtonClick} /> */}
 </View>
 );
 };
@@ -102,18 +103,42 @@ const Header = () => {
   //     return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
   //   }, [])
   // );
+  const logout = async () => {
+  try {
+    await AsyncStorage.removeItem('authToken');
+    await AsyncStorage.removeItem('userId');
+    await AsyncStorage.removeItem('type');
+    console.log('Logged out');
+    
+    // ✅ Redirect to index.jsx (typically your login or welcome screen)
+    router.replace('/'); // or router.push('/') depending on your routing structure
+  } catch (e) {
+    console.error('Logout failed:', e);
+}
+};
 
   const handleBackPress = () => {
     router.replace('/'); // Navigate to Login and clear stack
   };
   return (
-    <View style={headerStyles.container}>
-      <TouchableOpacity style={headerStyles.backButton} onPress={handleBackPress} >
-        <Icon name="arrow-left" size={24} color="#fff" />
-      </TouchableOpacity>
-      <Text style={headerStyles.greeting}>Hello,</Text>
-      <Text style={headerStyles.adminName}>Admin</Text>
-    </View>
+   <View style={headerStyles.container}>
+  {/* Back Button (on the left) */}
+  <TouchableOpacity style={headerStyles.backButton} onPress={handleBackPress}>
+    <Icon name="arrow-left" size={24} color="#fff" />
+  </TouchableOpacity>
+
+  {/* Greeting and Admin Name (center or left aligned depending on layout) */}
+  <View style={headerStyles.textContainer}>
+    <Text style={headerStyles.greeting}>Hello,</Text>
+    <Text style={headerStyles.adminName}>Admin</Text>
+  </View>
+
+  {/* Logout Button (on the right) */}
+  <TouchableOpacity onPress={logout} style={headerStyles.logoutButton}>
+    <FontAwesome name="sign-out" size={34} color="#fff"  />
+  </TouchableOpacity>
+</View>
+
   );
 };
 
@@ -121,6 +146,13 @@ const headerStyles = StyleSheet.create({
   container: {
     padding: 20,
     position: 'relative',
+    top: 30,
+  },
+  logoutButton: {
+    padding: 8,
+    position: 'absolute',
+    right: 20,
+    top: 20,
   },
   backButton: {
     position: 'absolute',
@@ -173,7 +205,7 @@ const NavigationButtons = () => {
       </TouchableOpacity>
       <TouchableOpacity
         style={[navStyles.button, navStyles.viewQuery]}
-        onPress={() => router.push('/Queries')} // Navigate to ViewQuery
+        onPress={() => router.push('/UserQueries')} // Navigate to ViewQuery
       >
         <Icon name="comments" size={30} color="#157fdd" />
         <Text style={navStyles.viewQueryText}>View Query</Text>
@@ -694,7 +726,7 @@ const ActivityBarChart = () => {
         const data = await response.json();
         setCaregivers(data);
       } catch (error) {
-        console.error('Fetch error:', error);
+        // console.error('Fetch error:', error);
       }
     };
 

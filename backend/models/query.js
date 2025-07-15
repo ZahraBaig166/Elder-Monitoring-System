@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       sender_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
       },
       sender_type: {

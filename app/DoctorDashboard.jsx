@@ -7,6 +7,8 @@ import { Link, router } from 'expo-router';
 import NavBar from '../components/NavBarPatients';
 import useConfig from "../hooks/useConfig";
 import useAuth from "../hooks/useAuth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const { width } = Dimensions.get('window');
 
@@ -38,6 +40,20 @@ const DoctorDashboard = () => {
     };
     fetchPatientCounts();
   }, [apiBaseUrl]);
+
+  const logout = async () => {
+  try {
+    await AsyncStorage.removeItem('authToken');
+    await AsyncStorage.removeItem('userId');
+    await AsyncStorage.removeItem('type');
+    console.log('Logged out');
+    
+    // ✅ Redirect to index.jsx (typically your login or welcome screen)
+    router.replace('/'); // or router.push('/') depending on your routing structure
+  } catch (e) {
+    console.error('Logout failed:', e);
+}
+};
 
   useEffect(() => {
     if (!apiBaseUrl || !user?.userId) return;
@@ -176,6 +192,7 @@ const DoctorDashboard = () => {
     </View>
   );
 
+
   if (configLoading || loading || authLoading) {
     return (
       <View style={styles.centeredContainer}>
@@ -186,74 +203,49 @@ const DoctorDashboard = () => {
   }
 
   return (
-    <View style={styles.dashboardContainer}>
-      <ScrollView style={styles.dashboadContainer}>
-        <View style={styles.header}>
-          <Image source={{ uri: 'https://placeholder.pics/svg/50x50' }} style={styles.profileImage} />
-          <Text style={styles.welcomeText}>Welcome {user?.name || "Doctor"}</Text>
-          <Text style={styles.subText}>Have a Nice day</Text>
-          <View style={styles.searchContainer}>
-            <Text style={styles.searchText}>Search....</Text>
-            <Image source={{ uri: 'https://placeholder.pics/svg/20x20' }} style={styles.searchIcon} />
-          </View>
-        </View>
-      
-        <PatientInfoCard counts={counts} />
-        <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push('/ViewPatients')}>
-          <Text style={styles.viewAllButtonText}>View All Patients</Text>
-        </TouchableOpacity>
-
-        <CriticalPatientList />
-        <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push('/AddMedication')}>
-          <Text style={styles.viewAllButtonText}>Add Medication</Text>
-        </TouchableOpacity>
-
-              <MedicationScheduleList /><View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Patient Status Transition Trends</Text>
-            <PatientTrendChart />
-          </View>
-
-          <View style={styles.chartContainer}>
-            <View style={styles.alertsContainer}>
-  <Text style={styles.sleepPatternTitle}>Patient Alerts This Week</Text>
-  <BarChart
-    data={{
-      labels: ["Ali", "Sara", "Ahmed", "Noor", "Hassan"],
-      datasets: [
-        {
-          data: [4, 7, 2, 5, 3], // Number of alerts per patient
-        },
-      ],
-    }}
-    width={Dimensions.get("window").width - 55}
-    height={220}
-    fromZero
-    chartConfig={{
-      backgroundGradientFrom: "#ADC1D8",
-      backgroundGradientTo: "#ADC1D8",
-      color: (opacity = 1) => `rgba(50, 115, 220, ${opacity})`,
-      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-      decimalPlaces: 0,
-      propsForLabels: {
-        fontSize: 12,
-      },
-    }}
-    style={{
-      marginVertical: 8,
-      borderRadius: 15,
-    }}
-  />
-</View>
-    
-            {/* <FallIncidentBarChart /> */}
-          </View>
-
-        {/* <ChartWithHeading title="Heart Rate Trends" source={require('../assets/images/G2.png')} /> */}
-        {/* <ChartWithHeading title=" Patient Location" source={require('../assets/images/G3.png')} /> */}
-        {/* <ChartWithHeading title="Activity Levels Over Time" source={require('../assets/images/G4.png')} /> */}
-      </ScrollView>
-      <NavBar />
+<View style={styles.dashboardContainer}>
+  <ScrollView style={styles.dashboadContainer}>
+    <View style={styles.header}>
+      <Image source={{ uri: 'https://placeholder.pics/svg/50x50' }} style={styles.profileImage} />
+      <TouchableOpacity onPress={logout} style={{ position: 'absolute', right: 20, top: 50 }}>
+        <FontAwesome name="sign-out" size={34} color="#fff" />
+      </TouchableOpacity>
+      <Text style={styles.welcomeText}>Welcome {user?.name || "Doctor"}</Text>
+      <Text style={styles.subText}>Have a Nice day</Text>
+      <View style={styles.searchContainer}>
+        <Text style={styles.searchText}>Search....</Text>
+        <Image source={{ uri: 'https://placeholder.pics/svg/20x20' }} style={styles.searchIcon} />
+      </View>
     </View>
+
+    <PatientInfoCard counts={counts} />
+    <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push('/ViewPatients')}>
+      <Text style={styles.viewAllButtonText}>View All Patients</Text>
+    </TouchableOpacity>
+
+    <CriticalPatientList />
+    <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push('/AddMedication')}>
+      <Text style={styles.viewAllButtonText}>Add Medication</Text>
+    </TouchableOpacity>
+
+    <MedicationScheduleList />
+    <View style={styles.chartContainer}>
+      <Text style={styles.chartTitle}>Patient Status Transition Trends</Text>
+      <PatientTrendChart />
+    </View>
+    <View style={{ padding: 16, backgroundColor: '#f5f5f5' }}>
+      <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>
+        Alert Summary
+      </Text>
+      <AlertsChart apiBaseUrl={apiBaseUrl} criticalPatients={criticalPatients} />
+    </View>
+
+    {/* <ChartWithHeading title="Heart Rate Trends" source={require('../assets/images/G2.png')} /> */}
+    {/* <ChartWithHeading title=" Patient Location" source={require('../assets/images/G3.png')} /> */}
+    {/* <ChartWithHeading title="Activity Levels Over Time" source={require('../assets/images/G4.png')} /> */}
+  </ScrollView>
+  <NavBar />
+</View>
   );
   
 };
@@ -350,6 +342,108 @@ const PatientTrendChart = () => {
       <SvgText x={paddingLeft + 80} y={15} paddingBottom='20' fontSize="10" fill="orange">● Moderate</SvgText>
       <SvgText x={paddingLeft + 190} y={15} paddingBottom='20' fontSize="10" fill="green">● Stable</SvgText>
     </Svg>
+  );
+};
+
+const AlertsChart = ({ apiBaseUrl, criticalPatients }) => {
+  const [alertData, setAlertData] = useState({ labels: [], data: [] });
+  const screenWidth = Dimensions.get('window').width;
+  console.log("Alert chart data to render:", alertData);
+
+console.log("Critical Patients in AlertsChart:", criticalPatients);
+ const fetchAlertData = async () => {
+  try {
+    if (!criticalPatients || criticalPatients.length === 0) {
+      console.log('No critical patients found');
+      return;
+    }
+
+    const criticalIds = criticalPatients.map((p) => p.patient_id);
+    console.log("Fetching alerts for:", criticalIds);
+
+    const response = await fetch(
+      `${apiBaseUrl}/alerts?patient_ids=${criticalIds.join(',')}`
+    );
+
+    const data = await response.json();
+    console.log('API response for alerts:', data);
+
+    // Check if data is an array
+    if (!Array.isArray(data)) {
+      console.error('Expected an array but got:', data);
+      return;
+    }
+
+    // Proceed only if it's a valid array
+    const counts = {};
+    data.forEach((alert) => {
+      const name = alert.patient_name || `Patient ${alert.patient_id}`;
+      counts[name] = (counts[name] || 0) + 1;
+    });
+console.log("ALERT DATA ")
+    setAlertData({
+      labels: Object.keys(counts),
+      data: Object.values(counts),
+    });
+
+  } catch (err) {
+    console.error('Error fetching alert data', err);
+  }
+};
+
+  useEffect(() => {
+    if (apiBaseUrl && criticalPatients) fetchAlertData();
+  }, [apiBaseUrl, criticalPatients]);
+
+  if (alertData.data.length === 0) return null;
+  const maxAlertValue = Math.max(...alertData.data);
+
+// Estimate an appropriate number of steps for the y-axis
+const yAxisInterval = Math.ceil(maxAlertValue / 4) || 1;
+
+  return (
+
+<BarChart
+  data={{
+    labels: alertData.labels,
+    datasets: [
+      {
+        data: alertData.data,
+      },
+    ],
+  }}
+  width={screenWidth - 40}
+  height={250}
+  fromZero
+  yAxisInterval={yAxisInterval}
+  chartConfig={{
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
+    backgroundColor: '#ffffff',
+    fillShadowGradient: '#FF3B30', // red bars
+    fillShadowGradientOpacity: 1,
+    decimalPlaces: 0,
+    barPercentage: 0.6,
+    color: () => '#FF3B30',
+    labelColor: () => '#000',
+    propsForLabels: {
+      fontSize: 12,
+    },
+    propsForBackgroundLines: {
+      stroke: 'transparent',
+    },
+    formatYLabel: (val) => `${parseInt(val, 10)}`, // fix 000, 0111
+  }}
+  verticalLabelRotation={30}
+  style={{
+    marginVertical: 16,
+    borderRadius: 16,
+    paddingRight: 20,
+    paddingLeft: 10,
+  }}
+/>
+
+
   );
 };
 

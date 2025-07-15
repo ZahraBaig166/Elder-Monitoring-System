@@ -10,8 +10,9 @@ import { checkFall } from "../services/fallApi";
 import useAuth from "../hooks/useAuth";
 import { useLocalSearchParams } from "expo-router"; // NEW
 import Svg, { Line, Circle, Text as SvgText, Path } from "react-native-svg";
+import { checkAnomaly, getPatientRoutine,getSleepPattern } from "../services/anomaly"; 
 
-import { checkAnomaly } from "../services/anomaly"; // Assuming you have a similar function for anomaly detection
+// Assuming you have a similar function for anomaly detection
 
 
 const IndividualPatientProfile = () => {
@@ -28,6 +29,10 @@ const IndividualPatientProfile = () => {
   const [fallStatus, setFallStatus] = useState("Unknown");
   const [notes, setNotes] = useState([]); 
 const [isLoading, setIsLoading] = useState(true);
+const [routine, setRoutine] = useState(0);
+  const [sleepPattern, setSleepPattern] = useState([]);
+  const [sleepLoading, setSleepLoading] = useState(false);
+  const device_connect =1;
   const router = useRouter(); 
   const { apiBaseUrl, loading, error } = useConfig();  
    const { user, loading: authLoading } = useAuth();
@@ -48,29 +53,35 @@ const [isLoading, setIsLoading] = useState(true);
           console.error("Failed to fetch patient name:", patientData.message);
         }
   
-        // Step 2: Fetch Health Metrics
-        const metricsResponse = await fetch(`${apiBaseUrl}/health-metrics/${patientId}`);
-        const metricsData = await metricsResponse.json();
-  console.log("Metrics Data:", metricsData); // Log the fetched metrics data
-        if (metricsResponse.ok) {
-          setHealthMetrics(metricsData);
-          if (metricsData.length > 0) {
-            setCurrentHeartRate(metricsData[0].value);
-          }
-        } else {
-          console.error("Failed to fetch health metrics:", metricsData.message);
-        }
-  
-      } catch (error) {
-        console.error("Error fetching patient data:", error);
+      // ✅ Mimic device connectivity
+      if (device_connect === 0) {
+        console.error("⚠ Device Disconnected");
+        alert("⚠ Device disconnected! No real-time data.");
+        return; // Stop further processing
       }
-    };
-  
-    if (!loading && patientId) {
-      fetchPatientDataAndMetrics();
+
+    
+      // Fetch Health Metrics
+      const metricsResponse = await fetch(`${apiBaseUrl}/health-metrics/${patientId}`);
+      const metricsData = await metricsResponse.json();
+
+      if (metricsResponse.ok) {
+        setHealthMetrics(metricsData);
+        if (metricsData.length > 0) {
+          setCurrentHeartRate(metricsData[0].value);
+        }
+      } else {
+        console.error("Failed to fetch health metrics:", metricsData.message);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
-  }, [apiBaseUrl, loading, patientId]);
-  
+  };
+
+  if (!loading) {
+    fetchPatientDataAndMetrics();
+  }
+}, [apiBaseUrl, loading]);
   useEffect(() => {
     const fetchNotes = async () => {
       console.log("Fetching notes for patientId:", patientId);
@@ -102,6 +113,50 @@ const [isLoading, setIsLoading] = useState(true);
   
     fetchNotes();
   }, [apiBaseUrl,patientId,loading]);
+
+  useEffect(() => {
+    const fetchRoutine = async () => {
+      console.log("Fetching Routine for Patient:", patientId);
+      const result = await getPatientRoutine(patientId);
+      // console.log("Routine API Response:", result);
+  
+      if (Array.isArray(result.routine) && result.routine.length > 0) {
+        setRoutine(result.routine);
+      } else {
+        console.warn("No routine data or API returned an error:", result);
+        setRoutine([]); 
+      }
+    };
+
+    fetchRoutine();
+  }, [patientId]);
+
+  useEffect(() => {
+    const fetchSleepPattern = async () => {
+      if (!patientId) return;
+  
+      console.log("📡 Fetching sleep pattern for patient:", patientId);
+      try {
+        const result = await getSleepPattern(patientId);
+  
+        if (Array.isArray(result.sleep_pattern) && result.sleep_pattern.length > 0) {
+          const cleanedData = result.sleep_pattern.filter(
+            item => item.sleep_stage !== "No Data"
+          );
+          console.log("✅ Aggregated Sleep Pattern:", cleanedData);
+          setSleepPattern(cleanedData);
+        } else {
+          console.warn("⚠ No sleep pattern data or API error:", result.error);
+          setSleepPattern([]);
+        }
+      } catch (err) {
+        console.error("❌ Error fetching sleep pattern:", err);
+        setSleepPattern([]);
+      }
+    };
+  
+    fetchSleepPattern();
+  }, [patientId]);
   
  
 // const [anomalyStatus, setAnomalyStatus] = useState("Checking...");
@@ -361,14 +416,7 @@ const MoodTimeline = () => {
 
       <ScrollView style={styles.scrollView}>
         <Text style={styles.patientName}>Patient name: {patientName}</Text>
-      <Text style={{ 
-        fontSize: 16, 
-        fontWeight: 'bold', 
-        color: anomalyStatus.includes("Anomaly") ? "red" : "green", 
-        margin: 10 
-      }}>
-        {anomalyStatus}
-      </Text>
+     
         {/* Heart Rate Section */}
 <View style={styles.heartRateContainer}>
   <Text style={styles.heartRateLabel}>Heart Rate</Text>
@@ -387,7 +435,121 @@ const MoodTimeline = () => {
     </Svg>
   </View>
 </View>
-<MoodTimeline />
+<View style={styles.RoutineSection}>
+  <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
+    Patient Routine (Last 24 Hours)
+  </Text>
+
+  {Array.isArray(routine) && routine.length > 0 ? (
+    <ScrollView horizontal>
+      <View>
+        {/* Table Header */}
+        <View style={[styles.RoutineRow, styles.RoutineHeader]}>
+          <Text style={styles.RoutineCell}>Time</Text>
+          <Text style={styles.RoutineCell}>Activity</Text>
+          <Text style={styles.RoutineCell}>Mood</Text>
+          <Text style={styles.RoutineCell}>Heart Rate</Text>
+        </View>
+
+        {/* Table Rows */}
+        {routine.map((item, index) => (
+          <View key={index} style={styles.RoutineRow}>
+            <Text style={styles.RoutineCell}>{item.time_interval}</Text>
+            <Text style={styles.RoutineCell}>{item.activity}</Text>
+            <Text style={styles.RoutineCell}>{item.emotion}</Text>
+            <Text style={styles.RoutineCell}>{item.value}</Text>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
+  ) : (
+    <Text style={{ fontSize: 14, color: "gray" }}>
+      No routine data available.
+    </Text>
+  )}
+</View>
+{/* sleeppppppp */}
+{/* Sleep Pattern Section */}
+<View style={{ marginVertical: 20 }}>
+  <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
+    Sleep Pattern (Last 24 Hours)
+  </Text>
+
+  {sleepLoading ? (
+    <Text style={{ color: "gray", textAlign: "center" }}>Loading sleep pattern...</Text>
+  ) : sleepPattern.length > 0 ? (
+    (() => {
+      const stageMap = { "Awake": 0, "Light Sleep": 1, "Deep Sleep": 2 };
+      const reverseMap = { 
+                0: "Awake", 
+                1: "Light", 
+                2: "Deep" 
+              };
+
+      const filteredData = sleepPattern.filter(item => item.sleep_stage !== "No Data");
+
+      const labels = filteredData.map((item, index) =>
+        index % 2 === 0 ? item.time : ""
+      );
+      const dataPoints = filteredData.map(item => stageMap[item.sleep_stage]);
+
+      return (
+        <LineChart
+          data={{
+            labels: labels,
+            datasets: [{ data: dataPoints }]
+          }}
+          width={Dimensions.get("window").width - 30}
+          height={200}
+          fromZero
+          yAxisInterval={1}
+          yAxisLabel=""
+          yAxisSuffix=""
+          chartConfig={{
+            backgroundGradientFrom: "#ffffff",
+            backgroundGradientTo: "#ffffff",
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`, // Line color
+            labelColor: () => "#333",
+            propsForDots: {
+              r: "3",
+              strokeWidth: "2",
+              stroke: "#007AFF"
+            },
+            propsForBackgroundLines: {
+              stroke: "#e3e3e3",
+              strokeDasharray: ""
+            },
+            propsForLabels: {
+              fontSize: 12
+            }
+          }}
+          bezier
+          style={{
+            borderRadius: 16,
+            marginVertical: 8,
+            paddingLeft: 10 // 👈 Add left padding here
+          }}
+          segments={2}
+          formatYLabel={yValue => {
+            if (reverseMap[yValue]) {
+              return reverseMap[yValue].replace(" ", "\n"); // 👈 Multi-line labels
+            }
+            return "";
+          }}
+
+        />
+      );
+    })()
+  ) : (
+    <Text style={{ color: "gray", textAlign: "center" }}>
+      No sleep pattern data available.
+    </Text>
+  )}
+</View>
+
+
+{/* end sleeppppppp */}
 {/* <View style={styles.ChartStyles}>
   <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Physical Activity (Steps)</Text>
   <LineChart
@@ -436,7 +598,7 @@ const MoodTimeline = () => {
         <View style={styles.statsContainer}>
           <View style={styles.row}>
             {/* Blood Count */}
-            <View style={styles.statCardblood}>
+            {/* <View style={styles.statCardblood}>
               <View style={styles.iconContainer}>
                 <Image
                   source={require("@/assets/images/bloodicon.png")}
@@ -449,20 +611,10 @@ const MoodTimeline = () => {
                 source={require("@/assets/images/bloodgraph.png")}
                 style={styles.graphblood}
               />
-            </View>
+            </View> */}
 
             {/* Pills */}
-            <TouchableOpacity
-              style={styles.statCard}
-               // Navigate to Medication page
-            >
-              <Image
-                source={require("@/assets/images/pills.png")}
-                style={styles.iconpill}
-              />
-              <Text style={styles.statValue}>3</Text>
-              <Text style={styles.statTitle}>Pills</Text>
-            </TouchableOpacity>
+          
           </View>
 
           <View style={styles.row}>
@@ -949,6 +1101,24 @@ flex: 1,
     height: 10,
     borderRadius: 5,
     marginRight: 5,
+  },
+  RoutineRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    paddingVertical: 5,
+  },
+  RoutineCell: {
+    width: 140,
+    textAlign: 'center',
+    fontSize: 14,
+  },
+  RoutineHeader: {
+    backgroundColor: '#f0f0f0',
+    fontWeight: 'bold',
+  },
+  RoutineSection: {
+    marginTop: 20,
   },
 });
 

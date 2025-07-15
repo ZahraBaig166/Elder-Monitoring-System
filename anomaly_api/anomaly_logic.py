@@ -2,7 +2,6 @@ import pandas as pd
 import joblib
 from sqlalchemy import create_engine
 
-# Database connection
 DATABASE_URL = "postgresql+psycopg2://postgres:laiba@localhost:5432/ElderlyMonitoring"
 engine = create_engine(DATABASE_URL)
 
@@ -12,10 +11,8 @@ def predict_anomaly(data) -> dict:
     and predict anomaly using Isolation Forest.
     """
     try:
-        # Extract patient_id from the incoming wearable metrics
         patient_id = data.patient_id
 
-        # Convert wearable metrics (already from frontend) to DataFrame
         wearable_df = pd.DataFrame([{
             "value": data.value,
             "steps": data.steps,
@@ -24,7 +21,6 @@ def predict_anomaly(data) -> dict:
             "sleep_stage": data.sleep_stage
         }])
 
-        # Fetch latest video data (emotion and activity) from DB
         video_query = f"""
             SELECT emotion, activity
             FROM patient_activities
@@ -37,23 +33,18 @@ def predict_anomaly(data) -> dict:
         if video_df.empty:
             return {"anomaly": False, "message": "No video activity data available."}
 
-        # Combine wearable + video data
         wearable_df['emotion'] = video_df.iloc[0]['emotion']
         wearable_df['activity'] = video_df.iloc[0]['activity']
 
-        # Encode categorical features
         wearable_df['emotion'] = wearable_df['emotion'].astype('category').cat.codes
         wearable_df['activity'] = wearable_df['activity'].astype('category').cat.codes
 
-        # Load pre-trained model for this patient
         model_path = f"anomaly_api/models/patient_{patient_id}_anomaly_model.pkl"
         model = joblib.load(model_path)
 
-        # Define feature columns
         features = ["value", "steps", "calories", "distance", "sleep_stage", "emotion", "activity"]
         X = wearable_df[features]
 
-        # Run prediction
         prediction = model.predict(X)[0]
 
         return {
@@ -65,46 +56,149 @@ def predict_anomaly(data) -> dict:
     except Exception as e:
         print("Error during anomaly detection:", e)
         return {"anomaly": False, "error": str(e)}
-    
+ 
+
 def fetch_patient_routine(patient_id: int) -> dict:
     """
-    Fetches wearable + video data for patient for last 24 hours
+    Aggregates wearable data into 2-hour intervals and attaches video rows.
     """
     try:
-        # Fetch wearable data
+        time_query = f"""
+            SELECT MIN(time) AS start_time
+            FROM health_metrics
+            WHERE patient_id = {patient_id};
+        """
+        result = pd.read_sql(time_query, engine)
+        start_time = result['start_time'].iloc[0]
+
+        if pd.isna(start_time):
+            return {"routine": [], "error": "No wearable data for this patient."}
+
+        start_time = pd.to_datetime(start_time)
+        end_time = start_time + pd.Timedelta(hours=24)
+
         wearable_query = f"""
-            SELECT time, steps, sleep_stage
+            SELECT time, value AS value, sleep_stage
             FROM health_metrics
             WHERE patient_id = {patient_id}
-            AND time >= NOW() - INTERVAL '1 day'
+            AND time >= '{start_time}'
+            AND time < '{end_time}'
             ORDER BY time ASC;
         """
         wearable_df = pd.read_sql(wearable_query, engine)
 
-        # Fetch video data
+        if wearable_df.empty:
+            return {"routine": [], "error": "No wearable data found for patient in this period."}
+
         video_query = f"""
-            SELECT timestamp AS time, activity, emotion
+            SELECT activity, emotion
             FROM patient_activities
             WHERE patient_id = {patient_id}
-            AND timestamp >= NOW() - INTERVAL '1 day'
-            ORDER BY timestamp ASC;
+            LIMIT {len(wearable_df)};
         """
         video_df = pd.read_sql(video_query, engine)
 
-        # Merge wearable + video data
-        routine_df = pd.merge_asof(
-            wearable_df.sort_values('time'),
-            video_df.sort_values('time'),
-            on='time',
-            direction='nearest',
-            tolerance=pd.Timedelta(minutes=10)
+        if video_df.empty:
+            video_df = pd.DataFrame({
+                "activity": ["No Data"] * len(wearable_df),
+                "emotion": ["No Data"] * len(wearable_df)
+            })
+
+        while len(video_df) < len(wearable_df):
+            video_df = pd.concat([video_df, video_df], ignore_index=True)
+        video_df = video_df.iloc[:len(wearable_df)]
+
+
+        combined_df = pd.concat([
+            wearable_df.reset_index(drop=True),
+            video_df.reset_index(drop=True)
+        ], axis=1)
+
+        combined_df['time_interval'] = combined_df['time'].dt.floor('2h')
+
+        grouped = combined_df.groupby('time_interval').agg({
+            'activity': lambda x: x.mode()[0] if not x.mode().empty else "No Data",
+            'emotion': lambda x: x.mode()[0] if not x.mode().empty else "No Data",
+            'sleep_stage': lambda x: x.mode()[0] if not x.mode().empty else 0,
+            'value': lambda x: x.mode()[0] if not x.mode().empty else 0
+        }).reset_index()
+
+        grouped['time_interval'] = grouped['time_interval'].apply(
+            lambda t: f"{t.strftime('%H:%M')}–{(t + pd.Timedelta(hours=2)).strftime('%H:%M')}"
         )
 
-        routine_df.fillna(method='ffill', inplace=True)
+        sleep_stage_map = {0: "Awake", 1: "Light Sleep", 2: "Deep Sleep"}
+        grouped['sleep_stage'] = grouped['sleep_stage'].map(sleep_stage_map).fillna("No Data")
 
-        # Format as list of dicts
-        return {"routine": routine_df.to_dict(orient='records')}
+        return {"routine": grouped.to_dict(orient='records')}
 
     except Exception as e:
         print("Error fetching routine:", e)
         return {"routine": [], "error": str(e)}
+
+
+def get_sleep_pattern(patient_id: int) -> dict:
+    """
+    Fetch aggregated sleep stage data for the patient over 24 hours.
+    Returns 24 data points (1 per hour), using priority: Deep Sleep > Light Sleep > Awake.
+    """
+    try:
+        time_query = f"""
+            SELECT MIN(time) AS start_time
+            FROM health_metrics
+            WHERE patient_id = {patient_id};
+        """
+        result = pd.read_sql(time_query, engine)
+        start_time = result['start_time'].iloc[0]
+
+        if pd.isna(start_time):
+            return {"sleep_pattern": [], "error": "No sleep data for this patient."}
+
+        start_time = pd.to_datetime(start_time)
+        end_time = start_time + pd.Timedelta(hours=24)
+
+        sleep_query = f"""
+            SELECT time, sleep_stage
+            FROM health_metrics
+            WHERE patient_id = {patient_id}
+            AND time >= '{start_time}'
+            AND time < '{end_time}'
+            ORDER BY time ASC;
+        """
+        sleep_df = pd.read_sql(sleep_query, engine)
+
+        if sleep_df.empty:
+            return {"sleep_pattern": [], "error": "No sleep data found."}
+
+        stage_map = {0: "Awake", 1: "Light Sleep", 2: "Deep Sleep"}
+        sleep_df['sleep_stage_label'] = sleep_df['sleep_stage'].map(stage_map)
+
+        sleep_df['time'] = pd.to_datetime(sleep_df['time'])
+        sleep_df.set_index('time', inplace=True)
+
+        def priority_stage(series):
+            if "Deep Sleep" in series.values:
+                return "Deep Sleep"
+            elif "Light Sleep" in series.values:
+                return "Light Sleep"
+            elif "Awake" in series.values:
+                return "Awake"
+            else:
+                return "No Data"
+
+        hourly_df = sleep_df.resample('1H').agg(priority_stage).reset_index()
+
+        hourly_df['hour'] = hourly_df['time'].dt.strftime('%H:%M')
+
+        sleep_data = [
+            {"time": row['hour'], "sleep_stage": row['sleep_stage_label']}
+            for _, row in hourly_df.iterrows()
+        ]
+
+        print("Aggregated Sleep Pattern (Priority):", sleep_data)
+
+        return {"sleep_pattern": sleep_data}
+
+    except Exception as e:
+        print("Error fetching sleep pattern:", e)
+        return {"sleep_pattern": [], "error": str(e)}

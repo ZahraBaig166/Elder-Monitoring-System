@@ -26,7 +26,7 @@ const UserDetails = () => {
         setUserDetails(userDetails);
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching user details:", err);
+        // console.error("Error fetching user details:", err);
         setLoading(false);
       }
     };
@@ -53,7 +53,7 @@ const UserDetails = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, padding: wp(5), backgroundColor: "#F9F9F9" },
+  container: { flexGrow: 1, padding: wp(5), backgroundColor: "#F9F9F9" , top:35 },
   title: { fontSize: wp(5), fontWeight: "bold", marginBottom: hp(2) },
   card: {
     padding: wp(3),

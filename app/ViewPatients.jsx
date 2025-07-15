@@ -27,7 +27,7 @@ const ViewPatients = () => {
   const { apiBaseUrl, loading, error } = useConfig();
   const { user, loading: authLoading } = useAuth();
   const navigation = useNavigation();
-  const fastApiURL = 'http://192.168.100.70:8001/api/upload';
+  const fastApiURL = 'http://10.46.42.129:8001/api/upload';
   const [recording, setRecording] = useState(null);
   const [activeRecordingId, setActiveRecordingId] = useState(null);
   const [loadingPatientId, setLoadingPatientId] = useState(null);
@@ -197,12 +197,7 @@ const ViewPatients = () => {
       <View key={patient.patient_id} style={styles.patientCard}>
         {/* Patient Info Section */}
         <View style={styles.patientInfo}>
-          <Image
-            source={{
-              uri: patient.image || 'https://via.placeholder.com/50',
-            }}
-            style={styles.patientImage}
-          />
+          <Icon name="user-circle" size={55} color="#ffff" marginBottom={30} right={10} style={styles.profileIcon} />
           <View style={styles.patientDetails}>
             <Text style={styles.patientName}>{patient.name}</Text>
             <Text style={styles.patientCondition}>
@@ -241,6 +236,19 @@ const ViewPatients = () => {
       {recording && activeRecordingId === patient.patient_id ? 'Stop' : 'Record'}
     </Text>
   </TouchableOpacity>
+
+  <TouchableOpacity 
+  style={styles.ReportsButton}
+  onPress={() =>
+    router.push({
+      pathname: "/Reports/[patientId]",
+      params: { patientId: patient.patient_id },
+    })
+  }
+>
+  <Text style={styles.ReportsButtonText}>Report</Text>
+</TouchableOpacity>
+
 </View>
 
 
@@ -476,7 +484,7 @@ detailsButton: {
   paddingVertical: 8,
   paddingHorizontal: 16,
   borderRadius: 8,
-  flex: 1,
+
 },
 
 recordBtn: {
@@ -484,12 +492,23 @@ recordBtn: {
   paddingVertical: 8,
   paddingHorizontal: 16,
   borderRadius: 8,
-  flex: 1.5,
+  
 },
 
 recordBtnText: {
   fontSize: 11,
   color: 'white',
+  textAlign: 'center',
+},
+ReportsButton:{
+ backgroundColor: '#FFFFFF',
+  paddingVertical: 5,
+  paddingHorizontal: 16,
+  borderRadius: 8,
+},
+ReportsButtonText: {
+  fontSize: 11,
+  color: '#000',
   textAlign: 'center',
 },
 

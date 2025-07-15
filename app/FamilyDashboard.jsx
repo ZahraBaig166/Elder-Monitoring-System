@@ -9,7 +9,10 @@ import { checkFall } from "../services/fallApi";
 import useAuth from "../hooks/useAuth";
 import NavBarFamily from '../components/NavBarFamily';
 import Svg, { Line, Rect, Text as SvgText , Circle } from 'react-native-svg';
-import { checkAnomaly } from "../services/anomaly"; 
+import { FontAwesome } from '@expo/vector-icons';
+import { checkAnomaly, getPatientRoutine,getSleepPattern } from "../services/anomaly"; 
+
+
 
 const DashboardHeartRateAndStats = () => {
   const [patientId, setPatientId] = useState("");
@@ -20,7 +23,10 @@ const DashboardHeartRateAndStats = () => {
   const [hrvIndex, setHrvIndex] = useState(0);
   const [stressData, setStressData] = useState({ stress: "Calculating...", color: "#000" });
   const [fallStatus, setFallStatus] = useState("Unknown");
+  const device_connect =1;
   const [routine, setRoutine] = useState(0);
+  const [sleepPattern, setSleepPattern] = useState([]);
+  const [sleepLoading, setSleepLoading] = useState(false);
 
   const router = useRouter(); 
   const { apiBaseUrl, loading, error } = useConfig();  
@@ -31,71 +37,65 @@ const DashboardHeartRateAndStats = () => {
   };
 
   useEffect(() => {
-    const fetchPatientDataAndMetrics = async () => {
-      try {
-        // Step 1: Fetch family patient(s)
-        console.log("Fetching family data...",user.userId);
-        const userId = user.userId; // get this from local storage, Redux, context, etc.
-        const familyResponse = await fetch(`${apiBaseUrl}/family/${userId}`);
-        console.log("Family Response:", familyResponse.status );
-        console.log("Family Response Headers:", familyResponse.headers.get("content-type"));
-        const data = await familyResponse.json();
-console.log("Family Data:", data);
-        // console.log("familyResponse:", familyResponse);
-        // const familyData = await familyResponse.json();
-        // console.log("familyData received from backend:", familyData);
-  
-        if (!familyResponse.ok || !Array.isArray(data) || data.length === 0) {
-          console.error("No patients found in Family table");
-          return;
-        }
-  
-        // Get the first patient_id (or handle multiple)
-        const id = data[0].patient_id;
-        setPatientId(id);
-  
-        // Step 2: Fetch Patient Details
-        const patientResponse = await fetch(`${apiBaseUrl}/patient/${id}`);
-        const patientData = await patientResponse.json();
-  
-        if (patientResponse.ok) {
-          setPatientName(patientData.name);
-        } else {
-          console.error("Failed to fetch patient name:", patientData.message);
-        }
-  
-        // Step 3: Fetch Health Metrics
-        const metricsResponse = await fetch(`${apiBaseUrl}/health-metrics/${id}`);
-        const metricsData = await metricsResponse.json();
-  
-        if (metricsResponse.ok) {
-          setHealthMetrics(metricsData);
-          if (metricsData.length > 0) {
-            setCurrentHeartRate(metricsData[0].value);
-          }
-        } else {
-          console.error("Failed to fetch health metrics:", metricsData.message);
-        }
-  
-      } catch (error) {
-        console.error("Error fetching data:", error);
+  const fetchPatientDataAndMetrics = async () => {
+    try {
+      // ✅ Mimic device connectivity
+      if (device_connect === 0) {
+        console.error("⚠ Device Disconnected");
+        alert("⚠ Device disconnected! No real-time data.");
+        return; // Stop further processing
       }
-    };
-  
-    if (!loading) {
-      fetchPatientDataAndMetrics();
+
+      // Fetch family patient(s)
+      console.log("Fetching family data...", user.userId);
+      const userId = user.userId;
+      const familyResponse = await fetch(`${apiBaseUrl}/family/${userId}`);
+      const data = await familyResponse.json();
+      console.log("Family Data:", data);
+
+      if (!familyResponse.ok || !Array.isArray(data) || data.length === 0) {
+        console.error("No patients found in Family table");
+        return;
+      }
+
+      const id = data[0].patient_id;
+      setPatientId(id);
+
+      // Fetch Patient Details
+      const patientResponse = await fetch(`${apiBaseUrl}/patient/${id}`);
+      const patientData = await patientResponse.json();
+
+      if (patientResponse.ok) {
+        setPatientName(patientData.name);
+      } else {
+        console.error("Failed to fetch patient name:", patientData.message);
+      }
+
+      // Fetch Health Metrics
+      const metricsResponse = await fetch(`${apiBaseUrl}/health-metrics/${id}`);
+      const metricsData = await metricsResponse.json();
+
+      if (metricsResponse.ok) {
+        setHealthMetrics(metricsData);
+        if (metricsData.length > 0) {
+          setCurrentHeartRate(metricsData[0].value);
+        }
+      } else {
+        console.error("Failed to fetch health metrics:", metricsData.message);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
-  }, [apiBaseUrl, loading]);
+  };
+
+  if (!loading) {
+    fetchPatientDataAndMetrics();
+  }
+}, [apiBaseUrl, loading]);
   
 
   useEffect(() => {
-    //  checkAnomaly(patientId)
-    //   .then((res) => {
-    //     console.log(res.anomaly)
-    //     console.log(res.details)
-    //   })
   
-    // console.log("ANOMALY DETECTION MODEL RUNNING ",result.anomaly, result.details);
         
     if (healthMetrics.length > 0) {
       const interval = setInterval(() => {
@@ -187,17 +187,48 @@ console.log("Family Data:", data);
 
 useEffect(() => {
   const fetchRoutine = async () => {
-    try {
-      const response = await fetch(`http://192.168.100.70:8001/anomaly/patient-routine/${patientId}`);
-      const result = await response.json();
+    console.log("Fetching Routine for Patient:", patientId);
+    const result = await getPatientRoutine(patientId);
+    // console.log("Routine API Response:", result);
+
+    if (Array.isArray(result.routine) && result.routine.length > 0) {
       setRoutine(result.routine);
-    } catch (error) {
-      console.error("Error fetching routine:", error);
+    } else {
+      console.warn("No routine data or API returned an error:", result);
+      setRoutine([]); 
     }
   };
 
   fetchRoutine();
-}, [apiBaseUrl, patientId]);
+}, [patientId]);
+
+
+useEffect(() => {
+  const fetchSleepPattern = async () => {
+    if (!patientId) return;
+
+    console.log("📡 Fetching sleep pattern for patient:", patientId);
+    try {
+      const result = await getSleepPattern(patientId);
+
+      if (Array.isArray(result.sleep_pattern) && result.sleep_pattern.length > 0) {
+        const cleanedData = result.sleep_pattern.filter(
+          item => item.sleep_stage !== "No Data"
+        );
+        console.log("✅ Aggregated Sleep Pattern:", cleanedData);
+        setSleepPattern(cleanedData);
+      } else {
+        console.warn("⚠ No sleep pattern data or API error:", result.error);
+        setSleepPattern([]);
+      }
+    } catch (err) {
+      console.error("❌ Error fetching sleep pattern:", err);
+      setSleepPattern([]);
+    }
+  };
+
+  fetchSleepPattern();
+}, [patientId]);
 
   if (loading) {
     return (
@@ -233,53 +264,76 @@ useEffect(() => {
       alert("An unexpected error occurred while creating the alert");
     }
   };
+  const logout = async () => {
+  try {
+    await AsyncStorage.removeItem('authToken');
+    await AsyncStorage.removeItem('userId');
+    await AsyncStorage.removeItem('type');
+    console.log('Logged out');
+    
+    // ✅ Redirect to index.jsx (typically your login or welcome screen)
+    router.replace('/'); // or router.push('/') depending on your routing structure
+  } catch (e) {
+    console.error('Logout failed:', e);
+}
+};
+
   
   // Function to calculate HRV Triangular Index and return Stress Level
 const stressLevel = (heartRateValues) => {
-  if (!heartRateValues || heartRateValues.length === 0) {
+  // console.log("Calculating HRV Triangular Index with values:", heartRateValues);
+
+  if (!heartRateValues || heartRateValues.length < 3) {
     return { hrv: 0, stress: "No Data", color: "#000" };
   }
 
-  // Step 1: Convert Heart Rate (bpm) to R-R intervals (ms)
+  // Step 1: Convert HR to RR intervals (ms)
   const rrIntervals = heartRateValues.map((hr) => Math.round(60000 / hr));
 
-  // Step 2: Bin the R-R intervals into 50ms bins
-  const binSize = 50;
-  const bins = {};
+  // Step 2: Count frequency of each RR interval (binning by 50ms to smooth)
+  const binSize = 50; // ms
+  const histogram = {};
   rrIntervals.forEach((rr) => {
-    const bin = Math.floor(rr / binSize) * binSize;
-    bins[bin] = (bins[bin] || 0) + 1;
+    const bin = Math.round(rr / binSize) * binSize;
+    histogram[bin] = (histogram[bin] || 0) + 1;
   });
 
-  // Step 3: Find the bin with the maximum frequency
-  const maxBinCount = Math.max(...Object.values(bins));
+  // Step 3: Sum of NN intervals = total number of RR intervals
+  const sumNN = rrIntervals.length;
 
-  // Step 4: Calculate HRV Triangular Index
-  const hrvIndex = rrIntervals.length / maxBinCount;
+  // Step 4: Max NN = most frequent bin count
+  const maxBinCount = Math.max(...Object.values(histogram));
 
-  // Step 5: Determine stress level based on HRV Index
-  let stress;
-  let color;
+  // Step 5: HRV Triangular Index
+  const hrvIndex = sumNN / maxBinCount;
 
-  if (hrvIndex > 20) {
-    stress = "Deeply Relaxed";
-    color = "#34C759"; // Green
-  } else if (hrvIndex > 15) {
+  // Step 6: Stress Classification
+  let stress, color;
+
+  if (hrvIndex <= 15) {
+    stress = "Highly Tense";
+    color = "#FF3B30";
+  } else if (hrvIndex <= 25) {
+    stress = "Slightly Tense";
+    color = "#FF9F0A";
+  } else if (hrvIndex <= 52) {
+    stress = "Mildly Calm";
+    color = "#FFD60A";
+  } else if (hrvIndex <= 60) {
     stress = "Quietly Relaxed";
     color = "#85E6C4";
-  } else if (hrvIndex > 10) {
-    stress = "Mildly Calm";
-    color = "#FFD60A"; // Yellow
-  } else if (hrvIndex > 5) {
-    stress = "Slightly Tense";
-    color = "#FF9F0A"; // Orange
   } else {
-    stress = "Highly Tense";
-    color = "#FF3B30"; // Red
+    stress = "Deeply Relaxed";
+    color = "#34C759";
   }
 
-  return { hrv: hrvIndex.toFixed(2), stress, color };
+  return {
+    hrv: hrvIndex.toFixed(2),
+    stress,
+    color
+  };
 };
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -298,8 +352,15 @@ const stressLevel = (heartRateValues) => {
         <Text style={styles.notesButtonText}>View Notes</Text> 
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.reportsButton} onPress={() => router.push(`/Reports/${patientId}`)}> 
+        <Text style={styles.reportsButtonText}>View Reports</Text> 
+      </TouchableOpacity>
+
       <ScrollView style={styles.scrollView}>
         <Text style={styles.patientName}>Patient name: {patientName}</Text>
+         <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+    <FontAwesome name="sign-out" size={34} color="#fff"  />
+  </TouchableOpacity>
 
         {/* Heart Rate Section */}
         <View style={styles.heartRateContainer}>
@@ -352,8 +413,8 @@ const stressLevel = (heartRateValues) => {
                 source={require("@/assets/images/pills.png")}
                 style={styles.iconpill}
               />
-              <Text style={styles.statValue}>3</Text>
-              <Text style={styles.statTitle}>Pills</Text>
+              <Text style={styles.statValue}>Medicine</Text>
+              <Text style={styles.statTitle}>Schedule</Text>
             </TouchableOpacity>
           </View>
 
@@ -387,27 +448,127 @@ const stressLevel = (heartRateValues) => {
                 <Text style={styles.greenText}>▲5%</Text> mg/dL
               </Text>
             </View>
-            <View style={styles.RoutineSection}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Patient Routine (Last 24 Hours)</Text>
-              {routine.map((item, index) => (
-                <View key={index} style={styles.RoutineItem}>
-                  <Text style={{ fontSize: 14 }}>
-                    🕒 {new Date(item.time).toLocaleTimeString()} — 
-                    📌 Activity: {item.activity}, 
-                    😊 Mood: {item.emotion}, 
-                    🚶 Steps: {item.steps}, 
-                    😴 Sleep: {item.sleep_stage}
-                  </Text>
-                </View>
-            ))}
-</View>
           </View>
         </View>
         <FallIncidentBarChart></FallIncidentBarChart>
-        <MoodTimeline />
+       <View style={styles.RoutineSection}>
+  <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
+    Patient Routine (Last 24 Hours)
+  </Text>
+
+  {Array.isArray(routine) && routine.length > 0 ? (
+    <ScrollView horizontal>
+      <View>
+        {/* Table Header */}
+        <View style={[styles.RoutineRow, styles.RoutineHeader]}>
+          <Text style={styles.RoutineCell}>Time</Text>
+          <Text style={styles.RoutineCell}>Activity</Text>
+          <Text style={styles.RoutineCell}>Mood</Text>
+          <Text style={styles.RoutineCell}>Heart Rate</Text>
+        </View>
+
+        {/* Table Rows */}
+        {routine.map((item, index) => (
+          <View key={index} style={styles.RoutineRow}>
+            <Text style={styles.RoutineCell}>{item.time_interval}</Text>
+            <Text style={styles.RoutineCell}>{item.activity}</Text>
+            <Text style={styles.RoutineCell}>{item.emotion}</Text>
+            <Text style={styles.RoutineCell}>{item.value}</Text>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
+  ) : (
+    <Text style={{ fontSize: 14, color: "gray" }}>
+      No routine data available.
+    </Text>
+  )}
+</View>
+{/* sleeppppppp */}
+{/* Sleep Pattern Section */}
+<View style={{ marginVertical: 20 }}>
+  <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
+    Sleep Pattern (Last 24 Hours)
+  </Text>
+
+  {sleepLoading ? (
+    <Text style={{ color: "gray", textAlign: "center" }}>Loading sleep pattern...</Text>
+  ) : sleepPattern.length > 0 ? (
+    (() => {
+      const stageMap = { "Awake": 0, "Light Sleep": 1, "Deep Sleep": 2 };
+      const reverseMap = { 
+                0: "Awake", 
+                1: "Light", 
+                2: "Deep" 
+              };
+
+      const filteredData = sleepPattern.filter(item => item.sleep_stage !== "No Data");
+
+      const labels = filteredData.map((item, index) =>
+        index % 2 === 0 ? item.time : ""
+      );
+      const dataPoints = filteredData.map(item => stageMap[item.sleep_stage]);
+
+      return (
+        <LineChart
+          data={{
+            labels: labels,
+            datasets: [{ data: dataPoints }]
+          }}
+          width={Dimensions.get("window").width - 30}
+          height={200}
+          fromZero
+          yAxisInterval={1}
+          yAxisLabel=""
+          yAxisSuffix=""
+          chartConfig={{
+            backgroundGradientFrom: "#ffffff",
+            backgroundGradientTo: "#ffffff",
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`, // Line color
+            labelColor: () => "#333",
+            propsForDots: {
+              r: "3",
+              strokeWidth: "2",
+              stroke: "#007AFF"
+            },
+            propsForBackgroundLines: {
+              stroke: "#e3e3e3",
+              strokeDasharray: ""
+            },
+            propsForLabels: {
+              fontSize: 12
+            }
+          }}
+          bezier
+          style={{
+            borderRadius: 16,
+            marginVertical: 8,
+            paddingLeft: 10 // 👈 Add left padding here
+          }}
+          segments={2}
+          formatYLabel={yValue => {
+            if (reverseMap[yValue]) {
+              return reverseMap[yValue].replace(" ", "\n"); // 👈 Multi-line labels
+            }
+            return "";
+          }}
+
+        />
+      );
+    })()
+  ) : (
+    <Text style={{ color: "gray", textAlign: "center" }}>
+      No sleep pattern data available.
+    </Text>
+  )}
+</View>
+
+
+{/* end sleeppppppp */}
 
         {/* Activity Level Section */}
-        <ActivityLevelSection styles={styles} />
+        <ActivityLevelSection styles={styles} healthMetrics={healthMetrics} patientId={patientId} />
 
         <NavBarFamily />
       </ScrollView>
@@ -527,16 +688,132 @@ const FallIncidentBarChart = ({ data }) => {
   );
 };
 
-// Move ActivityLevelSection outside of the main component
-const ActivityLevelSection = ({ styles }) => {
-  const [activeTab, setActiveTab] = useState("steps");
 
-  const chartData = {
-    steps: [5400, 6700, 5800, 7500, 8200, 9000, 7600],
-    time: [35, 40, 38, 50, 55, 60, 45], // minutes
-    calorie: [220, 280, 250, 300, 310, 400, 370],
-    distance: [3.8, 4.6, 4.1, 5.2, 5.4, 6.0, 5.3], // in km
+// Move ActivityLevelSection outside of the main component
+const ActivityLevelSection = ({ styles, healthMetrics, patientId }) => {
+  const barCount =2; // Should be 2
+const screenWidth = Dimensions.get("window").width - 40;
+
+  const [activeTab, setActiveTab] = useState("steps");
+  const [selectedBarIndex, setSelectedBarIndex] = useState(null);
+
+
+  // Simulate real dates mapped to current ones
+  const today = new Date();
+
+// Simulated mapping (from real past dates to today/tomorrow)
+const simulatedDates = {
+  "2016-04-12": new Date(today),
+  "2016-04-13": new Date(today.getTime() + 86400000),
+};
+
+// Ensure fallback for invalid endDate
+let endDate = simulatedDates["2016-04-13"];
+if (!endDate || isNaN(endDate.getTime())) {
+  console.warn("Invalid end date. Falling back to today.");
+  endDate = new Date();
+}
+
+// Safely generate 7-day range
+const weekDates = Array.from({ length: 7 }, (_, i) => {
+  const date = new Date(endDate.getTime() - (6 - i) * 86400000);
+  if (isNaN(date.getTime())) {
+    console.warn("Invalid weekly date generated. Using today instead.");
+    return new Date(); // fallback
+  }
+  return date;
+});
+
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const sundayFirstWeekDates = [...weekDates].sort((a, b) => a.getDay() - b.getDay());
+
+  // Generate weekly data based on simulated mapping
+const weeklyData = sundayFirstWeekDates
+  .filter((date) => {
+    const day = date.getDay();
+    return day === 0 || day === 1; // Only Sunday (0) and Monday (1)
+  })
+  .map((date) => {
+    const dayIndex = date.getDay(); // 0 = Sunday
+    const dayLabel = daysOfWeek[dayIndex];
+
+    if (dayIndex === 0) {
+      // Static Sunday
+      return {
+        label: dayLabel,
+        steps: 7400,
+        calories: 250,
+        distance: 4.2,
+        isStatic: true,
+      };
+    }
+
+    if (dayIndex === 1) {
+      const simulatedDateStr = Object.entries(simulatedDates).find(
+        ([realStr, simDate]) => simDate.toDateString() === date.toDateString()
+      )?.[0];
+
+      if (!simulatedDateStr) {
+        return {
+          label: dayLabel,
+          steps: null,
+          calories: null,
+          distance: null,
+        };
+      }
+
+      const entries = healthMetrics.filter((item) => {
+        const raw = item.timestamp || item.created_at;
+        if (!raw) return false;
+        const itemDate = new Date(raw);
+        if (isNaN(itemDate.getTime())) return false;
+        const itemDateStr = itemDate.toISOString().split("T")[0];
+        return (
+          itemDateStr === simulatedDateStr &&
+          parseInt(item.patient_id) === parseInt(patientId)
+        );
+      });
+
+      const steps = entries.reduce((sum, entry) => sum + (entry.steps || 0), 0);
+      const calories = entries.reduce((sum, entry) => sum + (entry.calories || 0), 0);
+      const distance = entries.reduce((sum, entry) => sum + (entry.distance || 0), 0);
+
+      return {
+        label: dayLabel,
+        steps: entries.length ? steps : null,
+        calories: entries.length ? calories : null,
+        distance: entries.length ? distance : null,
+        isStatic: false,
+      };
+    }
+
+    return null; // Filtered out anyway
+  })
+  .filter(Boolean); // Remove nulls
+
+
+
+  // Handle missing data by averaging
+  const fillMissing = (key) => {
+    const validValues = weeklyData.map((d) => d[key]).filter((v) => v !== null);
+    const avg = validValues.length
+      ? validValues.reduce((a, b) => a + b, 0) / validValues.length
+      : 0;
+    return weeklyData.map((d) => (d[key] !== null ? d[key] : avg));
   };
+
+ const chartLabels = weeklyData.map((d) => d.label);
+const stepsData = weeklyData.map((d) => d.steps ?? 0);
+const calorieData = weeklyData.map((d) => d.calories ?? 0);
+const distanceData = weeklyData.map((d) => d.distance ?? 0);
+
+const chartData = {
+  steps: stepsData,
+  calorie: calorieData,
+  distance: distanceData,
+  time: Array(weeklyData.length).fill(0),
+};
+
 
   const yAxisSuffix =
     activeTab === "steps"
@@ -547,109 +824,173 @@ const ActivityLevelSection = ({ styles }) => {
       ? "kcal"
       : "km";
 
-  const totalStats = {
-    steps: "256,480",
-    time: "85h 24m",
-    calorie: "20,492",
-    distance: "294.35",
-  };
+  const mondayData = weeklyData.find((d) => d.label === "Mon") || {
+  steps: 0,
+  calories: 0,
+  distance: 0,
+};
+
+const totalStats = {
+  steps: mondayData.steps?.toLocaleString?.() || "0",
+  calorie: mondayData.calories?.toLocaleString?.() || "0",
+  distance: mondayData.distance?.toFixed?.(2) || "0.00",
+};
+
 
   const totalLabel = {
-    steps: "Total steps all the time",
+    steps: "Total steps this week",
     time: "Total active time",
     calorie: "Total calories burned",
     distance: "Total distance covered",
   };
 
+  // You can now return the rendered chart and UI using this data.
+
+
+
   return (
-    <View style={styles.activityLevelContainer}>
-      <View style={styles.activityLevelHeader}>
-        <Text style={styles.activityLevelTitle}>Activity Level</Text>
-        <TouchableOpacity style={styles.dropdown}>
-          <Text style={styles.dropdownText}>This Week</Text>
-        </TouchableOpacity>
-      </View>
-
-      <BarChart
-        data={{
-          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-          datasets: [{ data: chartData[activeTab] }],
-        }}
-        width={Dimensions.get("window").width - 40}
-        height={220}
-        fromZero
-        yAxisSuffix={yAxisSuffix}
-        chartConfig={{
-          backgroundGradientFrom: "#e0f7fa",
-          backgroundGradientTo: "#e0f7fa",
-          color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`,
-          labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-          barPercentage: 0.6,
-        }}
-        style={styles.chartStyle}
-      />
-
-      {/* Tabs for changing stats */}
-      <View style={styles.statsRow}>
-        {["steps", "time", "calorie", "distance"].map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[
-              styles.statsTab,
-              activeTab !== tab && styles.inactiveTab,
-            ]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text
-              style={[
-                styles.statsTabText,
-                activeTab !== tab && styles.inactiveTabText,
-              ]}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <View style={styles.totalStats}>
-        <Text style={styles.totalSteps}>{totalStats[activeTab]}</Text>
-        <Text style={styles.totalLabel}>{totalLabel[activeTab]}</Text>
-      </View>
-
-      <View style={styles.detailedStats}>
-        <View style={styles.statDetail}>
-          <Image
-            source={{
-              uri: "https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png",
-            }}
-            style={styles.iconImage}
-          />
-          <Text style={styles.statDetailValue}>{totalStats["time"]}</Text>
-          <Text style={styles.statDetailLabel}>Time</Text>
-        </View>
-        <View style={styles.statDetail}>
-          <Image
-            source={{
-              uri: "https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png",
-            }}
-            style={styles.iconImage}
-          />
-          <Text style={styles.statDetailValue}>{totalStats["calorie"]}</Text>
-          <Text style={styles.statDetailLabel}>Kcal</Text>
-        </View>
-        <View style={styles.statDetail}>
-          <Image
-            source={{
-              uri: "https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png",
-            }}
-            style={styles.iconImage}
-          />
-          <Text style={styles.statDetailValue}>{totalStats["distance"]}</Text>
-          <Text style={styles.statDetailLabel}>km</Text>
-        </View>
-      </View>
+   <View>
+  <View style={styles.activityLevelContainer}>
+    <View style={styles.activityLevelHeader}>
+      <Text style={styles.activityLevelTitle}>Activity Level</Text>
+      <TouchableOpacity style={styles.dropdown}>
+      </TouchableOpacity>
     </View>
+
+   <View style={{ position: "relative", width: screenWidth }}>
+  <BarChart
+    data={{
+      labels: chartLabels,
+      datasets: [{ data: chartData[activeTab] }],
+    }}
+    width={screenWidth}
+    height={220}
+    fromZero
+    yAxisSuffix={yAxisSuffix}
+    chartConfig={{
+      backgroundGradientFrom: "#e0f7fa",
+      backgroundGradientTo: "#e0f7fa",
+      color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+      barPercentage: 0.6,
+    }}
+    style={styles.chartStyle}
+    withInnerLines={false}
+    withHorizontalLabels={true}
+  />
+
+  {/* Transparent touch zones */}
+  {weeklyData.map((_, index) => (
+    <TouchableOpacity
+      key={index}
+      onPress={() => setSelectedBarIndex(index)}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: (screenWidth / barCount) * index,
+        width: screenWidth / barCount,
+        height: 220,
+        backgroundColor: "transparent",
+      }}
+    />
+  ))}
+</View>
+
+
+    <View style={styles.statsRow}>
+      {["steps", "calorie", "distance"].map((tab) => (
+        <TouchableOpacity
+          key={tab}
+          style={[
+            styles.statsTab,
+            activeTab !== tab && styles.inactiveTab,
+          ]}
+          onPress={() => setActiveTab(tab)}
+        >
+          <Text
+            style={[
+              styles.statsTabText,
+              activeTab !== tab && styles.inactiveTabText,
+            ]}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+
+    <View style={styles.totalStats}>
+      <Text style={styles.totalSteps}>{totalStats[activeTab]}</Text>
+      <Text style={styles.totalLabel}>{totalLabel[activeTab]}</Text>
+    </View>
+    {selectedBarIndex === 0 && weeklyData[0]?.isStatic && (
+  <Text
+    style={{
+      marginTop: 10,
+      fontSize: 20,
+      textAlign: "center",
+      color: "#FFF",
+      fontWeight: "bold",
+    }}
+  >
+    {`Sunday ${
+      activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+    }: ${
+      activeTab === "steps"
+        ? weeklyData[0].steps
+        : activeTab === "calorie"
+        ? weeklyData[0].calories
+        : activeTab === "distance"
+        ? weeklyData[0].distance?.toFixed?.(2)
+        : "N/A"
+    }`}
+  </Text>
+)}
+
+  </View>
+
+
+  <View style={styles.detailedStats}>
+    {/* <View style={styles.statDetail}>
+      <Image
+        source={{
+          uri: "https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png",
+        }}
+        style={styles.iconImage}
+      />
+      <Text style={styles.statDetailValue}>{totalStats["time"]}</Text>
+      <Text style={styles.statDetailLabel}>Time</Text>
+    </View> */}
+
+    <View style={styles.statDetail}>
+      <Image
+        source={{
+          uri: "https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png",
+        }}
+        style={styles.iconImage}
+      />
+      <Text style={styles.statDetailValue}>{totalStats["calorie"]}</Text>
+      <Text style={styles.statDetailLabel}>Kcal</Text>
+    </View>
+
+    <View style={styles.statDetail}>
+      <Image
+        source={{
+          uri: "https://w7.pngwing.com/pngs/345/54/png-transparent-green-location-icon-illustration-computer-icons-google-maps-google-map-maker-adress-angle-leaf-grass.png",
+        }}
+        style={styles.iconImage}
+      />
+      <Text style={styles.statDetailValue}>{totalStats["distance"]}</Text>
+      <Text style={styles.statDetailLabel}>km</Text>
+    </View>
+  </View>
+
+<View style={{ marginTop: 20, paddingHorizontal: 20 }}>
+
+</View>
+
+
+</View>
   );
 };
 
@@ -663,6 +1004,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+   logoutButton: {
+    padding: 8,
+    position: 'absolute',
+    right: 10,
+    
+  },
+
 alertsContainer: {
   marginTop: 20,
   paddingHorizontal: 10,
@@ -688,9 +1036,24 @@ alertsContainer: {
     paddingHorizontal: 15,
     borderRadius: 8,
     position: "absolute",
-     right: 130, // Adjust to position the button to the top right
+     right: 120, // Adjust to position the button to the top right
     top: 50,   // Adjust to match header spacing
   },
+  reportsButton: {
+     backgroundColor: "#FFF",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    position: "absolute",
+     right: 250, // Adjust to position the button to the top right
+    top: 50, 
+  },
+  reportsButtonText: {
+    color: "#000",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
   notesButtonText: {
     color: "#000",
     fontWeight: "bold",
@@ -988,6 +1351,39 @@ flex: 1,
   legendText: {
     fontSize: 12,
     color: "#444",
+  },
+
+  NavBarFamily: {
+    position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: 60, // adjust as needed
+  backgroundColor: "#fff",
+  zIndex: 1000, // stays above other elements
+  // React Native does not support boxShadow shorthand, use shadow properties below
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  },
+  RoutineRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    paddingVertical: 5,
+  },
+  RoutineCell: {
+    width: 140,
+    textAlign: 'center',
+    fontSize: 14,
+  },
+  RoutineHeader: {
+    backgroundColor: '#f0f0f0',
+    fontWeight: 'bold',
+  },
+  RoutineSection: {
+    marginTop: 20,
   },
   
 });

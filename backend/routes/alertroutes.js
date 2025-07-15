@@ -8,7 +8,7 @@ router.get("/alerts", async (req, res) => {
     const allAlerts = await Alerts.findAll(); 
     return res.status(200).json(allAlerts);
   } catch (error) {
-    console.error("Error fetching alerts:", error);
+    // console.error("Error fetching alerts:", error);
     return res.status(500).json({
       message: "Internal server error",
       error: error.message,

@@ -8,7 +8,6 @@ from speech_api.routes.audio_routes import router as speech_router
 import os 
 
 import threading
-
 # Lifespan handler to run video monitoring on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):

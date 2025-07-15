@@ -34,44 +34,59 @@ router.post('/admin/queries', async (req, res) => {
 
 
 router.post('/admin/allqueries', async (req, res) => {
-  // console.log("Making caregiver request with sender_id:",userId);
-  console.log("IN QIUERIES OF CAREGIVER");
+  console.log("IN QUERIES OF CAREGIVER");
 
   try {
-    const { userId,sender_type } = req.body;
-  
-    console.log("THE SENDER ID IN CAREGIVER QUERIES ",sender_type);
+    const { userId, sender_type } = req.body;
 
-    // Fetch all unresolved queries from the database
-      const queries = await Query.findAll({
-        where: {
-          sender_id: userId,
-          sender_type: sender_type,
-         // caregiver hasn't received a response
-        }
-      });
-      
-    console.log("CAREGIVER QUEIRES DATA FETCHING ",queries);
+    console.log("THE SENDER TYPE:", sender_type);
+    console.log("THE CAREGIVER ID:", userId);
+
+    // 1. Get patients assigned to this caregiver
+    const patients = await Patient.findAll({
+      where: { assigned_caregiver_id: userId },
+      attributes: ['patient_id']
+    });
+
+    const patientIds = patients.map(p => p.patient_id);
+
+    // 2. Get family members linked to these patients
+    const families = await Family.findAll({
+      where: { patient_id: patientIds },
+      attributes: ['user_id']
+    });
+
+    const familyUserIds = families.map(f => f.user_id);
+
+    // 3. Get queries from those family members sent to this caregiver
+    const queries = await Query.findAll({
+      where: {
+        sender_id: familyUserIds,
+        sender_type: 'family',
+        recepient: 'caregiver',
+      }
+    });
+
+    console.log("Filtered caregiver queries: ", queries);
     return res.json({ success: true, data: queries });
 
   } catch (error) {
-    console.error('Error fetching queries:', error);
+    console.error('Error fetching caregiver queries:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch queries' });
   }
 });
 
 
 router.post('/admin/allfamily', async (req, res) => {
+  console.log("IN ALL admin QUERIES");
   try {
-
-    const { sender_id,sender_type } = req.body;
 
     // Fetch all unresolved queries from the database
     const queries = await Query.findAll({
       where: {
-        sender_id: sender_id,
-        recepient: 'caregiver',
-        sender_type: sender_type,
+        recepient: 'admin',
+        sender_type: "caregiver"|| "family",
+        response: null, // Ensure the response is null
       }
     });
     console.log(queries);
@@ -126,7 +141,7 @@ router.get('/admin/users', async (req, res) => {
     // Send the response
     res.status(200).json(response);
   } catch (error) {
-    console.error('Error fetching users:', error);
+    // console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
@@ -460,7 +475,7 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
       console.log("User found:", user);
       return res.status(200).json(user);
     } catch (error) {
-      console.error("Error fetching user details:", error);
+      // console.error("Error fetching user details:", error);
       return res.status(500).json({ message: "Internal server error." });
     }
   });
@@ -552,6 +567,10 @@ router.post('/admin/approve/:requestType/:requestId', async (req, res) => {
     }
   });
 
+  router.post('/admin/logout', (req, res) => {
+  // You could optionally log this or blacklist the token if needed
+  return res.status(200).json({ message: 'Logout successful' });
+});
 
 
 

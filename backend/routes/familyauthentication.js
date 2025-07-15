@@ -146,13 +146,42 @@ router.get("/health-metrics/:patientId", async (req, res) => {
       },
       order: [["time", "ASC"]], // Sort the metrics by time in ascending order
     });
-    console.log("Metrics",metrics.slice(0, 5)); // Debugging log
+    // console.log("Metrics",metrics.slice(0, 5)); // Debugging log
     res.status(200).json(metrics); // Send fetched metrics as JSON
   } catch (error) {
     console.error("Error fetching health metrics:", error);
     res.status(500).json({ message: "Error fetching health metrics", error });
   }
 })
+
+router.get('/patientsreport/:patientId', async (req, res) => {
+ console.log("FETCHING PATIENT DETSILD FOR REPORT " , req.params.patientId);
+  try {
+    const patientId = req.params.patientId;
+
+    const patient = await Patient.findOne({
+      where: { patient_id: patientId },
+      include: [
+        {
+          model: Caregiver,
+          as: 'caregiver',
+          attributes: ['name', 'email'] // Include relevant fields
+        }
+      ]
+    });
+    console.log("Fetched patient data:", patient); // Debugging log
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    res.json(patient);
+  } catch (error) {
+    console.error("Error fetching patient:", error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 router.get("/family/:userId", async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -237,6 +266,59 @@ router.post('/family/getPatientNotes', async (req, res) => {
   } catch (error) {
     console.error('Error fetching notes:', error);
     return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+router.get("/health-metrics-reports/:patientId", async (req, res) => {
+  const { patientId } = req.params;
+
+  // Full day time range for 2016-04-12
+  const startTime = "2016-04-12 08:00:00+05:00";
+  const endTime = "2016-04-12 22:58:00+05:00";
+
+  try {
+    const metrics = await HealthMetric.findAll({
+      where: {
+        patient_id: patientId,
+        time: {
+          [Op.between]: [startTime, endTime],
+        },
+      },
+      attributes: ["value", "calories", "steps", "distance", "time"],
+      order: [["time", "ASC"]],
+    });
+
+    if (!metrics.length) {
+      return res.status(404).json({ message: "No metrics found in selected time range." });
+    }
+
+    // Filter and extract each metric
+    const bpmArr = metrics.map(m => m.value).filter(v => v != null);
+    const caloriesArr = metrics.map(m => m.calories).filter(v => v != null);
+    const stepsArr = metrics.map(m => m.steps).filter(v => v != null);
+    const distanceArr = metrics.map(m => m.distance).filter(v => v != null);
+
+    // Helper to get avg, min, max
+    const getStats = (arr) => {
+      const sum = arr.reduce((acc, val) => acc + val, 0);
+      const avg = +(sum / arr.length).toFixed(2);
+      const min = Math.min(...arr);
+      const max = Math.max(...arr);
+      return { avg, min, max };
+    };
+
+    // Response JSON
+    const response = {
+      bpm: getStats(bpmArr),
+      calories: getStats(caloriesArr),
+      steps: getStats(stepsArr),
+      distance: getStats(distanceArr),
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching health metrics:", error);
+    res.status(500).json({ message: "Error fetching health metrics", error });
   }
 });
 

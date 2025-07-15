@@ -64,7 +64,7 @@ const QueriesPage = () => {
 
           if (user.type === 'caregiver') {
             // Caregiver: Fetch queries from /admin/allqueries
-            const caregiverResponse = await fetch(`${apiBaseUrl}/admin/allqueries`, {
+            const caregiverResponse = await fetch(`${apiBaseUrl}/caregiver/allqueries`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -236,21 +236,21 @@ const QueriesPage = () => {
   filteredQueries.map((query, index) => (
     <View key={query.query_id} style={styles.queryCard}>
       {/* User Info Section */}
-      <View style={styles.queryInfo}>
-        <Image
-          source={{
-            uri: 'https://i.pinimg.com/736x/8b/16/7a/8b167af653c2399dd93b952a48740620.jpg',
-          }}
-          style={styles.userImage}
-        />
-        <View style={styles.queryDetails}>
-          <Text style={styles.userName}> Sender ID: {query.sender_id}</Text>
-          <Text style={styles.querySubject}>{query.subject}</Text>
-          <Text style={styles.queryDescription}>{query.message}</Text>
-        </View>
-      </View>
+     <View style={styles.queryInfo}>
+  <Image
+    source={{
+      uri: 'https://i.pinimg.com/736x/8b/16/7a/8b167af653c2399dd93b952a48740620.jpg',
+    }}
+    style={styles.userImage}
+  />
 
-      {query.sender_type !== 'caregiver' && (
+  <View style={styles.queryDetails}>
+    <Text style={styles.userName}>Sender ID: {query.sender_id}</Text>
+    <Text style={styles.querySubject}>{query.subject}</Text>
+    <Text style={styles.queryDescription}>{query.message}</Text>
+  </View>
+
+ {query.sender_type !== 'caregiver' && (
   <Link
     href={{
       pathname: '/responsepage',
@@ -262,37 +262,41 @@ const QueriesPage = () => {
   </Link>
 )}
 
+</View>
+
+
 
       {(selectedCaregiverFilter === 'SENT' || query.sender_type === 'caregiver') && (
         <View>
-          <View
-            style={[
-              styles.statusField,
-              query.is_resolved === true ? styles.resolved : styles.unresolved,
-            ]}
-          >
-            <Text style={styles.statusFieldText}>
-              {query.is_resolved === true ? 'Responded' : 'Pending'}
-            </Text>
-          </View>
+  <View
+    style={[
+      styles.statusField,
+      query.is_resolved ? styles.resolved : styles.unresolved,
+    ]}
+  >
+    <Text style={styles.statusFieldText}>
+      {query.is_resolved ? 'Responded' : 'Pending'}
+    </Text>
+  </View>
 
-          {query.is_resolved && (
-            <TouchableOpacity
-              style={styles.responseButton}
-              onPress={() => toggleExpand(index)} // Toggling the response
-            >
-              <Text style={styles.responseButtonText}>
-                {expandedQueries[index] ? 'Hide Response' : 'Show Response'}
-              </Text>
-            </TouchableOpacity>
-          )}
+  {query.is_resolved && (
+    <TouchableOpacity
+      style={styles.responseButton}
+      onPress={() => toggleExpand(index)}
+    >
+      <Text style={styles.responseButtonText}>
+        {expandedQueries[index] ? 'Hide Response' : 'Show Response'}
+      </Text>
+    </TouchableOpacity>
+  )}
 
-          {expandedQueries[index] && query.response && (
-            <View style={styles.responseContainer}>
-              <Text style={styles.responseText}>{query.response}</Text>
-            </View>
-          )}
-        </View>
+  {expandedQueries[index] && query.response && (
+    <View style={styles.responseContainer}>
+      <Text style={styles.responseText}>{query.response}</Text>
+    </View>
+  )}
+</View>
+
       )}
     </View>
   ))
@@ -309,7 +313,7 @@ const QueriesPage = () => {
 
 
 const styles = StyleSheet.create({
-  container: {
+   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
@@ -511,5 +515,4 @@ queryDescription: {
     fontWeight: '700',
   },
 });
-
 export default QueriesPage;

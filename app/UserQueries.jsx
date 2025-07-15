@@ -13,6 +13,7 @@ import {
 import useConfig from "../hooks/useConfig";
 import useAuth from '../hooks/useAuth';
 import Icon from "react-native-vector-icons/FontAwesome";
+import { Link, useLocalSearchParams } from 'expo-router';
 
 const UserQueries = () => {
   const [queries, setQueries] = useState([]);
@@ -94,33 +95,40 @@ const UserQueries = () => {
                 <Text style={styles.queryMessage}>{query.message}</Text>
               </View>
 
-              <View
-                style={[
-                  styles.statusField,
-                  query.is_resolved === true ? styles.resolved : styles.unresolved,
-                ]}
-              >
-                <Text style={styles.statusFieldText}>
-                  {query.is_resolved === true ? "Responded" : "Pending"}
-                </Text>
-              </View>
+             {query.is_resolved ? (
+  <>
+    <View style={[styles.statusField, styles.resolved]}>
+      <Text style={styles.statusFieldText}>Responded</Text>
+    </View>
 
-              {query.is_resolved && (
-                <TouchableOpacity
-                  style={styles.responseButton}
-                  onPress={() => toggleExpand(index)}
-                >
-                  <Text style={styles.responseButtonText}>
-                    {expandedQueries[index] ? "Hide Response" : "Show Response"}
-                  </Text>
-                </TouchableOpacity>
-              )}
+    <TouchableOpacity
+      style={styles.responseButton}
+      onPress={() => toggleExpand(index)}
+    >
+      <Text style={styles.responseButtonText}>
+        {expandedQueries[index] ? "Hide Response" : "Show Response"}
+      </Text>
+    </TouchableOpacity>
 
-              {expandedQueries[index] && query.response && (
-                <View style={styles.responseContainer}>
-                  <Text style={styles.responseText}>{query.response}</Text>
-                </View>
-              )}
+    {expandedQueries[index] && query.response && (
+      <View style={styles.responseContainer}>
+        <Text style={styles.responseText}>{query.response}</Text>
+      </View>
+    )}
+  </>
+) : (
+  <Link
+    href={{
+      pathname: '/responsepage',
+      params: { query: query, queryId: query.query_id },
+    }}
+    style={styles.responseButton}
+  >
+    <Text style={styles.responseButtonText}>Respond</Text>
+  </Link>
+)}
+
+           
             </View>
           ))}
         </ScrollView>

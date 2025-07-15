@@ -17,7 +17,7 @@ const Alerts = () => {
         const data = await response.json();
         setAlerts(data); // Update state with fetched alerts
       } catch (error) {
-        console.error("Error fetching alerts:", error);
+        // console.error("Error fetching alerts:", error);
       }
     };
 

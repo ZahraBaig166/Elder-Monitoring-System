@@ -541,6 +541,50 @@ router.get('/caregiver-performance', async (req, res) => {
   }
 });
 
+router.get('/alerts', async (req, res) => {
+  console.log("IN ALERTS ROUTE");
+  try {
+    const { patient_ids } = req.query;
+
+    if (!patient_ids) {
+      return res.status(400).json({ error: 'patient_ids query param is required' });
+    }
+
+    const ids = patient_ids.split(',').map((id) => parseInt(id, 10)).filter(Boolean);
+
+    // Fetch alerts for critical patients, including patient info
+    const alerts = await Alerts.findAll({
+      where: {
+        patient_id: ids,
+      },
+      include: [
+        {
+          model: Patient,
+          as: 'patient',
+          attributes: ['name'], // Include patient name only
+        },
+      ],
+    });
+    console.log("ALERTS", alerts);
+
+    // Attach patient name to response object
+    const alertsWithPatientName = alerts.map((alert) => ({
+      alert_id: alert.alert_id,
+      patient_id: alert.patient_id,
+      type: alert.type,
+      timestamp: alert.timestamp,
+      is_acknowledged: alert.is_acknowledged,
+      patient_name: alert.patient?.name || `Patient ${alert.patient_id}`,
+    }));
+
+    res.json(alertsWithPatientName);
+  } catch (err) {
+    console.error('Error fetching alerts:', err);
+    res.status(500).json({ error: 'Failed to fetch alerts' });
+  }
+});
+
+
 
 
 module.exports = router;
